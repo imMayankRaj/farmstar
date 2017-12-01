@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginLeft="2dp"
+    android:layout_marginRight="2dp"
+    app:cardElevation="5dp"
+    android:layout_marginBottom="10dp"
+    android:layout_height="wrap_content">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:layout_height="match_parent">
+        <TextView
+            android:id="@+id/name"
+            android:maxLines="1"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_width="wrap_content"
+            android:textSize="20dp"
+            android:text="Name"
+            android:layout_height="wrap_content" />
+        <Button
+            android:id="@+id/call"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_width="wrap_content"
+            android:text="Call"
+            android:layout_height="wrap_content" />
+        <RelativeLayout
+            android:id="@+id/usernamecont"
+            android:layout_toLeftOf="@+id/call"
+            android:layout_below="@+id/name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/username"
+            android:text="Username: "
+            android:textSize="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/username_info"
+            android:textSize="20dp"
+            android:layout_toRightOf="@+id/username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/passwordcont"
+            android:layout_below="@+id/usernamecont"
+            android:layout_width="match_parent"
+            android:layout_toLeftOf="@+id/call"
+            android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/password"
+            android:text="Password: "
+            android:textSize="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/password_info"
+            android:textSize="20dp"
+            android:maxLines="1"
+            android:layout_toRightOf="@+id/password"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/zonecont"
+            android:layout_below="@+id/passwordcont"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/zonename"
+            android:text="Zone Name: "
+            android:textSize="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/zone_info"
+            android:textSize="20dp"
+            android:layout_toRightOf="@+id/zonename"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        </RelativeLayout>
+        <TextView
+            android:id="@+id/curbal"
+            android:text="Current balance: "
+            android:textSize="20dp"
+            android:layout_below="@+id/zonecont"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/curbal_info"
+            android:textSize="20dp"
+            android:layout_below="@+id/zonecont"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@+id/active"
+            android:layout_toStartOf="@+id/active"
+            android:layout_toRightOf="@+id/curbal"
+            android:layout_toEndOf="@+id/curbal" />
+        <ImageView
+            android:layout_alignParentEnd="true"
+            android:id="@+id/active"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/zonecont"
+            android:layout_alignBottom="@+id/curbal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>

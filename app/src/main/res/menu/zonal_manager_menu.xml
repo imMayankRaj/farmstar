@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="none">
+        <item
+            android:id="@+id/all_purchase"
+            android:icon="@drawable/cash_register"
+            android:title="All Purchases" />
+        <item
+            android:id="@+id/executives"
+            android:icon="@drawable/construction_worker"
+            android:title="Executives" />
+        <item
+            android:id="@+id/commodities"
+            android:icon="@drawable/warehouse_"
+            android:title="Commodities/Stock" />
+        <item
+            android:id="@+id/wallet"
+            android:icon="@drawable/wallet"
+            android:title="Wallet" />
+        <item
+            android:id="@+id/buyers"
+            android:icon="@drawable/buyer"
+            android:title="Buyers" />
+        <item
+            android:id="@+id/sale"
+            android:icon="@drawable/sales"
+            android:title="Sale" />
+        <item
+            android:id="@+id/paymentRequest"
+            android:icon="@drawable/receipt"
+            android:title="Payment Requests" />
+    </group>
+
+
+</menu>

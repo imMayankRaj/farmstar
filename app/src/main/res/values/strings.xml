@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Zendor</string>
+    <string name="app_nameC">ZENDOR</string>
+    <string name="hint1">User Name</string>
+    <string name="hint2">Password</string>
+    <string name="login">Login</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Sign Out</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
