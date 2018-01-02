@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="5sp"
+    app:cardCornerRadius="5dp"
+    app:cardElevation="5dp"
+    app:cardUseCompatPadding="false">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:background="#aeaeae"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:textSize="16sp"
+                android:gravity="start"
+                android:text="Wheat "
+                android:id="@+id/cname"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
+
+            <View
+                android:background="#fff"
+                android:layout_width="1dp"
+                android:layout_height="25dp">
+
+            </View>
+            <TextView
+                android:gravity="end"
+                android:textSize="16sp"
+                android:text="Zone"
+                android:id="@+id/zname"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+
+
+        </LinearLayout>
+        <LinearLayout
+            android:padding="5dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:textSize="16sp"
+                android:gravity="center"
+                android:text="Collected :"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
+
+            <TextView
+                android:gravity="center"
+                android:id="@+id/collectedWeight"
+                android:layout_weight="1"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:text="24 kg"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+
+
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:padding="5dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:textSize="16sp"
+                android:gravity="center"
+                android:text="Picked :"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
+
+            <TextView
+                android:gravity="center"
+                android:id="@+id/pickedWeight"
+                android:layout_weight="1"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:text="24 kg"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+
+
+
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:padding="5dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:textSize="16sp"
+                android:gravity="center"
+                android:text="Booked :"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
+
+            <TextView
+                android:gravity="center"
+                android:id="@+id/bookedWeight"
+                android:layout_weight="1"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:text="24 kg"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+
+
+
+        </LinearLayout>
+
+
+
+        <View
+            android:background="#aeaeae"
+            android:layout_width="match_parent"
+            android:layout_height="1dp">
+
+        </View>
+
+
+    </LinearLayout>
+</android.support.v7.widget.CardView>

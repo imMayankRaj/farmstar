@@ -4,20 +4,48 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.TimeoutError;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.bumptech.glide.Glide;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import mayank.example.zendor.R;
+import mayank.example.zendor.onClickSeller.sellerPurchases;
+
+import static mayank.example.zendor.MainActivity.showError;
 
 public class commoditiesActivity extends AppCompatActivity {
 
-    private ImageView v1,v2,v3,v4,f1,f2,f3,f4,p1,p2,p3,p4;
-    private CheckBox vc1,vc2,vc3,vc4,fc1,fc2,fc3,fc4,pc1,pc2,pc3,pc4;
     private TextView submit;
     private Toolbar toolbar;
+    private ArrayList<commodity> arrayList;
+    private LinearLayout layout1, layout2, layout3, layout4, layout5, layout6, layout7, layout8, layout9, layout10, layout11;
+    private String commo[];
+    private LoadingClass lc;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,34 +53,32 @@ public class commoditiesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_commodities);
 
         final Bundle bundle = getIntent().getBundleExtra("sellerDetail");
-        v1 = findViewById(R.id.v1);
-        v2 = findViewById(R.id.v2);
-        v3 = findViewById(R.id.v3);
-        v4 = findViewById(R.id.v4);
-        f1 = findViewById(R.id.f1);
-        f2 = findViewById(R.id.f2);
-        f3 = findViewById(R.id.f3);
-        f4 = findViewById(R.id.f4);
-        p1 = findViewById(R.id.p1);
-        p2 = findViewById(R.id.p2);
-        p3 = findViewById(R.id.p3);
-        p4 = findViewById(R.id.p4);
-        vc1 = findViewById(R.id.vc1);
-        vc2 = findViewById(R.id.vc2);
-        vc3 = findViewById(R.id.vc3);
-        vc4 = findViewById(R.id.vc4);
-        fc1 = findViewById(R.id.fc1);
-        fc2 = findViewById(R.id.fc2);
-        fc3 = findViewById(R.id.fc3);
-        fc4 = findViewById(R.id.fc4);
-        pc1 = findViewById(R.id.pc1);
-        pc2 = findViewById(R.id.pc2);
-        pc3 = findViewById(R.id.pc3);
-        pc4 = findViewById(R.id.pc4);
+
+        final Bundle bun = new Bundle();
+
+        arrayList = new ArrayList<>();
+
+        layout1 = findViewById(R.id.layout1);
+        layout2 = findViewById(R.id.layout2);
+        layout3 = findViewById(R.id.layout3);
+        layout4 = findViewById(R.id.layout4);
+        layout5 = findViewById(R.id.layout5);
+        layout6 = findViewById(R.id.layout6);
+        layout7 = findViewById(R.id.layout7);
+        layout8 = findViewById(R.id.layout8);
+        layout9 = findViewById(R.id.layout9);
+        layout10 = findViewById(R.id.layout10);
+        layout11 = findViewById(R.id.layout11);
+
+
+        lc = new LoadingClass(this);
+        getCommodity();
+
         submit = findViewById(R.id.submit);
         toolbar = findViewById(R.id.toolbar);
 
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -63,169 +89,197 @@ public class commoditiesActivity extends AppCompatActivity {
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(commoditiesActivity.this, sellerExtraData.class);
-                intent.putExtra("sellerDetail", bundle);
-                startActivity(intent);
-            }
-        });
-
-        v1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!vc1.isChecked()) {
-                    vc1.setVisibility(View.VISIBLE);
-                    vc1.setChecked(true);
-                }else {
-                    vc1.setVisibility(View.INVISIBLE);
-                    vc1.setChecked(false);
+                String addComm = "";
+                for (int i =0;i<arrayList.size();i++){
+                    if(commo[i] == null){
+                        commo[i] = "";
+                    }
                 }
-            }
-        });
-        v2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!vc2.isChecked()) {
-                    vc2.setVisibility(View.VISIBLE);
-                    vc2.setChecked(true);
-                }else {
-                    vc2.setVisibility(View.INVISIBLE);
-                    vc2.setChecked(false);
+
+                for (int i =0;i<arrayList.size();i++){
+                    if(commo[i].length() != 0)
+                    addComm = addComm.concat(commo[i] + ",");
                 }
-            }
-        });
-
-        v3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!vc3.isChecked()) {
-                    vc3.setVisibility(View.VISIBLE);
-                    vc3.setChecked(true);
+                if(addComm.length() == 0 || addComm.length() == 4){
+                    Toast.makeText(commoditiesActivity.this, "Select a commodity.", Toast.LENGTH_SHORT).show();
                 }else {
-                    vc3.setVisibility(View.INVISIBLE);
-                    vc3.setChecked(false);
+                    addComm = addComm.replaceAll("null", "");
+                    addComm = addComm.substring(0, addComm.lastIndexOf(","));
+                    bun.putString("commodities", addComm);
+                    Intent intent = new Intent(commoditiesActivity.this, sellerExtraData.class);
+                    intent.putExtra("sellerDetail", bundle);
+                    intent.putExtra("comm", bun);
+                    startActivity(intent);
                 }
+
             }
         });
+    }
 
-        v4.setOnClickListener(new View.OnClickListener() {
+    private void getCommodity(){
+        lc.showDialog();
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, URLclass.GET_COMMODITIES, new Response.Listener<String>() {
             @Override
-            public void onClick(View v) {
-                if(!vc4.isChecked()) {
-                    vc4.setVisibility(View.VISIBLE);
-                    vc4.setChecked(true);
-                }else {
-                    vc4.setVisibility(View.INVISIBLE);
-                    vc4.setChecked(false);
-                }
-            }
-        });
+            public void onResponse(String response) {
 
-        f1.setOnClickListener(new View.OnClickListener() {
+                Log.e("comres", response);
+                arrayList.clear();
+                try {
+                    JSONObject json = new JSONObject(response);
+                    JSONArray array = json.getJSONArray("values");
+                    for(int i =0;i<array.length();i++){
+                        JSONObject object = array.getJSONObject(i);
+                        String commodities = object.getString("commodities");
+                        String pic_path = object.getString("pic_path");
+                        String types = object.getString("types");
+                        arrayList.add(new commodity(commodities, pic_path, types));
+                    }
+                } catch (JSONException e) {
+                    Log.e("rrrr", e+"");
+                }
+
+                commo = new String[arrayList.size()];
+                startLoop(arrayList);
+
+            }
+        }, new Response.ErrorListener() {
             @Override
-            public void onClick(View v) {
-                if(!fc1.isChecked()) {
-                    fc1.setVisibility(View.VISIBLE);
-                    fc1.setChecked(true);
-                }else {
-                    fc1.setVisibility(View.INVISIBLE);
-                    fc1.setChecked(false);
-                }
+            public void onErrorResponse(VolleyError error) {
+
+                Log.e("server", error+"");
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(commoditiesActivity.this, "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, commoditiesActivity.this.getClass().getName(), commoditiesActivity.this);
+
+
             }
         });
 
-        f2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!fc2.isChecked()) {
-                    fc2.setVisibility(View.VISIBLE);
-                    fc2.setChecked(true);
-                }else {
-                    fc2.setVisibility(View.INVISIBLE);
-                    fc2.setChecked(false);
-                }
-            }
-        });
-        f3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!fc3.isChecked()) {
-                    fc3.setVisibility(View.VISIBLE);
-                    fc3.setChecked(true);
-                }else {
-                    fc3.setVisibility(View.INVISIBLE);
-                    fc3.setChecked(false);
-                }
-            }
-        });
-        f4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!fc4.isChecked()) {
-                    fc4.setVisibility(View.VISIBLE);
-                    fc4.setChecked(true);
-                }else {
-                    fc4.setVisibility(View.INVISIBLE);
-                    fc4.setChecked(false);
-                }
-            }
-        });
+        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+    }
 
-        p1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!pc1.isChecked()) {
-                    pc1.setVisibility(View.VISIBLE);
-                    pc1.setChecked(true);
-                }else {
-                    pc1.setVisibility(View.INVISIBLE);
-                    pc1.setChecked(false);
-                }
-            }
-        });
+    public class commodity{
 
-        p2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!pc2.isChecked()) {
-                    pc2.setVisibility(View.VISIBLE);
-                    pc2.setChecked(true);
-                }else {
-                    pc2.setVisibility(View.INVISIBLE);
-                    pc2.setChecked(false);
-                }
-            }
-        });
+        private String commodity;
+        private String pic_path;
+        private String type;
 
-        p3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!pc3.isChecked()) {
-                    pc3.setVisibility(View.VISIBLE);
-                    pc3.setChecked(true);
-                }else {
-                    pc3.setVisibility(View.INVISIBLE);
-                    pc3.setChecked(false);
-                }
-            }
-        });
+        public commodity(String commodity, String pic_path, String type){
+            this.commodity = commodity;
+            this.pic_path = pic_path;
+            this.type = type;
+        }
 
-        p4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!pc4.isChecked()) {
-                    pc4.setVisibility(View.VISIBLE);
-                    pc4.setChecked(true);
-                }else {
-                    pc4.setVisibility(View.INVISIBLE);
-                    pc4.setChecked(false);
-                }
-            }
-        });
+        public String getCommodity() {
+            return commodity;
+        }
 
+        public String getPic_path() {
+            return pic_path;
+        }
 
+        public String getType() {
+            return type;
+        }
+    }
 
+    private void startLoop(ArrayList<commodity> list){
+        for(int i =0;i<list.size();i++){
+            checkLayout(list.get(i), i);
+        }
+    }
 
+    private void checkLayout(commodity current, int id){
+        switch (current.getType()){
+            case "Vegetables":
+                makeView(layout1, id+current.getCommodity(), current.getPic_path(), current.getCommodity());
+                break;
 
+            case "Fruits":
+                makeView(layout2, id+current.getCommodity(), current.getPic_path(), current.getCommodity());
+                break;
+
+            case "Pulses":
+                makeView(layout3, id+current.getCommodity(), current.getPic_path(), current.getCommodity());
+                break;
+
+            case "Cereals":
+                makeView(layout4, id+current.getCommodity(), current.getPic_path(), current.getCommodity());
+                break;
+
+            case "Cash Crops":
+                makeView(layout5, id+current.getCommodity(), current.getPic_path(), current.getCommodity());
+                break;
+
+            case "Oil Seeds":
+                makeView(layout6, id+current.getCommodity(), current.getPic_path(), current.getCommodity());
+                break;
+
+            case "Spices":
+                makeView(layout7, id+current.getCommodity(), current.getPic_path(), current.getCommodity());
+                break;
+
+            case "Forage Crops":
+                makeView(layout8, id+current.getCommodity() , current.getPic_path(), current.getCommodity());
+                break;
+
+            case "Flowers":
+                makeView(layout9, id+current.getCommodity(), current.getPic_path(), current.getCommodity());
+                break;
+
+            case "Dairy":
+                makeView(layout10, id+current.getCommodity(), current.getPic_path(), current.getCommodity());
+                break;
+
+            case "Live Stocks":
+                makeView(layout11, id+current.getCommodity(), current.getPic_path(), current.getCommodity());
+                break;
+        }
 
     }
+
+    private void makeView(LinearLayout layout, String id, String path, String name){
+        View view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.add_view, layout, false);
+        view.setTag(id);
+
+        view.setOnClickListener(onClickListener);
+        ImageView img = view.findViewById(R.id.img);
+        TextView na = view.findViewById(R.id.name);
+
+        na.setText(name);
+
+        Glide.with(this).load(URLclass.COMMODITY_PIC_PATH+path).into(img);
+
+        layout.addView(view);
+        lc.dismissDialog();
+    }
+
+    private View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            String id = (String) v.getTag();
+            Pattern pattern = Pattern.compile("[0-9]+");
+            Matcher matcher = pattern.matcher(id);
+
+            String match = null;
+            while (matcher.find()) {
+                match = matcher.group();
+            }
+            int a = Integer.parseInt(match);
+
+            CheckBox cb = v.findViewById(R.id.cb);
+            if(cb.isChecked()){
+                commo[a]="";
+                cb.setChecked(false);
+                cb.setVisibility(View.GONE);
+            }else {
+                cb.setVisibility(View.VISIBLE);
+                cb.setChecked(true);
+                commo[a]=id.substring(1);
+            }
+        }
+    };
+
 }

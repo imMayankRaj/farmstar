@@ -6,18 +6,22 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:name="xendorp1.application_classes.AppController"
         android:allowBackup="true"
-        android:hardwareAccelerated="false"
+        android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:largeHeap="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".LoginActivity">
+        <activity
+            android:name=".LoginActivity"
+            android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -29,10 +33,15 @@
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
 
+        <service
+            android:name=".FetchAddressIntentService"
+            android:exported="false" />
+
         <activity
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity android:name=".sellerDetailActivity" />
         <activity android:name=".sellerExtraData" />
         <activity android:name=".sellerOtpVerify" />
@@ -40,7 +49,21 @@
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
         <activity android:name=".commoditiesActivity" />
-        <activity android:name=".onClickSeller.OnClickSellerCard"></activity>
+        <activity android:name=".onClickSeller.OnClickSellerCard" />
+        <activity android:name=".onClickBooked.onClickBookedCard" />
+        <activity android:name=".onClickPicked.onClickPickedCard" />
+        <activity android:name=".onClickBuyer.onClickBuyerCard" />
+        <activity android:name=".navigationDrawerOption.allPurchases" />
+        <activity android:name=".navigationDrawerOption.addCommodities" />
+        <activity android:name=".navigationDrawerOption.onClickCommodityList" />
+        <activity android:name=".onClickBuyer.onClickDispatchedCard" />
+        <activity android:name=".onClickBuyer.onClickDeliveredCard" />
+        <activity android:name=".navigationDrawerOption.sale" />
+        <activity android:name=".navigationDrawerOption.wallet" />
+        <activity android:name=".navigationDrawerOption.paymentRequest" />
+        <activity android:name=".onClickExecutive.onClickExecutiveCard" />
+        <activity android:name=".onClickSeller.addRemoveActivity" />
+        <activity android:name=".onClickSeller.sellerEdit"></activity>
     </application>
 
 </manifest>

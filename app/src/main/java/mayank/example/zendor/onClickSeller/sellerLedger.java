@@ -1,109 +1,367 @@
 package mayank.example.zendor.onClickSeller;
 
-import android.content.Context;
-import android.net.Uri;
+import android.app.Dialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.TimeoutError;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import mayank.example.zendor.ApplicationQueue;
+import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.R;
+import mayank.example.zendor.URLclass;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link sellerLedger.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link sellerLedger#newInstance} factory method to
- * create an instance of this fragment.
- */
+import static android.content.Context.MODE_PRIVATE;
+import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.onClickSeller.sellerDetails.amountDue;
+
+
 public class sellerLedger extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
-    private OnFragmentInteractionListener mListener;
+    public static String SELLER_ID = "seller_id";
+    private String sid;
+    private ListView sellerLedgerView;
+    private TextView cb;
+    private ArrayList<ledgerClass> ledgerList;
+    private TextView sellerNameAndZone;
+    private SharedPreferences sharedPreferences;
+    private TextView transfer;
+    private LoadingClass lc;
+    private int ucb;
+    public static double sellerCb;
 
     public sellerLedger() {
-        // Required empty public constructor
+
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment sellerLedger.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static sellerLedger newInstance(String param1, String param2) {
+    public static sellerLedger newInstance(String seller_id) {
         sellerLedger fragment = new sellerLedger();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
+        Bundle bundle = new Bundle();
+        bundle.putString(SELLER_ID, seller_id);
+        fragment.setArguments(bundle);
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+        if(getArguments() != null){
+            sid = getArguments().getString(SELLER_ID);
         }
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_seller_ledger, container, false);
+        View view = inflater.inflate(R.layout.fragment_seller_ledger, container, false);
+        sellerLedgerView = view.findViewById(R.id.ledgerView);
+        cb = view.findViewById(R.id.cb);
+        transfer = view.findViewById(R.id.transfer);
+        sellerNameAndZone = view.findViewById(R.id.sellerNameAndZone);
+        ledgerList = new ArrayList<>();
+
+        lc = new LoadingClass(getActivity());
+
+        sharedPreferences = getActivity().getSharedPreferences("details", MODE_PRIVATE);
+
+        getSellerCb();
+        getSellerLedger();
+        getUserCb();
+
+        final String pos = sharedPreferences.getString("position","");
+
+
+        transfer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if((ucb < 0 || ucb == 0) && !pos.equals("0"))
+                    Toast.makeText(getActivity(), "Not Enough Credits.", Toast.LENGTH_SHORT).show();
+                else
+                    requestDialog();
+            }
+        });
+
+
+        return view;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+    private void getUserCb(){
+        lc.showDialog();
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.SELLER_CB, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONObject json = new JSONObject(response);
+                    String CB = json.getString("current_balance");
+                    ucb = Integer.parseInt(CB);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                lc.dismissDialog();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, sellerLedger.class.getName(), getActivity());
+
+
+                lc.dismissDialog();
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                String id = sharedPreferences.getString("id","");
+
+
+                Map<String, String> parameters = new HashMap<>();
+                parameters.put("id",id);
+                return parameters;
+            }
+        };
+
+        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+    }
+
+    private void getSellerCb(){
+
+        lc.showDialog();
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.SELLER_CB, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONObject json = new JSONObject(response);
+                    String CB = json.getString("current_balance");
+                    cb.setText(CB);
+                    sellerCb = Double.parseDouble(CB);
+                    amountDue.setText('\u20B9'+" "+CB);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                lc.dismissDialog();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, sellerLedger.class.getName(), getActivity());
+
+
+                lc.dismissDialog();
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> parameters = new HashMap<>();
+                parameters.put("id",sid.substring(11));
+                return parameters;
+            }
+        };
+
+        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+    }
+
+    private void getSellerLedger(){
+        lc.showDialog();
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.SELL_LEDGER, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    ledgerList.clear();
+                    JSONObject json = new JSONObject(response);
+                    JSONArray ledgerArray = json.getJSONArray("ledger");
+
+                    for(int i =0;i<ledgerArray.length();i++){
+                        JSONObject ledger = ledgerArray.getJSONObject(i);
+                        String date = ledger.getString("date");
+                        String pid = ledger.getString("pid");
+                        String dc = ledger.getString("dc");
+                        String balance = ledger.getString("Balance");
+                        ledgerList.add(new ledgerClass(date, pid, dc,'\u20B9'+balance));
+                    }
+
+                    JSONObject details = json.getJSONObject("details");
+                    String name = details.getString("zm");
+                    String szone = details.getString("zm_zone");
+                    sellerNameAndZone.setText(name+" - "+szone);
+
+                } catch (JSONException e) {
+                    Log.e("error e", e+"");
+                }
+
+                ledgerAdapter adapter = new ledgerAdapter(getActivity(),0, ledgerList);
+                sellerLedgerView.setAdapter(adapter);
+                lc.dismissDialog();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                lc.dismissDialog();
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, sellerLedger.class.getName(), getActivity());
+
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> parameters = new HashMap<>();
+                parameters.put("id",sid.substring(11));
+                return parameters;
+            }
+        };
+
+        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+    }
+
+    public static class ledgerClass{
+
+        private String date;
+        private String transaction;
+        private String status;
+        private String balance;
+
+        public ledgerClass(String date, String transaction, String status, String balance){
+
+            this.date = date;
+            this.transaction = transaction;
+            this.status = status;
+            this.balance = balance;
+        }
+
+        public String getBalance() {
+            return balance;
+        }
+
+        public String getDate() {
+            return date;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public String getTransaction() {
+            return transaction;
         }
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
+    private void requestDialog(){
+
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.ledger_request);
+
+        ImageView back = dialog.findViewById(R.id.back);
+        final EditText amount = dialog.findViewById(R.id.amount);
+        TextView cancel = dialog.findViewById(R.id.cancel);
+        TextView request = dialog.findViewById(R.id.request);
+        final EditText desc = dialog.findViewById(R.id.dsc);
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        request.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String amt = amount.getText().toString();
+                String description = desc.getText().toString();
+                if(amt.length() == 0 || description.length() == 0){
+                    Toast.makeText(getActivity(), "All fields are compulsory.", Toast.LENGTH_SHORT).show();
+                }else {
+                    double AMT = Double.parseDouble(amt);
+                    if(AMT > sellerCb){
+                        Toast.makeText(getActivity(), "Requested amount greater than Seller current balance.", Toast.LENGTH_SHORT).show();
+                    }else {
+                        sendRequest(amt, description);
+                        dialog.dismiss();
+                    }
+                }
+            }
+        });
+
+        dialog.show();
     }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
+    private void sendRequest(final String amt, final String desc){
+
+        lc.showDialog();
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.SELLER_REQUEST, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                getSellerCb();
+                getSellerLedger();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                String id = sharedPreferences.getString("id","");
+
+                Map<String, String> parameters = new HashMap<>();
+                parameters.put("rid",sid.substring(11));
+                parameters.put("sid", id);
+                parameters.put("amt", amt);
+                parameters.put("des", desc);
+                return parameters;
+            }
+        };
+        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
-    }
 }

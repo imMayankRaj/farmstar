@@ -1,13 +1,28 @@
 package mayank.example.zendor;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.ResultReceiver;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -21,6 +36,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +47,11 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,9 +60,11 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
+import mayank.example.zendor.onClickBuyer.onClickBuyerCard;
 import xendorp1.adapters.zone_card_spinner_adapter;
 import xendorp1.application_classes.AppConfig;
 import xendorp1.application_classes.AppController;
@@ -50,7 +73,7 @@ import xendorp1.cards.zone_card;
 import static android.content.ContentValues.TAG;
 import static android.widget.Toast.LENGTH_LONG;
 
-public class sellerDetailActivity extends AppCompatActivity {
+public class sellerDetailActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private EditText name;
     private EditText address;
@@ -69,6 +92,15 @@ public class sellerDetailActivity extends AppCompatActivity {
     private boolean check = true;
     private List<zone_card> zonelist;
     private LinearLayout zoneLayout;
+    protected Location mLastLocation;
+    private AddressResultReceiver mResultReceiver;
+    private FusedLocationProviderClient mFusedLocationClient;
+    private String mAddressOutput;
+    private TextView locate;
+    private Intent intent;
+    private boolean isCheck = false;
+    private TextView gpsAddress;
+    private ProgressBar load;
 
 
     @Override
@@ -84,6 +116,10 @@ public class sellerDetailActivity extends AppCompatActivity {
         pincode = findViewById(R.id.pincode);
         zone = findViewById(R.id.zone);
         zoneLayout = findViewById(R.id.zonelayout);
+        locate = findViewById(R.id.locate);
+        gpsAddress = findViewById(R.id.gpsAddress);
+        load = findViewById(R.id.load);
+
         zonelist = new ArrayList<>();
 
 
@@ -107,6 +143,15 @@ public class sellerDetailActivity extends AppCompatActivity {
 
         String pos = sharedPreferences.getString("position", "");
 
+        locate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                isCheck = true;
+                getAddressFromGps();
+                gpsAddress.setVisibility(View.VISIBLE);
+            }
+        });
+
         phone.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -120,25 +165,25 @@ public class sellerDetailActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if(s.length() == 10){
+                if (s.length() == 10) {
                     checkNumber(s.toString());
                 }
             }
         });
 
-        if(pos.equals("0")){
+        if (pos.equals("0")) {
             zoneLayout.setVisibility(View.VISIBLE);
             dialog.show();
             getZones();
-        }else
+        } else
             zone_id = " ";
 
         zone.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (position != 0) {
-                    zone_id =zonelist.get(position).getZone_id();
-                }else
+                    zone_id = zonelist.get(position).getZone_id();
+                } else
                     zone_id = "";
             }
 
@@ -156,66 +201,33 @@ public class sellerDetailActivity extends AppCompatActivity {
                 String a = address.getText().toString();
                 String p = phone.getText().toString();
 
-                if(n.length()==0 || a.length()==0 || p.length()==0 || pin.length()==0 || zone_id.length() == 0)
-                    Toast.makeText(sellerDetailActivity.this, "Some Fields Are Left Empty", Toast.LENGTH_SHORT).show();
-                else if(p.length()<10)
-                    Toast.makeText(sellerDetailActivity.this, "Incorrect Number Entered.", Toast.LENGTH_SHORT).show();
-                else if(!check)
-                    Toast.makeText(sellerDetailActivity.this, "Number Already Exists.", Toast.LENGTH_SHORT).show();
+                if (n.length() == 0 || a.length() == 0 || p.length() == 0 || pin.length() == 0 || zone_id.length() == 0)
+                    Toast.makeText(sellerDetailActivity.this, "Some Fields Are Left Empty", Toast.LENGTH_LONG).show();
+                else if (p.length() < 10)
+                    Toast.makeText(sellerDetailActivity.this, "Incorrect Number Entered.", Toast.LENGTH_LONG).show();
+                else if (!check)
+                    Toast.makeText(sellerDetailActivity.this, "Number Already Exists.", Toast.LENGTH_LONG).show();
                 else {
                     Random rand = new Random();
-                    String otp = String.format("%04d",rand.nextInt(10000));
+                    String otp = String.format(Locale.ENGLISH,"%04d", rand.nextInt(10000));
                     Intent intent = new Intent(sellerDetailActivity.this, sellerOtpVerify.class);
-                    sendOTP(p, otp);
+
+                    frequentlyUsedClass.sendOTP(p, "Code : "+otp+" प्रिय किसान भाई, फ़ार्मस्टार परिवार में आपका स्वागत है,\n" +
+                            "आपका कृषक पंजीकरण पूरा करने के लिये ऊपर लिखा कोड कंपनी प्रतिनिधि से साझा करें", sellerDetailActivity.this);
+
                     intent.putExtra("otp", otp);
                     intent.putExtra("name", n);
                     intent.putExtra("address", a);
                     intent.putExtra("phone", p);
-                    intent.putExtra("zoneid",zone_id);
-                    intent.putExtra("pincode",pin);
+                    intent.putExtra("zoneid", zone_id);
+                    intent.putExtra("gpsAddress", mAddressOutput);
+                    intent.putExtra("pincode", pin);
                     startActivity(intent);
                 }
             }
         });
 
 
-
-    }
-
-    public static void sendOTP(final String phone, final String otp){
-
-        Uri.Builder builder = new Uri.Builder();
-        builder.scheme("http");
-        builder.authority("enterprise.smsgupshup.com");
-        builder.appendPath("GatewayAPI");
-        builder.appendPath("rest");
-        builder.appendQueryParameter("method", "sendMessage");
-        builder.appendQueryParameter("msg","Your Foodmonk verification code is "+otp+" . Happy food ordering :)");
-        builder.appendQueryParameter("v","1.1");
-        builder.appendQueryParameter("userid", userName);
-        builder.appendQueryParameter("password", password);
-        builder.appendQueryParameter("send_to","91"+phone);
-        builder.appendQueryParameter("msg_type", "text");
-        builder.appendQueryParameter("format", "JSON");
-        builder.appendQueryParameter("auth_scheme", "Plain");
-        builder.appendQueryParameter("mask", "ZENDOR");
-        String url = builder.build().toString();
-        Log.e("url", url);
-
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-
-                Log.e("otp response", response);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-            }
-        });
-        stringRequest.setShouldCache(false);
-        requestQueue.add(stringRequest);
     }
 
     private void getZones() {
@@ -227,14 +239,14 @@ public class sellerDetailActivity extends AppCompatActivity {
                 try {
                     zonelist.add(new zone_card());
                     JSONArray jsonArray = new JSONArray(response);
-                    for (int i=0;i<jsonArray.length();i++) {
+                    for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject jsonObject = jsonArray.getJSONObject(i);
                         zone_card zone_card = new zone_card();
                         zone_card.setZone_name(jsonObject.getString("zname"));
                         zone_card.setZone_id(jsonObject.getString("zid"));
                         zonelist.add(zone_card);
                     }
-                    zone_card_spinner_adapter adapter=new zone_card_spinner_adapter(sellerDetailActivity.this,R.layout.spinner_zone,zonelist,getLayoutInflater());
+                    zone_card_spinner_adapter adapter = new zone_card_spinner_adapter(sellerDetailActivity.this, R.layout.spinner_zone, zonelist, getLayoutInflater());
                     zone.setAdapter(adapter);
                     dialog.dismiss();
                 } catch (JSONException e) {
@@ -252,7 +264,7 @@ public class sellerDetailActivity extends AppCompatActivity {
         AppController.getInstance().addToRequestQueue(strReq, "getzones");
     }
 
-    public void checkNumber(final String number){
+    public void checkNumber(final String number) {
         dialog.show();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.CHECKNUMBER, new Response.Listener<String>() {
             @Override
@@ -260,9 +272,9 @@ public class sellerDetailActivity extends AppCompatActivity {
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     String status = jsonObject.getString("status");
-                    if(status.equals("exists")) {
+                    if (status.equals("exists")) {
                         check = false;
-                        Toast.makeText(sellerDetailActivity.this, "Number Already Exists.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(sellerDetailActivity.this, "Number Already Exists.", Toast.LENGTH_LONG).show();
                     } else {
                         check = true;
                     }
@@ -276,7 +288,7 @@ public class sellerDetailActivity extends AppCompatActivity {
             public void onErrorResponse(VolleyError error) {
 
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 HashMap<String, String> parameters = new HashMap<>();
@@ -286,6 +298,141 @@ public class sellerDetailActivity extends AppCompatActivity {
         };
         stringRequest.setShouldCache(false);
         requestQueue.add(stringRequest);
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    class AddressResultReceiver extends ResultReceiver {
+        public AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+
+             mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
+
+            // Show a toast message if an address was found.
+            if (resultCode == Constants.SUCCESS_RESULT) {
+                load.setVisibility(View.GONE);
+                gpsAddress.setVisibility(View.VISIBLE);
+                gpsAddress.setText(mAddressOutput);
+                Toast.makeText(sellerDetailActivity.this, "Press the \'Locate On Map\' again if you are unsure about the address.", Toast.LENGTH_SHORT).show();
+            }
+
+        }
+    }
+
+    public void startIntentService() {
+        mResultReceiver = new AddressResultReceiver(new Handler());
+        intent = new Intent(this, FetchAddressIntentService.class);
+        intent.putExtra(Constants.RECEIVER, mResultReceiver);
+        intent.putExtra(Constants.LOCATION_DATA_EXTRA, mLastLocation);
+        startService(intent);
+    }
+
+    private void getAddressFromGps() {
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    0);
+        }else {
+           getLocation();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if(requestCode == 0){
+            getLocation();
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private void getLocation(){
+        load.setVisibility(View.VISIBLE);
+        final LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
+
+        if (manager != null && !manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            buildAlertMessageNoGps();
+        }else {
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(sellerDetailActivity.this);
+            mFusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            mLastLocation = location;
+
+                            if (mLastLocation == null) {
+                            }
+
+                            if (!Geocoder.isPresent()) {
+                                Toast.makeText(sellerDetailActivity.this,
+                                        "Network Error. Try again",
+                                        Toast.LENGTH_LONG).show();
+                                return;
+                            }
+
+                            startIntentService();
+                        }
+                    });
+        }
+
+    }
+
+
+
+
+    private void buildAlertMessageNoGps() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Your GPS seems to be disabled, do you want to enable it?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        dialog.dismiss();
+                        startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        dialog.dismiss();
+                        load.setVisibility(View.GONE);
+                    }
+                });
+        final AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(isCheck)
+        getLocation();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        if (isCheck)
+            getLocation();
     }
 }
 

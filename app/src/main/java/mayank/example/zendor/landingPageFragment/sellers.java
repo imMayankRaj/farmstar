@@ -15,11 +15,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
@@ -37,10 +39,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
+import mayank.example.zendor.ApplicationQueue;
+import mayank.example.zendor.LoadingClass;
+import mayank.example.zendor.MainActivity;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
 import mayank.example.zendor.apiConnect;
+import mayank.example.zendor.commoditiesActivity;
 import mayank.example.zendor.sellerDetailActivity;
+
+import static mayank.example.zendor.MainActivity.showError;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -50,15 +58,16 @@ public class sellers extends Fragment implements View.OnClickListener{
 
 
     private View view;
-    private RecyclerView recyclerView;
+    public static RecyclerView recyclerView;
     private LinearLayoutManager llm;
-    private ArrayList<sellerClass> arrayList;
+    public static ArrayList<sellerClass> arrayList;
     private RequestQueue requestQueue;
     private apiConnect connect;
     private FloatingActionButton fab;
     private SharedPreferences sharedPreferences;
-    private ProgressDialog progressDialog;
     private SwipeRefreshLayout swipeRefreshLayout;
+    public static sellerAdapter adapter;
+    private LoadingClass lc;
 
     public sellers() {
 
@@ -73,6 +82,7 @@ public class sellers extends Fragment implements View.OnClickListener{
         fab = view.findViewById(R.id.addSeller);
         swipeRefreshLayout = view.findViewById(R.id.swipe);
 
+        lc = new LoadingClass(getActivity());
         sharedPreferences = getActivity().getSharedPreferences("details", Context.MODE_PRIVATE);
 
         llm = new LinearLayoutManager(getActivity());
@@ -83,16 +93,15 @@ public class sellers extends Fragment implements View.OnClickListener{
         arrayList = new ArrayList<>();
         connect = new apiConnect(getActivity(),"Seller");
 
-        progressDialog = new ProgressDialog(getActivity());
-        progressDialog.setMessage("Loading...");
-        progressDialog.setCancelable(false);
-        progressDialog.show();
+
+        lc.showDialog();
 
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 swipeRefreshLayout.setRefreshing(true);
                 getSellersData();
+                MainActivity.searchSeller.setText("");
             }
         });
 
@@ -118,33 +127,36 @@ public class sellers extends Fragment implements View.OnClickListener{
                             String address = details.getString("address");
                             String seller_id = details.getString("seller_id");
                             String last_purchase = details.getString("last_purchase");
-                            arrayList.add(new sellerClass(seller_id, name, address, last_purchase));
+                            String number = details.getString("number");
+                            arrayList.add(new sellerClass(seller_id, name, address, last_purchase, number));
                         }
                     }
                 } catch (JSONException e) {
                     arrayList.clear();
                     e.printStackTrace();
+                    swipeRefreshLayout.setRefreshing(false);
+
                 }
-                progressDialog.dismiss();
 
-                Collections.sort(arrayList, new Comparator<sellerClass>() {
-                    @Override
-                    public int compare(sellerClass o1, sellerClass o2) {
-                        String first = sortOnExpiry(o1);
-                        String second = sortOnExpiry(o2);
-                        return second.compareTo(first);
-                    }
-                });
+                lc.dismissDialog();
 
-                sellerAdapter adapter = new sellerAdapter(getActivity(), arrayList);
+
+                adapter = new sellerAdapter(getActivity(), arrayList);
                 recyclerView.setAdapter(adapter);
                 swipeRefreshLayout.setRefreshing(false);
+                MainActivity.tabLayout.getTabAt(0).setText("SELLERS"+"("+arrayList.size()+")");
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                progressDialog.dismiss();
+                lc.dismissDialog();
                 swipeRefreshLayout.setRefreshing(false);
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, sellers.class.getName(), getActivity());
+
 
             }
         }){
@@ -160,10 +172,11 @@ public class sellers extends Fragment implements View.OnClickListener{
                 return map;
             }
         };
-        stringRequest.setShouldCache(false);
-        requestQueue = connect.getRequestQueue();
-        requestQueue.add(stringRequest);
+
+        ApplicationQueue.getInstance(getActivity()).addToRequestQueue(stringRequest);
     }
+
+
 
     @Override
     public void onClick(View v) {
@@ -186,5 +199,6 @@ public class sellers extends Fragment implements View.OnClickListener{
         return updated_time + "";
 
     }
+
 
 }

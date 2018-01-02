@@ -183,6 +183,7 @@
             </android.support.design.widget.TextInputLayout>
         </RelativeLayout>
         <RelativeLayout
+            android:visibility="gone"
             android:layout_below="@+id/passwordcont"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">

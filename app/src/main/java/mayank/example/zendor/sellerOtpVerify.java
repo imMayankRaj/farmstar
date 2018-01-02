@@ -14,7 +14,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import static mayank.example.zendor.sellerDetailActivity.sendOTP;
 
 public class sellerOtpVerify extends AppCompatActivity {
 
@@ -92,7 +91,9 @@ public class sellerOtpVerify extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Toast.makeText(sellerOtpVerify.this, "Otp has been resend.", Toast.LENGTH_SHORT).show();
-                sendOTP(number, getOtp);
+                frequentlyUsedClass.sendOTP(number, "Code : "+getOtp+" प्रिय किसान भाई, फ़ार्मस्टार परिवार में आपका स्वागत है,\n" +
+                        "आपका कृषक पंजीकरण पूरा करने के लिये ऊपर लिखा कोड कंपनी प्रतिनिधि से साझा करें", sellerOtpVerify.this);
+
             }
         });
 

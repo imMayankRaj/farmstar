@@ -1,0 +1,76 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent"
+    tools:context="mayank.example.zendor.onClickSeller.sellerLedger">
+
+
+
+    <TextView
+        android:id="@+id/sellerNameAndZone"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:text="SellerName - Zone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+
+
+    <LinearLayout
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:text="Date"
+            android:gravity="center"
+            android:textStyle="italic"
+            android:textSize="12sp"
+            android:textColor="#000"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
+
+
+        <TextView
+            android:text="Transaction"
+            android:gravity="center"
+            android:textStyle="italic"
+            android:textSize="12sp"
+            android:textColor="#000"
+            android:layout_weight="2"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:text="Dr/Cr"
+            android:gravity="center"
+            android:textStyle="italic"
+            android:textSize="12sp"
+            android:textColor="#000"
+            android:layout_weight=".5"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:text="Balance"
+            android:gravity="center"
+            android:textStyle="italic"
+            android:textSize="12sp"
+            android:textColor="#000"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
+
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/ledgerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </ListView>
+</LinearLayout>

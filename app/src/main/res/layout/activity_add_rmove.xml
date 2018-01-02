@@ -1,0 +1,229 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        app:cardElevation="5dp"
+        app:cardCornerRadius="5dp"
+        android:layout_margin="5dp"
+        tools:context="mayank.example.zendor.onClickSeller.sellerDetails">
+
+
+        <LinearLayout
+            android:padding="15dp"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:textStyle="bold"
+                    android:id="@+id/sellerName"
+                    android:textColor="#ff8a80"
+                    android:layout_weight="1"
+                    android:textSize="18sp"
+                    android:gravity="start"
+                    android:text="Seller Name"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent" />
+
+                <TextView
+                    android:background="@drawable/rounded_edge"
+                    android:layout_weight=".5"
+                    android:text="CALL"
+                    android:shadowColor="#000"
+                    android:id="@+id/call"
+                    android:textSize="16sp"
+                    android:textColor="#000"
+                    android:gravity="center"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_marginTop="15dp"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:textColor="#000"
+                    android:layout_weight="1"
+                    android:textSize="16sp"
+                    android:gravity="start"
+                    android:text="Registered by :"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent" />
+
+
+                <TextView
+                    android:id="@+id/registererName"
+                    android:textColor="#000"
+                    android:layout_weight="1"
+                    android:textSize="16sp"
+                    android:gravity="end"
+                    android:text="Admin/ZM/Exex Name"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent" />
+
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_marginTop="15dp"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="start|center"
+                    android:text="Address :"
+                    android:textColor="#000"
+                    android:textSize="16sp" />
+
+
+                <TextView
+                    android:id="@+id/address"
+                    android:textColor="#000"
+                    android:layout_weight="1"
+                    android:textSize="16sp"
+                    android:gravity="start"
+                    android:text="_ _ _ __ _ __ __ _ __ _ __ _ _ _ __ _ _ _ __ _ _ _ _ __"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent" />
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_marginTop="15dp"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="start|center"
+                    android:text="Bank Details :"
+                    android:textColor="#000"
+                    android:textSize="16sp" />
+
+
+                <TextView
+                    android:id="@+id/bankDetails"
+                    android:textColor="#000"
+                    android:layout_weight="1"
+                    android:textSize="16sp"
+                    android:gravity="start"
+                    android:text="_ _ _ __ _ __ __ _ __ _ __ _ _ _ __ _ _ _ __ _ _ _ _ __"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent" />
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_marginTop="15dp"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="start|center"
+                    android:text="Amount Due :"
+                    android:textColor="#000"
+                    android:textSize="16sp" />
+
+
+                <TextView
+                    android:id="@+id/amountDue"
+                    android:textColor="#000"
+                    android:layout_weight="1"
+                    android:textSize="16sp"
+                    android:gravity="start"
+                    android:text="Amount due"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent" />
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_marginTop="15dp"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="start|center"
+                    android:text="Commodities :"
+                    android:textColor="#000"
+                    android:textSize="16sp" />
+
+
+                <TextView
+                    android:id="@+id/commodities"
+                    android:orientation="vertical"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="match_parent">
+
+
+                </TextView>
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_marginTop="5sp"
+                android:id="@+id/addRemove"
+                android:gravity="end"
+                android:text="Add/Remove Commodity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
+
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5sp"
+        android:layout_alignParentBottom="true"
+        app:cardCornerRadius="5sp"
+        app:cardElevation="5sp">
+
+        <TextView
+            android:id="@+id/purchase"
+            android:layout_width="match_parent"
+            android:layout_height="50sp"
+            android:gravity="center"
+            android:text="Purchase"
+            android:textColor="#000"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+    </android.support.v7.widget.CardView>
+</RelativeLayout>

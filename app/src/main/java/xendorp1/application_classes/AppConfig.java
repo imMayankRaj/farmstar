@@ -5,7 +5,7 @@ package xendorp1.application_classes;
  */
 
 public class AppConfig {
-    public static String REST_API_URL="http://zendor.in/zendorp1";
+    public static String REST_API_URL="http://farmstar.in/zendorp1";
     public static String URL_PROFILE_PIC=REST_API_URL+"/profilepic/";
     public static String URL_GET_ZONES=REST_API_URL+"/getzones.php";
     public static String URL_GET_BUYERS_FROM_ZID=REST_API_URL+"/getBuyersFromZid.php";

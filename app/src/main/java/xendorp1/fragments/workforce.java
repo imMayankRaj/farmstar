@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
@@ -38,10 +39,12 @@ import xendorp1.application_classes.AppController;
 import xendorp1.cards.zone_card;
 
 import static android.content.ContentValues.TAG;
+import static mayank.example.zendor.MainActivity.showError;
 
 /**
  * A simple {@link Fragment} subclass.
  */
+
 public class workforce extends Fragment implements SwipeRefreshLayout.OnRefreshListener{
     private View rootview;
     private Toolbar toolbar;
@@ -126,6 +129,12 @@ public class workforce extends Fragment implements SwipeRefreshLayout.OnRefreshL
                                 public void onErrorResponse(VolleyError error) {
                                     Log.e(TAG, "" + error.getMessage());
                                     Toast.makeText(getActivity(), "Some error occured. Please try again", Toast.LENGTH_SHORT).show();
+
+                                    if (error instanceof TimeoutError) {
+                                        Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                                    } else
+                                        showError(error, workforce.class.getName(), getActivity());
+
                                 }
                             }){
 
@@ -175,10 +184,11 @@ public class workforce extends Fragment implements SwipeRefreshLayout.OnRefreshL
                 AppConfig.URL_GET_ZONES, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d(TAG, "Register Response: " + response.toString());
+
                 try {
                     List<zone_card> zonelist=new ArrayList<>();
                     JSONArray jsonArray = new JSONArray(response);
+
                     for (int i=0;i<jsonArray.length();i++) {
                         JSONObject jsonObject = jsonArray.getJSONObject(i);
                         zone_card zone_card = new zone_card();
@@ -186,9 +196,11 @@ public class workforce extends Fragment implements SwipeRefreshLayout.OnRefreshL
                         zone_card.setZone_id(jsonObject.getString("zid"));
                         zonelist.add(zone_card);
                     }
+
                     zone_card_recycler_adapter=new zone_card_recycler_adapter(getActivity(),zonelist,workforce.this);
                     recyclerView.setAdapter(zone_card_recycler_adapter);
                     swipeRefreshLayout.setRefreshing(false);
+
                 } catch (JSONException e) {
                     swipeRefreshLayout.setRefreshing(false);
                     recyclerView.setAdapter(null);
@@ -202,6 +214,13 @@ public class workforce extends Fragment implements SwipeRefreshLayout.OnRefreshL
             public void onErrorResponse(VolleyError error) {
                 swipeRefreshLayout.setRefreshing(false);
                 recyclerView.setAdapter(null);
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, workforce.class.getName(), getActivity());
+
+
             }
         });
 

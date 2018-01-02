@@ -15,7 +15,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="#0069c0"
+            android:background="#157260"
             app:popupTheme="@style/AppTheme.PopupOverlay" >
 
             <LinearLayout
@@ -24,17 +24,19 @@
                 android:layout_height="wrap_content">
             <EditText
                 android:id="@+id/search"
+                android:inputType="number"
                 android:textColor="#fff"
                 android:gravity="center"
                 android:hint="Search a Seller"
                 android:layout_width="0dp"
                 android:layout_weight="10"
-                android:focusable="false"
                 android:layout_height="match_parent" />
 
+
                 <ImageView
+                    android:id="@+id/cut"
                     android:src="@drawable/ic_search_black_24dp"
-                    android:layout_weight="1"
+                    android:layout_weight="1."
                     android:layout_width="0dp"
                     android:layout_height="match_parent" />
 

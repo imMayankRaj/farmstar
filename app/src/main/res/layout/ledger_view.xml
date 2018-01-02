@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:layout_marginTop="5dp"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <TextView
+        android:text="Date"
+        android:id="@+id/date"
+        android:gravity="center"
+        android:textSize="12sp"
+        android:textColor="#000"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="match_parent" />
+
+
+    <TextView
+        android:id="@+id/tran"
+        android:text="Transaction"
+        android:gravity="center"
+        android:textSize="12sp"
+        android:textColor="#000"
+        android:layout_weight="2"
+        android:layout_width="0dp"
+        android:layout_height="match_parent" />
+
+    <TextView
+        android:id="@+id/dc"
+        android:text="Dr/Cr"
+        android:gravity="center"
+        android:textSize="12sp"
+        android:textColor="#000"
+        android:layout_weight=".5"
+        android:layout_width="0dp"
+        android:layout_height="match_parent" />
+
+    <TextView
+        android:id="@+id/bal"
+        android:text="Balance"
+        android:gravity="center"
+        android:textSize="12sp"
+        android:textColor="#000"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="match_parent" />
+
+</LinearLayout>

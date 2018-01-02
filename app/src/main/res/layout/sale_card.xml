@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="5sp"
+    app:cardCornerRadius="5dp"
+    app:cardElevation="5dp"
+    app:cardUseCompatPadding="false">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:padding="5dp"
+            android:background="#e0e0e0"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:textSize="16sp"
+                android:gravity="start"
+                android:text="Buyer Name "
+                android:id="@+id/bname"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
+
+            <View
+                android:layout_gravity="center"
+                android:background="#fff"
+                android:layout_width="1dp"
+                android:layout_height="18dp">
+
+            </View>
+            <TextView
+                android:gravity="end"
+                android:textSize="16sp"
+                android:text="Sale Id"
+                android:id="@+id/sid"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:padding="5dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:textSize="16sp"
+                android:gravity="center"
+                android:text="Commodity :"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
+
+            <TextView
+                android:gravity="center"
+                android:id="@+id/cname"
+                android:layout_weight="1"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:text="24 kg"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+
+
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:padding="5dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:textSize="16sp"
+                android:gravity="center"
+                android:text="Weight :"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
+
+            <TextView
+                android:gravity="center"
+                android:id="@+id/weight"
+                android:layout_weight="1"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:text="24 kg"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+
+
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:padding="5dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:textSize="16sp"
+                android:gravity="center"
+                android:text="Rate :"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
+
+            <TextView
+                android:gravity="center"
+                android:id="@+id/rate"
+                android:layout_weight="1"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:text="24 kg"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+
+
+
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:padding="5dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:textSize="16sp"
+                android:gravity="center"
+                android:text="Total Amount :"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
+
+            <TextView
+                android:gravity="center"
+                android:id="@+id/totalAmount"
+                android:layout_weight="1"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:text="24 kg"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:visibility="gone"
+                android:id="@+id/flag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+
+
+        </LinearLayout>
+
+
+
+        <View
+            android:background="#aeaeae"
+            android:layout_width="match_parent"
+            android:layout_height="1dp">
+
+        </View>
+
+        <LinearLayout
+            android:padding="5dp"
+            android:background="#aeaeae"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:textSize="16sp"
+                android:gravity="start"
+                android:text="Dispatched :"
+                android:layout_weight="1"
+                android:id="@+id/saleFlag"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
+
+            <TextView
+                android:gravity="end"
+                android:id="@+id/ts"
+                android:layout_weight="1.5"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:text="12-06-2017 12:08:29 AM"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</android.support.v7.widget.CardView>

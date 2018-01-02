@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
@@ -33,6 +34,7 @@ import xendorp1.application_classes.AppController;
 import xendorp1.cards.zonal_manager_card;
 
 import static android.content.ContentValues.TAG;
+import static mayank.example.zendor.MainActivity.showError;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -90,6 +92,7 @@ public class executive_zonal_manager extends Fragment implements SwipeRefreshLay
                         zonal_manager_card.setPassword(jsonObject.getString("pwd"));
                         zonal_manager_card.setStatus(jsonObject.getInt("status"));
                         zonal_manager_card.setId(jsonObject.getString("id"));
+                        zonal_manager_card.setNumber(jsonObject.getString("mob")+","+jsonObject.getString("othermob"));
                         zonal_manager_cardList.add(zonal_manager_card);
                     }
                     executive_recycler_adapter=new executive_recycler_adapter(getActivity(),zonal_manager_cardList,executive_zonal_manager.this);
@@ -110,6 +113,13 @@ public class executive_zonal_manager extends Fragment implements SwipeRefreshLay
                 Log.e(TAG, "" + error.getMessage());
                 recyclerView.setAdapter(null);
                 Toast.makeText(getActivity(), "Some error occured. Please try again", Toast.LENGTH_SHORT).show();
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, executive_zonal_manager.class.getName(), getActivity());
+
+
             }
         }){
 

@@ -10,11 +10,13 @@ public class sellerClass {
     private String name;
     private String address;
     private String last_purchase;
+    private String number;
 
-    public sellerClass(String sellerId, String name, String address, String last_purchase){
+    public sellerClass(String sellerId, String name, String address, String last_purchase, String number){
         this.sellerId = sellerId;
         this.name = name;
         this.address = address;
+        this.number = number;
         this.last_purchase = last_purchase;
     }
 
@@ -32,6 +34,10 @@ public class sellerClass {
 
     public String getSellerId() {
         return sellerId;
+    }
+
+    public String getNumber() {
+        return number;
     }
 }
 

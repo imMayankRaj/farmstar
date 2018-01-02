@@ -11,6 +11,14 @@
 
     <string name="action_settings">Sign Out</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
+
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string-array name="ctypes">
+        <item>Vegetables</item>
+        <item>Cereals</item>
+        <item>Fruits</item>
+    </string-array>
+
+    <string name="commodity">comm</string>
 </resources>

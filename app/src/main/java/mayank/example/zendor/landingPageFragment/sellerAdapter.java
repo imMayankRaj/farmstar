@@ -1,6 +1,7 @@
 package mayank.example.zendor.landingPageFragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,9 +11,10 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import mayank.example.zendor.R;
+import mayank.example.zendor.onClickSeller.OnClickSellerCard;
 
 /**
- * Created by mayan on 10/31/2017.
+ * Created by mayank on 10/31/2017.
  */
 
 public class sellerAdapter extends RecyclerView.Adapter<sellerAdapter.sellerHolder> {
@@ -25,10 +27,21 @@ public class sellerAdapter extends RecyclerView.Adapter<sellerAdapter.sellerHold
         this.sellerList = sellerList;
     }
 
+    private final View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            TextView sellerId = v.findViewById(R.id.sellerId);
+            Intent intent = new Intent(context, OnClickSellerCard.class);
+            intent.putExtra("SellerId", sellerId.getText());
+            context.startActivity(intent);
+        }
+    };
+
     @Override
     public sellerHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.seller_cardview, parent, false);
         sellerHolder holder = new sellerHolder(view);
+        view.setOnClickListener(onClickListener);
         return holder;
     }
 

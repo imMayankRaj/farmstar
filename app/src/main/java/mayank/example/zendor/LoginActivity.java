@@ -87,7 +87,6 @@ public class LoginActivity extends AppCompatActivity {
                     if(stat.equals("invalid"))
                         Snackbar.make(view,"Incorrect Username or password",BaseTransientBottomBar.LENGTH_LONG).show();
                     else {
-
                         String name = res.getString("name");
                         String position = res.getString("flag");
                         String path = res.getString("path");
@@ -103,13 +102,14 @@ public class LoginActivity extends AppCompatActivity {
                         editor.putString("id", id);
                         editor.apply();
                         editor.commit();
+                        Log.e("lets go", "ok");
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         startActivity(intent);
                         finish();
                         Toast.makeText(LoginActivity.this, "Welcome", Toast.LENGTH_SHORT).show();
                     }
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Log.e("the exception", e+"");
                 }
                 progressBar.setVisibility(View.GONE);
 

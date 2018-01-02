@@ -226,6 +226,7 @@
                     android:layout_height="wrap_content"/>
             </RelativeLayout>
             <RelativeLayout
+                android:visibility="gone"
                 android:id="@+id/zonecont"
                 android:layout_below="@+id/company_cont"
                 android:layout_width="match_parent"

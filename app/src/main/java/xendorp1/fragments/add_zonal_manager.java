@@ -2,6 +2,7 @@ package xendorp1.fragments;
 
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,10 +12,12 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
@@ -35,11 +38,18 @@ import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.hbb20.CountryCodePicker;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
+
+import net.gotev.uploadservice.MultipartUploadRequest;
+import net.gotev.uploadservice.ServerResponse;
+import net.gotev.uploadservice.UploadInfo;
+import net.gotev.uploadservice.UploadNotificationConfig;
+import net.gotev.uploadservice.UploadStatusDelegate;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -53,6 +63,8 @@ import java.util.List;
 import java.util.Map;
 
 import mayank.example.zendor.R;
+import mayank.example.zendor.URLclass;
+import mayank.example.zendor.sellerExtraData;
 import xendorp1.adapters.zone_card_spinner_adapter;
 import xendorp1.application_classes.AppConfig;
 import xendorp1.application_classes.AppController;
@@ -61,6 +73,8 @@ import xendorp1.cards.zone_card;
 import static android.app.Activity.RESULT_OK;
 import static android.content.ContentValues.TAG;
 import static android.content.Context.MODE_PRIVATE;
+import static mayank.example.zendor.MainActivity.showError;
+import static xendorp1.fragments.add_executive.addInCb;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -83,14 +97,23 @@ public class add_zonal_manager extends Fragment {
     private EditText primary_ph_no;
     private ProgressBar progressBar;
     private zone_card_spinner_adapter zone_card_spinner_adapter;
+    private String zid;
+    private String imgPath;
+
     public add_zonal_manager() {
         // Required empty public constructor
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        zid = getArguments().getString("zid");
+    }
+
+    @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+
         rootview= inflater.inflate(R.layout.fragment_add_zonal_manager, container, false);
         photoChanged=false;
         progressBar=rootview.findViewById(R.id.progressbar);
@@ -210,7 +233,7 @@ public class add_zonal_manager extends Fragment {
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(name.getText().length()==0||primary_ph_no.getText().length()==0||address.getText().length()==0||zone.getSelectedItemPosition()==0)
+                if(name.getText().length()==0||primary_ph_no.getText().length()==0||address.getText().length()==0)
                 {
                     Toast.makeText(getActivity(), "Required fields are empty", Toast.LENGTH_LONG).show();
                 }
@@ -225,7 +248,7 @@ public class add_zonal_manager extends Fragment {
                     final String address_val=address.getText().toString();
                     final String password_val=password.getText().toString();
                     zone_card zone_card=(xendorp1.cards.zone_card)zone.getSelectedItem();
-                    final String zone_id=zone_card.getZone_id();
+//                    final String zone_id=zone_card.getZone_id();
                     String other_nos="";
                     for(int i=0;i<linearLayout.getChildCount();i++)
                     {
@@ -243,67 +266,178 @@ public class add_zonal_manager extends Fragment {
                     }
                     final String finalOther_nos = other_nos;
                     progressBar.setVisibility(View.VISIBLE);
-                    StringRequest strReq = new StringRequest(Request.Method.POST,
-                            AppConfig.URL_ADD_PERSON, new Response.Listener<String>() {
-                        @Override
-                        public void onResponse(String response) {
-                            Log.d(TAG, "Register Response: " + response.toString());
-                            try {
-                                JSONObject jobj=new JSONObject(response);
-                                boolean error=jobj.getBoolean("error");
-                                if(error)
-                                {
-                                    Toast.makeText(getActivity(), jobj.getString("error_message"), Toast.LENGTH_SHORT).show();
+
+
+                    if (photoChanged){
+                        long time = System.currentTimeMillis();
+                        final String path =   "_" + time + imgPath.substring(imgPath.lastIndexOf("."));
+
+                        try {
+
+                            new MultipartUploadRequest(getActivity(), URLclass.UPLOAD_IMAGES)
+                                    .addFileToUpload(imgPath, "image")
+                                    .addParameter("name", path)
+                                    .setNotificationConfig(new UploadNotificationConfig())
+                                    .setMaxRetries(2)
+                                    .setDelegate(new UploadStatusDelegate() {
+                                        @Override
+                                        public void onProgress(Context context, UploadInfo uploadInfo) {
+
+                                        }
+
+                                        @Override
+                                        public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception exception) {
+
+                                        }
+
+                                        @Override
+                                        public void onCompleted(Context context, UploadInfo uploadInfo, ServerResponse serverResponse) {
+
+                                            StringRequest strReq = new StringRequest(Request.Method.POST,
+                                                    AppConfig.URL_ADD_PERSON, new Response.Listener<String>() {
+                                                @Override
+                                                public void onResponse(String response) {
+                                                    Log.d(TAG, "Register Response: " + response.toString());
+                                                    try {
+                                                        addInCb(getActivity());
+                                                        JSONObject jobj = new JSONObject(response);
+                                                        boolean error = jobj.getBoolean("error");
+                                                        if (error) {
+                                                            Toast.makeText(getActivity(), jobj.getString("error_message"), Toast.LENGTH_SHORT).show();
+                                                        } else {
+                                                            Toast.makeText(getActivity(), "Successfully added zonal manager", Toast.LENGTH_SHORT).show();
+                                                            getActivity().getSupportFragmentManager().popBackStackImmediate();
+                                                        }
+                                                        progressBar.setVisibility(View.GONE);
+                                                    } catch (Exception e) {
+                                                        progressBar.setVisibility(View.GONE);
+                                                        Toast.makeText(getActivity(), "Some network error occured. Please try again", Toast.LENGTH_SHORT).show();
+                                                        e.printStackTrace();
+                                                    }
+
+                                                    zonal_managers.click.performClick();
+                                                    getActivity().getFragmentManager().popBackStack();
+                                                }
+                                            }, new Response.ErrorListener() {
+
+                                                @Override
+                                                public void onErrorResponse(VolleyError error) {
+                                                    Log.e(TAG, "" + error.getMessage());
+                                                    progressBar.setVisibility(View.GONE);
+                                                    Toast.makeText(getActivity(), "Some network error occured. Please try again", Toast.LENGTH_SHORT).show();
+
+                                                    if (error instanceof TimeoutError) {
+                                                        Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                                                    } else
+                                                        showError(error, add_zonal_manager.class.getName(), getActivity());
+
+                                                }
+                                            }) {
+
+                                                @Override
+                                                protected Map<String, String> getParams() {
+                                                    // Posting params to register url
+                                                    Map<String, String> params = new HashMap<String, String>();
+                                                    params.put("name", name_val);
+                                                    params.put("mob", phone_num);
+                                                    params.put("address", address_val);
+                                                    params.put("zid", zid);
+                                                    params.put("pwd", password_val);
+                                                    params.put("flag", "1");
+                                                    SharedPreferences sharedPreferences = getActivity().getSharedPreferences("details", MODE_PRIVATE);
+                                                    String id = sharedPreferences.getString("id", "");
+                                                    params.put("adder_id", id);
+                                                    Log.d("other_nos", finalOther_nos);
+                                                    if (finalOther_nos.length() != 0) {
+                                                        String nos = finalOther_nos.substring(0, finalOther_nos.length() - 1);
+                                                        params.put("othermob", nos);
+                                                    }
+                                                    params.put("path", path);
+                                                    return params;
+                                                }
+                                            };
+                                            AppController.getInstance().addToRequestQueue(strReq, "addZonalManager");
+
+                                        }
+
+                                        @Override
+                                        public void onCancelled(Context context, UploadInfo uploadInfo) {
+
+                                        }
+                                    })
+                                    .startUpload();
+
+                        } catch (Exception exc) {
+                            Toast.makeText(getActivity(), "Error Occured.", Toast.LENGTH_SHORT).show();
+                        }
+                    }else
+                    {
+                        StringRequest strReq = new StringRequest(Request.Method.POST,
+                                AppConfig.URL_ADD_PERSON, new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                Log.d(TAG, "Register Response: " + response.toString());
+                                try {
+                                    addInCb(getActivity());
+                                    JSONObject jobj = new JSONObject(response);
+                                    boolean error = jobj.getBoolean("error");
+                                    if (error) {
+                                        Toast.makeText(getActivity(), jobj.getString("error_message"), Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Toast.makeText(getActivity(), "Successfully added zonal manager", Toast.LENGTH_SHORT).show();
+                                        getActivity().getSupportFragmentManager().popBackStackImmediate();
+                                    }
+                                    progressBar.setVisibility(View.GONE);
+                                } catch (Exception e) {
+                                    progressBar.setVisibility(View.GONE);
+                                    Toast.makeText(getActivity(), "Some network error occured. Please try again", Toast.LENGTH_SHORT).show();
+                                    e.printStackTrace();
                                 }
-                                else
-                                {
-                                    Toast.makeText(getActivity(), "Successfully added zonal manager", Toast.LENGTH_SHORT).show();
-                                    getActivity().getSupportFragmentManager().popBackStackImmediate();
-                                }
-                                progressBar.setVisibility(View.GONE);
-                            } catch (Exception e) {
+
+                                zonal_managers.click.performClick();
+                                getActivity().getFragmentManager().popBackStack();
+                            }
+                        }, new Response.ErrorListener() {
+
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.e(TAG, "" + error.getMessage());
                                 progressBar.setVisibility(View.GONE);
                                 Toast.makeText(getActivity(), "Some network error occured. Please try again", Toast.LENGTH_SHORT).show();
-                                e.printStackTrace();
-                            }
-                        }
-                    }, new Response.ErrorListener() {
 
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Log.e(TAG, "" + error.getMessage());
-                            progressBar.setVisibility(View.GONE);
-                            Toast.makeText(getActivity(), "Some network error occured. Please try again", Toast.LENGTH_SHORT).show();
-                        }
-                    }){
+                                if (error instanceof TimeoutError) {
+                                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                                } else
+                                    showError(error, add_zonal_manager.class.getName(), getActivity());
 
-                        @Override
-                        protected Map<String, String> getParams() {
-                            // Posting params to register url
-                            Map<String, String> params = new HashMap<String, String>();
-                            params.put("name",name_val);
-                            params.put("mob",phone_num);
-                            params.put("address",address_val);
-                            params.put("zid",zone_id);
-                            params.put("pwd",password_val);
-                            params.put("flag","1");
-                            SharedPreferences sharedPreferences=getActivity().getSharedPreferences("details",MODE_PRIVATE);
-                            String id= sharedPreferences.getString("id","");
-                            params.put("adder_id",id);
-                            Log.d("other_nos",finalOther_nos);
-                            if(finalOther_nos.length()!=0) {
-                                String nos=finalOther_nos.substring(0,finalOther_nos.length()-1);
-                                params.put("othermob", nos);
                             }
-                            if(photoChanged) {
-                                Bitmap drawable=((BitmapDrawable)profilepic.getDrawable()).getBitmap();
-                                params.put("profilepic", getStringImage(drawable));
-                            }
-                            return params;
-                        }
-                    };
-                    AppController.getInstance().addToRequestQueue(strReq, "addZonalManager");
+                        }) {
 
+                            @Override
+                            protected Map<String, String> getParams() {
+                                // Posting params to register url
+                                Map<String, String> params = new HashMap<String, String>();
+                                params.put("name", name_val);
+                                params.put("mob", phone_num);
+                                params.put("address", address_val);
+                                params.put("zid", zid);
+                                params.put("pwd", password_val);
+                                params.put("flag", "1");
+                                SharedPreferences sharedPreferences = getActivity().getSharedPreferences("details", MODE_PRIVATE);
+                                String id = sharedPreferences.getString("id", "");
+                                params.put("adder_id", id);
+                                Log.d("other_nos", finalOther_nos);
+                                if (finalOther_nos.length() != 0) {
+                                    String nos = finalOther_nos.substring(0, finalOther_nos.length() - 1);
+                                    params.put("othermob", nos);
+                                }
+
+                                return params;
+                            }
+                        };
+                        AppController.getInstance().addToRequestQueue(strReq, "addZonalManager");
+
+                    }
 
                 }
             }
@@ -325,6 +459,7 @@ public class add_zonal_manager extends Fragment {
                 CropImage.ActivityResult result = CropImage.getActivityResult(data);
                 if (resultCode == RESULT_OK) {
                     Uri resultUri = result.getUri();
+                    imgPath = resultUri.getPath();
                     try{
                         Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(),resultUri);
                         File file = new File(resultUri.getPath());
@@ -347,7 +482,7 @@ public class add_zonal_manager extends Fragment {
     }
     public String getStringImage(Bitmap bmp){
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        bmp.compress(Bitmap.CompressFormat.JPEG, 30, baos);
         byte[] imageBytes = baos.toByteArray();
         String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
         return encodedImage;
@@ -382,6 +517,12 @@ public class add_zonal_manager extends Fragment {
 
             @Override
             public void onErrorResponse(VolleyError error) {
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, add_zonal_manager.class.getName(), getActivity());
+
 
             }
         });

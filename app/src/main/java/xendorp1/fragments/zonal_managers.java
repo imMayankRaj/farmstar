@@ -13,10 +13,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
@@ -35,6 +37,7 @@ import xendorp1.application_classes.AppController;
 import xendorp1.cards.zonal_manager_card;
 
 import static android.content.ContentValues.TAG;
+import static mayank.example.zendor.MainActivity.showError;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -47,6 +50,8 @@ public class zonal_managers extends Fragment implements SwipeRefreshLayout.OnRef
     private RecyclerView recyclerView;
     private SwipeRefreshLayout swipeRefreshLayout;
     private String zid;
+    public static TextView click;
+
     public zonal_managers() {
         // Required empty public constructor
     }
@@ -57,7 +62,7 @@ public class zonal_managers extends Fragment implements SwipeRefreshLayout.OnRef
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootview= inflater.inflate(R.layout.fragment_zonal_managers, container, false);
-        Bundle bundle=this.getArguments();
+        final Bundle bundle=this.getArguments();
         zid=null;
         if(bundle!=null)
         {
@@ -65,6 +70,7 @@ public class zonal_managers extends Fragment implements SwipeRefreshLayout.OnRef
         }
         Log.d("zid",zid);
         next=rootview.findViewById(R.id.next);
+        click = rootview.findViewById(R.id.click);
         toolbar=rootview.findViewById(R.id.toolbar1);
         toolbar.setTitle("Zonal Managers");
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
@@ -87,9 +93,21 @@ public class zonal_managers extends Fragment implements SwipeRefreshLayout.OnRef
                 Fragment fragment=new add_zonal_manager();
                 FragmentTransaction transaction=getActivity().getSupportFragmentManager().beginTransaction();
                 transaction.add(R.id.drawer_layout,fragment);
+
+                Bundle bundle1 = new Bundle();
+                bundle1.putString("zid", zid);
+                fragment.setArguments(bundle1);
+
                 transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 transaction.addToBackStack(null);
                 transaction.commit();
+            }
+        });
+
+        click.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getZonalManagers();
             }
         });
 
@@ -117,6 +135,7 @@ public class zonal_managers extends Fragment implements SwipeRefreshLayout.OnRef
                         zonal_manager_card.setPassword(jsonObject.getString("pwd"));
                         zonal_manager_card.setStatus(jsonObject.getInt("status"));
                         zonal_manager_card.setId(jsonObject.getString("id"));
+                        zonal_manager_card.setNumber(jsonObject.getString("mob")+","+jsonObject.getString("othermob"));
                         zonal_manager_cardList.add(zonal_manager_card);
                     }
                     zonal_manager_recycler_adapter=new zonal_manager_recycler_adapter(getActivity(),zonal_manager_cardList,zonal_managers.this);
@@ -137,6 +156,13 @@ public class zonal_managers extends Fragment implements SwipeRefreshLayout.OnRef
                 Log.e(TAG, "" + error.getMessage());
                 recyclerView.setAdapter(null);
                 Toast.makeText(getActivity(), "Some error occured. Please try again", Toast.LENGTH_SHORT).show();
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, zonal_managers.class.getName(), getActivity());
+
+
             }
         }){
 

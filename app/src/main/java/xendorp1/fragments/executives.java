@@ -14,10 +14,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
@@ -38,6 +40,7 @@ import xendorp1.cards.zonal_manager_card;
 
 import static android.content.ContentValues.TAG;
 import static android.content.Context.MODE_PRIVATE;
+import static mayank.example.zendor.MainActivity.showError;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -50,6 +53,7 @@ public class executives extends Fragment implements SwipeRefreshLayout.OnRefresh
     private RecyclerView recyclerView;
     private SwipeRefreshLayout swipeRefreshLayout;
     private String id;
+    public static TextView click1;
 
     public executives() {
         // Required empty public constructor
@@ -69,6 +73,7 @@ public class executives extends Fragment implements SwipeRefreshLayout.OnRefresh
         }
         Log.d("id",id);
         next=rootview.findViewById(R.id.next);
+        click1 = rootview.findViewById(R.id.executivesClick);
         toolbar=rootview.findViewById(R.id.toolbar1);
         toolbar.setTitle("Executives");
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
@@ -105,6 +110,13 @@ public class executives extends Fragment implements SwipeRefreshLayout.OnRefresh
             }
         });
 
+        click1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getZonalManagers();
+            }
+        });
+
         getZonalManagers();
         return rootview;
     }
@@ -129,6 +141,7 @@ public class executives extends Fragment implements SwipeRefreshLayout.OnRefresh
                         zonal_manager_card.setPassword(jsonObject.getString("pwd"));
                         zonal_manager_card.setStatus(jsonObject.getInt("status"));
                         zonal_manager_card.setId(jsonObject.getString("id"));
+                        zonal_manager_card.setNumber(jsonObject.getString("mob")+","+jsonObject.getString("othermob"));
                         zonal_manager_cardList.add(zonal_manager_card);
                     }
                     executive_recycler_adapter=new executive_recycler_adapter(getActivity(),zonal_manager_cardList,executives.this);
@@ -149,6 +162,13 @@ public class executives extends Fragment implements SwipeRefreshLayout.OnRefresh
                 Log.e(TAG, "" + error.getMessage());
                 recyclerView.setAdapter(null);
                 Toast.makeText(getActivity(), "Some error occured. Please try again", Toast.LENGTH_SHORT).show();
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, executives.class.getName(), getActivity());
+
+
             }
         }){
 

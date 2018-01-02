@@ -15,9 +15,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
@@ -37,6 +40,7 @@ import xendorp1.application_classes.AppController;
 import xendorp1.cards.buyer_card;
 
 import static android.content.ContentValues.TAG;
+import static mayank.example.zendor.MainActivity.showError;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -50,6 +54,8 @@ public class buyers extends Fragment implements SwipeRefreshLayout.OnRefreshList
     private SwipeRefreshLayout swipeRefreshLayout;
     private SharedPreferences sharedPreferences;
     private String pos;
+    public static TextView click;
+
     public buyers() {
         // Required empty public constructor
     }
@@ -64,6 +70,8 @@ public class buyers extends Fragment implements SwipeRefreshLayout.OnRefreshList
         // Inflate the layout for this fragment
         next = rootview.findViewById(R.id.next);
         toolbar = rootview.findViewById(R.id.toolbar1);
+        click = rootview.findViewById(R.id.click);
+
         toolbar.setTitle("Buyers");
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -78,10 +86,12 @@ public class buyers extends Fragment implements SwipeRefreshLayout.OnRefreshList
         recyclerView.setLayoutManager(llm);
         swipeRefreshLayout = rootview.findViewById(R.id.swiperefresh);
         swipeRefreshLayout.setOnRefreshListener(this);
-        if(pos.equals("0"))
+       /* if(pos.equals("0"))
         getBuyer();
         else
-            getBuyerFromZid();
+            getBuyerFromZid();*/
+
+       getBuyer();
         next = rootview.findViewById(R.id.next);
         next.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,6 +104,14 @@ public class buyers extends Fragment implements SwipeRefreshLayout.OnRefreshList
                 transaction.commit();
             }
         });
+
+        click.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getBuyer();
+            }
+        });
+
         return rootview;
     }
     @Override
@@ -119,6 +137,7 @@ public class buyers extends Fragment implements SwipeRefreshLayout.OnRefreshList
                         buyer_card buyer_card=new buyer_card();
                         buyer_card.setName(jsonObject.getString("name"));
                         buyer_card.setBuyer_id(jsonObject.getString("id"));
+                        buyer_card.setNumber(jsonObject.getString("mob"));
                         buyer_cardList.add(buyer_card);
                     }
                     buyer_recycler_adapter=new buyer_recycler_adapter(getActivity(),buyer_cardList);
@@ -137,6 +156,12 @@ public class buyers extends Fragment implements SwipeRefreshLayout.OnRefreshList
             public void onErrorResponse(VolleyError error) {
                 recyclerView.setAdapter(null);
                 swipeRefreshLayout.setRefreshing(false);
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, buyers.class.getName(), getActivity());
+
 
             }
         });
@@ -178,6 +203,12 @@ public class buyers extends Fragment implements SwipeRefreshLayout.OnRefreshList
             public void onErrorResponse(VolleyError error) {
                 recyclerView.setAdapter(null);
                 swipeRefreshLayout.setRefreshing(false);
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, buyers.class.getName(), getActivity());
+
 
             }
         }){

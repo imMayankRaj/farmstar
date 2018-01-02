@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.astuetz.PagerSlidingTabStrip;
@@ -35,6 +36,7 @@ import xendorp1.application_classes.AppConfig;
 import xendorp1.application_classes.AppController;
 
 import static android.content.ContentValues.TAG;
+import static mayank.example.zendor.MainActivity.showError;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -65,6 +67,7 @@ public class zonal_manager extends Fragment {
         {
             linearLayout.setVisibility(View.GONE);
         }
+
         toolbar=rootview.findViewById(R.id.toolbar1);
         toolbar.setTitle("Zonal Manager");
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
@@ -124,6 +127,13 @@ public class zonal_manager extends Fragment {
                             public void onErrorResponse(VolleyError error) {
                                 Log.e(TAG, "" + error.getMessage());
                                 Toast.makeText(getActivity(), "Some error occured. Please try again", Toast.LENGTH_SHORT).show();
+
+                                if (error instanceof TimeoutError) {
+                                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                                } else
+                                    showError(error, zonal_manager.class.getName(), getActivity());
+
+
                             }
                         }){
 
@@ -155,6 +165,7 @@ public class zonal_manager extends Fragment {
         });
         pagerSlidingTabStrip=rootview.findViewById(R.id.pagerSlidingTabStrip);
         viewPager=rootview.findViewById(R.id.view_pager);
+        viewPager.setOffscreenPageLimit(3);
         view_pager_adapter_zonal_manager=new view_pager_adapter_zonal_manager(getChildFragmentManager(),bundle);
         viewPager.setAdapter(view_pager_adapter_zonal_manager);
         pagerSlidingTabStrip.setupWithViewPager(viewPager);
