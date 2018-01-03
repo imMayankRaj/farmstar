@@ -5,10 +5,18 @@ package xendorp1.cards;
  */
 
 public class zonal_manager_card {
-    String name,username,password,zone_name,id,zid,number;
+    String name,username,password,zone_name,id,zid,number, cb;
     int status;
     public zonal_manager_card()
     {}
+
+    public void setCb(String cb) {
+        this.cb = cb;
+    }
+
+    public String getCb() {
+        return cb;
+    }
 
     public void setNumber(String number) {
         this.number = number;

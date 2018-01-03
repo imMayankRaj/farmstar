@@ -40,6 +40,7 @@ import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
 import xendorp1.application_classes.AppConfig;
 import xendorp1.application_classes.AppController;
+import xendorp1.fragments.zonal_manager;
 
 import static android.content.ContentValues.TAG;
 import static mayank.example.zendor.MainActivity.showError;
@@ -56,6 +57,7 @@ public class executive_details extends Fragment {
     private Intent intent;
     private Button call;
     private LoadingClass lc;
+    private TextView disable;
 
     public executive_details() {
         // Required empty public constructor
@@ -91,6 +93,33 @@ public class executive_details extends Fragment {
         zone_val = rootview.findViewById(R.id.zone_value);
         profilepic = rootview.findViewById(R.id.profilepic);
         call = rootview.findViewById(R.id.call);
+        disable = rootview.findViewById(R.id.disable);
+
+        disable.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final android.support.v7.app.AlertDialog dialog =new android.support.v7.app.AlertDialog.Builder(getActivity())
+                        .setView(R.layout.disable_dialog)
+                        .setCancelable(false)
+                        .create();
+                dialog.show();
+                Button no =dialog.findViewById(R.id.no);
+                Button yes=dialog.findViewById(R.id.yes);
+                no.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        dialog.dismiss();
+                    }
+                });
+                yes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        dialog.dismiss();
+                        disableExecutive();
+                    }
+                });
+            }
+        });
 
         lc = new LoadingClass(getActivity());
         call.setOnClickListener(new View.OnClickListener() {
@@ -193,6 +222,56 @@ public class executive_details extends Fragment {
                 startActivity(intent);
             }
         }
+    }
+
+    private void disableExecutive(){
+
+        StringRequest strReq = new StringRequest(Request.Method.POST,
+                AppConfig.URL_DISABLE, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d(TAG, "Register Response: " + response.toString());
+                try {
+                    JSONObject jobj=new JSONObject(response);
+                    boolean error=jobj.getBoolean("error");
+                    if(error)
+                    {
+                        Toast.makeText(getActivity(), "Some error occured. Please try again", Toast.LENGTH_LONG).show();
+                    }
+                    else
+                    {
+                        Toast.makeText(getActivity(), "Disabled. Please Refresh.", Toast.LENGTH_LONG).show();
+                        getActivity().finish();
+                    }
+                } catch (Exception e) {
+                    Toast.makeText(getActivity(), "Some error occured. Please try again", Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(getActivity(), "Some error occured. Please try again", Toast.LENGTH_LONG).show();
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_LONG).show();
+                } else
+                    showError(error, executive_details.class.getName(), getActivity());
+
+
+            }
+        }){
+
+            @Override
+            protected Map<String, String> getParams() {
+                // Posting params to register url
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("id",execu_id);
+                return params;
+            }
+        };
+        AppController.getInstance().addToRequestQueue(strReq, "getzones");
     }
 
 }

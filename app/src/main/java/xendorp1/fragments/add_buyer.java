@@ -77,6 +77,7 @@ import static android.app.Activity.RESULT_OK;
 import static android.content.ContentValues.TAG;
 import static android.content.Context.MODE_PRIVATE;
 import static mayank.example.zendor.MainActivity.showError;
+import static xendorp1.fragments.add_executive.addInCb;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -320,6 +321,7 @@ public class add_buyer extends Fragment {
                                                 public void onResponse(String response) {
                                                     Log.d(TAG, "Register Response: " + response.toString());
                                                     try {
+                                                        addBuyerCb();
                                                         JSONObject jobj = new JSONObject(response);
                                                         boolean error = jobj.getBoolean("error");
                                                         if (error) {
@@ -410,6 +412,7 @@ public class add_buyer extends Fragment {
                             public void onResponse(String response) {
                                 Log.d(TAG, "Register Response: " + response.toString());
                                 try {
+                                    addBuyerCb();
                                     JSONObject jobj = new JSONObject(response);
                                     boolean error = jobj.getBoolean("error");
                                     if (error) {
@@ -636,6 +639,21 @@ public class add_buyer extends Fragment {
         });
 
         ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+    }
+
+    private void addBuyerCb(){
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, URLclass.ADD_BUYER, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+        ApplicationQueue.getInstance(getActivity()).addToRequestQueue(stringRequest);
     }
 
 

@@ -6,6 +6,11 @@
     tools:context="mayank.example.zendor.onClickSeller.sellerLedger">
 
 
+    <TextView
+        android:visibility="gone"
+        android:id="@+id/clickItBuyer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
     <TextView
         android:id="@+id/sellerNameAndZone"
@@ -17,6 +22,80 @@
         android:layout_height="wrap_content" />
 
 
+
+    <LinearLayout
+        android:padding="10dp"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+        <LinearLayout
+            android:padding="5dp"
+            android:orientation="vertical"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent">
+
+
+            <TextView
+                android:textColor="#000"
+                android:gravity="center"
+                android:text="CURRENT BALANCE"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout
+                android:layout_marginTop="5dp"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:src="@drawable/ic_rupee_indian"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+
+                <TextView
+                    android:id="@+id/cb"
+                    android:textColor="#000"
+                    android:textSize="16sp"
+                    android:gravity="center"
+                    android:text="0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:padding="5dp"
+            android:gravity="center"
+            android:visibility="gone"
+            android:layout_gravity="center"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/transfer"
+                android:layout_margin="1dp"
+                android:padding="5dp"
+                android:layout_gravity="center"
+                android:textColor="#000"
+                android:text="TRANSFER"
+                android:background="#f44336"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+
+        </LinearLayout>
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_marginTop="10dp"

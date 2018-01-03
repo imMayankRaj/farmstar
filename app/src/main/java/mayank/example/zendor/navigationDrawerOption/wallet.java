@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.Window;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,6 +52,7 @@ public class wallet extends AppCompatActivity {
     private LoadingClass ld;
     private ImageView addExpenses;
     private String position;
+    private LinearLayout ll;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +67,7 @@ public class wallet extends AppCompatActivity {
         ledgerList = new ArrayList<>();
         back = findViewById(R.id.back);
         addExpenses = findViewById(R.id.addCredit);
+        ll = findViewById(R.id.ll);
 
         back.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -78,6 +81,9 @@ public class wallet extends AppCompatActivity {
         id = sharedPreferences.getString("id", "");
         position = sharedPreferences.getString("position", "");
 
+        if(position.equals("0")){
+            ll.setVisibility(View.GONE);
+        }
 
         addExpenses.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -130,10 +136,10 @@ public class wallet extends AppCompatActivity {
 
     private void getLedger(){
         ld.showDialog();
+        ledgerList.clear();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ZM_LEDGER , new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.e("zm ledger", response);
                 try {
                     JSONObject json = new JSONObject(response);
                     JSONArray ledgerArray = json.getJSONArray("ledger");
@@ -192,7 +198,7 @@ public class wallet extends AppCompatActivity {
 
         final Dialog dialog = new Dialog(wallet.this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(R.layout.ledger_request);
+        dialog.setContentView(R.layout.ledger_request_dialog);
 
         ImageView back = dialog.findViewById(R.id.back);
         final EditText amount = dialog.findViewById(R.id.amount);
@@ -232,11 +238,18 @@ public class wallet extends AppCompatActivity {
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.REQUEST, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-
+                getCurrentBalance();
+                getLedger();
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(wallet.this, "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, wallet.this.getClass().getName(), wallet.this);
+
 
             }
         }){

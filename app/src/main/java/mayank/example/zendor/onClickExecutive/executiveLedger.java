@@ -55,26 +55,27 @@ public class executiveLedger extends Fragment {
     private TextView request;
     private ImageView addCredit;
     LoadingClass lc;
-    private int ucb;
-
+    private double ucb;
+    private String pos;
+    private double ecb;
 
 
     public executiveLedger() {
         // Required empty public constructor
     }
 
-   public static executiveLedger newInstance(String exec_id) {
+    public static executiveLedger newInstance(String exec_id) {
         executiveLedger fragment = new executiveLedger();
-       Bundle bundle = new Bundle();
-       bundle.putString(EXE_ID, exec_id);
-       fragment.setArguments(bundle);
+        Bundle bundle = new Bundle();
+        bundle.putString(EXE_ID, exec_id);
+        fragment.setArguments(bundle);
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(getArguments() != null){
+        if (getArguments() != null) {
             eid = getArguments().getString(EXE_ID);
         }
     }
@@ -96,32 +97,37 @@ public class executiveLedger extends Fragment {
 
         sharedPreferences = getActivity().getSharedPreferences("details", MODE_PRIVATE);
 
+        pos = sharedPreferences.getString("position", "");
+
+
         getSellerCb();
         getZmLedger();
         getUserCb();
 
-        final String pos = sharedPreferences.getString("position","");
 
         request.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if((ucb < 0 || ucb == 0) && !pos.equals("0"))
-                    Toast.makeText(getActivity(), "Not Enough Credits.", Toast.LENGTH_SHORT).show();
-                else
+
+                if (onClickExecutiveCard.status.equals("1"))
                     requestDialog();
+                else
+                    Toast.makeText(getActivity(), "Executive is disabled", Toast.LENGTH_SHORT).show();
+
             }
         });
 
         addCredit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if((ucb < 0 || ucb == 0) && !pos.equals("0"))
-                    Toast.makeText(getActivity(), "Not Enough Credits.", Toast.LENGTH_SHORT).show();
-                else
+
+                if (onClickExecutiveCard.status.equals("1")) {
                     addCreditDialog();
+                } else
+                    Toast.makeText(getActivity(), "Executive is disabled", Toast.LENGTH_SHORT).show();
+
             }
         });
-
 
         return view;
     }
@@ -134,7 +140,7 @@ public class executiveLedger extends Fragment {
                 try {
                     JSONObject json = new JSONObject(response);
                     String CB = json.getString("current_balance");
-                    ucb = Integer.parseInt(CB);
+                    ucb = Double.parseDouble(CB);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -168,8 +174,7 @@ public class executiveLedger extends Fragment {
     }
 
 
-
-    private void getSellerCb(){
+    private void getSellerCb() {
 
         lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.SELLER_CB, new Response.Listener<String>() {
@@ -179,6 +184,7 @@ public class executiveLedger extends Fragment {
                     JSONObject json = new JSONObject(response);
                     String CB = json.getString("current_balance");
                     cb.setText(CB);
+                    ecb = Double.parseDouble(CB);
                 } catch (JSONException e) {
                     lc.dismissDialog();
                 }
@@ -199,11 +205,11 @@ public class executiveLedger extends Fragment {
 
 
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> parameters = new HashMap<>();
-                parameters.put("id",eid);
+                parameters.put("id", eid);
                 return parameters;
             }
         };
@@ -211,10 +217,10 @@ public class executiveLedger extends Fragment {
         ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
     }
 
-    private void getZmLedger(){
+    private void getZmLedger() {
 
         lc.showDialog();
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ZM_LEDGER , new Response.Listener<String>() {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ZM_LEDGER, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 ledgerList.clear();
@@ -222,25 +228,25 @@ public class executiveLedger extends Fragment {
                 try {
                     JSONObject json = new JSONObject(response);
                     JSONArray ledgerArray = json.getJSONArray("ledger");
-                    for(int i =0;i<ledgerArray.length();i++){
+                    for (int i = 0; i < ledgerArray.length(); i++) {
                         JSONObject ledger = ledgerArray.getJSONObject(i);
                         String date = ledger.getString("date");
                         String pid = ledger.getString("pid");
                         String balance = ledger.getString("Balance");
                         String cd = ledger.getString("cd");
-                        ledgerList.add(new sellerLedger.ledgerClass(date, pid, cd, '\u20B9'+balance));
+                        ledgerList.add(new sellerLedger.ledgerClass(date, pid, cd, '\u20B9' + balance));
                     }
 
                     JSONObject details = json.getJSONObject("details");
                     String name = details.getString("zm");
                     String szone = details.getString("zm_zone");
-                    sellerNameAndZone.setText(name+" - "+szone);
+                    sellerNameAndZone.setText(name + " - " + szone);
                 } catch (JSONException e) {
-                    Log.e("error", e+"");
+                    Log.e("error", e + "");
                     e.printStackTrace();
                 }
 
-                ledgerAdapter adapter = new ledgerAdapter(getActivity(),0, ledgerList);
+                ledgerAdapter adapter = new ledgerAdapter(getActivity(), 0, ledgerList);
                 sellerLedgerView.setAdapter(adapter);
                 lc.dismissDialog();
             }
@@ -258,11 +264,11 @@ public class executiveLedger extends Fragment {
 
 
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> parameters = new HashMap<>();
-                parameters.put("id",eid);
+                parameters.put("id", eid);
                 return parameters;
             }
         };
@@ -271,9 +277,7 @@ public class executiveLedger extends Fragment {
     }
 
 
-
-
-    private void addCreditDialog(){
+    private void addCreditDialog() {
 
         final Dialog dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -304,7 +308,11 @@ public class executiveLedger extends Fragment {
             public void onClick(View v) {
                 String amt = amount.getText().toString();
                 String description = desc.getText().toString();
-                addCredit(amt, description);
+                Double AMT = Double.parseDouble(amt);
+                if ((AMT >= ucb) && !pos.equals("0"))
+                    Toast.makeText(getActivity(), "Not Enough Credits To Be Added In Executive's Current Balance.", Toast.LENGTH_LONG).show();
+                else
+                    addCredit(amt, description);
                 dialog.dismiss();
             }
         });
@@ -313,8 +321,7 @@ public class executiveLedger extends Fragment {
     }
 
 
-
-    private void requestDialog(){
+    private void requestDialog() {
 
         final Dialog dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -346,10 +353,13 @@ public class executiveLedger extends Fragment {
                 String amt = amount.getText().toString();
                 String description = desc.getText().toString();
                 int a = Integer.parseInt(amt);
-                if(a > ucb)
-                    sendRequest(amt, description);
-                else
-                    Toast.makeText(getActivity(), "Not Enough Credits.", Toast.LENGTH_SHORT).show();
+                if (a <= ecb) {
+                    if (pos.equals("0")) {
+                        sendRequestAdmin(amt, description);
+                    } else
+                        sendRequest(amt, description);
+                } else
+                    Toast.makeText(getActivity(), "Executive doesn't have enough credits to be debited.", Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
             }
         });
@@ -357,7 +367,7 @@ public class executiveLedger extends Fragment {
         dialog.show();
     }
 
-    private void sendRequest(final String amt, final String desc){
+    private void sendRequest(final String amt, final String desc) {
 
         lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.REQUEST, new Response.Listener<String>() {
@@ -365,7 +375,8 @@ public class executiveLedger extends Fragment {
             public void onResponse(String response) {
 
                 getSellerCb();
-               getZmLedger();
+                getZmLedger();
+                getUserCb();
             }
         }, new Response.ErrorListener() {
             @Override
@@ -373,14 +384,20 @@ public class executiveLedger extends Fragment {
                 lc.dismissDialog();
                 Toast.makeText(getActivity(), "Some Error Occured", Toast.LENGTH_SHORT).show();
 
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, executiveLedger.class.getName(), getActivity());
+
+
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
-                String id = sharedPreferences.getString("id","");
+                String id = sharedPreferences.getString("id", "");
 
                 Map<String, String> parameters = new HashMap<>();
-                parameters.put("id",eid);
+                parameters.put("id", eid);
                 parameters.put("amt", amt);
                 parameters.put("des", desc);
                 return parameters;
@@ -390,14 +407,15 @@ public class executiveLedger extends Fragment {
         ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
     }
 
-    private void addCredit(final String amt, final String desc){
+    private void addCredit(final String amt, final String desc) {
         lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ADD_CREDIT, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
 
                 getSellerCb();
-               getZmLedger();
+                getZmLedger();
+                getUserCb();
             }
         }, new Response.ErrorListener() {
             @Override
@@ -405,16 +423,19 @@ public class executiveLedger extends Fragment {
                 lc.dismissDialog();
                 Toast.makeText(getActivity(), "Some Error Occured", Toast.LENGTH_SHORT).show();
 
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, executiveLedger.class.getName(), getActivity());
+
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
-                String id = sharedPreferences.getString("id","");
-
-                Log.e("eid", eid);
+                String id = sharedPreferences.getString("id", "");
 
                 Map<String, String> parameters = new HashMap<>();
-                parameters.put("sid",id);
+                parameters.put("sid", id);
                 parameters.put("rid", eid);
                 parameters.put("amt", amt);
                 parameters.put("des", desc);
@@ -422,9 +443,49 @@ public class executiveLedger extends Fragment {
             }
         };
 
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        ApplicationQueue.getInstance(getActivity()).addToRequestQueue(stringRequest);
     }
 
+    private void sendRequestAdmin(final String amt, final String desc) {
+
+        lc.showDialog();
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ADMIN_DIRECT_REQUEST,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+
+                        getSellerCb();
+                        getZmLedger();
+                        getUserCb();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                lc.dismissDialog();
+                Toast.makeText(getActivity(), "Some Error Occured", Toast.LENGTH_SHORT).show();
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, executiveLedger.class.getName(), getActivity());
+
+
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                String id = sharedPreferences.getString("id", "");
+
+                Map<String, String> parameters = new HashMap<>();
+                parameters.put("id", eid);
+                parameters.put("amt", amt);
+                parameters.put("des", desc);
+                parameters.put("rec", id);
+                return parameters;
+            }
+        };
+        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+    }
 
 
 }

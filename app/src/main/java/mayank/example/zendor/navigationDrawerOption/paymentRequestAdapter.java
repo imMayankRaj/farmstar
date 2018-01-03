@@ -232,11 +232,7 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
             public void onClick(View v) {
                 String re = remarks.getText().toString();
                 String RN =rn.getText().toString();
-                Log.e("mnbvxasdfghjk", b+" "+amount);
                 proceedRequest(spid,re, RN,seller_id, amount, b);
-
-
-
                 dialog.dismiss();
             }
         });
@@ -296,7 +292,6 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.PAYMENT_REQUEST_PROCEED, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.e("wertyui", response);
                 lc.dismissDialog();
                 paymentRequest.check.performClick();
             }

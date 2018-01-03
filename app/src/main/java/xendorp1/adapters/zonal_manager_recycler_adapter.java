@@ -80,6 +80,7 @@ public class zonal_manager_recycler_adapter extends RecyclerView.Adapter<zonal_m
         holder.name.setText(zonal_manager_card.getName());
         holder.password_info.setText(zonal_manager_card.getPassword());
         holder.zone_info.setText(zonal_manager_card.getZone_name());
+        holder.curbal_info.setText('\u20B9'+zonal_manager_card.getCb());
         int status = zonal_manager_card.getStatus();
         if (status == 1) {
             holder.active.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.green));

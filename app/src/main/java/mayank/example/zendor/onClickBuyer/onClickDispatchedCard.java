@@ -204,10 +204,12 @@ public class onClickDispatchedCard extends AppCompatActivity {
                 String approved = aa.getText().toString();
                 String re = remark.getText().toString();
                 String dew = deliveredWe.getText().toString();
-                onSubmitClick(approved, re, dew);
-                dialog.dismiss();
-                frequentlyUsedClass.sendOTP(buyerDetails.num[0], "Your Foodmonk verification code is "+" Dispatched "+" . Happy food ordering :)", onClickDispatchedCard.this);
-
+                if(approved.length() !=0 && re.length() != 0 && dew.length() != 0) {
+                    onSubmitClick(approved, re, dew);
+                    dialog.dismiss();
+                    frequentlyUsedClass.sendOTP(buyerDetails.num[0], "Your Foodmonk verification code is " + " Dispatched " + " . Happy food ordering :)", onClickDispatchedCard.this);
+                }else
+                    Toast.makeText(onClickDispatchedCard.this, "All Fields Are Compulsory.", Toast.LENGTH_SHORT).show();
             }
         });
 

@@ -141,6 +141,7 @@ public class executives extends Fragment implements SwipeRefreshLayout.OnRefresh
                         zonal_manager_card.setPassword(jsonObject.getString("pwd"));
                         zonal_manager_card.setStatus(jsonObject.getInt("status"));
                         zonal_manager_card.setId(jsonObject.getString("id"));
+                        zonal_manager_card.setCb(jsonObject.getString("cb"));
                         zonal_manager_card.setNumber(jsonObject.getString("mob")+","+jsonObject.getString("othermob"));
                         zonal_manager_cardList.add(zonal_manager_card);
                     }
@@ -151,7 +152,7 @@ public class executives extends Fragment implements SwipeRefreshLayout.OnRefresh
                 } catch (Exception e) {
                     swipeRefreshLayout.setRefreshing(false);
                     recyclerView.setAdapter(null);
-                    e.printStackTrace();
+                    Log.e("wertyui", e+"");
                 }
             }
         }, new Response.ErrorListener() {

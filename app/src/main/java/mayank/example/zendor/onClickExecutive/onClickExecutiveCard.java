@@ -22,6 +22,7 @@ public class onClickExecutiveCard extends AppCompatActivity {
     private TabLayout header;
     private String eid;
     private String name;
+    public static String status;
 
 
     @Override
@@ -39,6 +40,7 @@ public class onClickExecutiveCard extends AppCompatActivity {
         if(bundle !=null){
             eid = bundle.getString("exec_id");
             name = bundle.getString("name");
+            status = bundle.getString("status");
         }
 
 

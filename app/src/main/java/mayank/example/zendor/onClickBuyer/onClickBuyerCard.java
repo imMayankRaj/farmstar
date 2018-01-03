@@ -2,6 +2,7 @@ package mayank.example.zendor.onClickBuyer;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -56,6 +57,8 @@ public class onClickBuyerCard extends AppCompatActivity {
     private TextView saleButton;
     private String commo[];
     private LoadingClass lc;
+    private SharedPreferences sharedPreferences;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +73,7 @@ public class onClickBuyerCard extends AppCompatActivity {
         saleButton = findViewById(R.id.saleButton);
 
         header.setupWithViewPager(viewPager);
+        sharedPreferences = getSharedPreferences("details", MODE_PRIVATE);
 
         getCommodities();
         saleButton.setOnClickListener(new View.OnClickListener() {
@@ -154,8 +158,7 @@ public class onClickBuyerCard extends AppCompatActivity {
             public void onResponse(String response) {
                 lc.dismissDialog();
                 getSaleDetail(onClickBuyerCard.this);
-
-                Log.e("erroe", response);
+                buyerLedger.click.performClick();
             }
         }, new Response.ErrorListener() {
             @Override
@@ -174,6 +177,9 @@ public class onClickBuyerCard extends AppCompatActivity {
                 SimpleDateFormat dateTimeInGMT = new SimpleDateFormat("yyyy-MMM-dd hh:mm:ss aa", Locale.ENGLISH);
                 dateTimeInGMT.setTimeZone(TimeZone.getTimeZone("GMT+05:30"));
 
+                String id = sharedPreferences.getString("id", "");
+
+
                 Map<String, String> parameters = new HashMap<>();
                 parameters.put("com", comm);
                 parameters.put("est", weight);
@@ -183,6 +189,7 @@ public class onClickBuyerCard extends AppCompatActivity {
                 parameters.put("da", address);
                 parameters.put("ba", baddress);
                 parameters.put("bid", buyer_id);
+                parameters.put("bookedBy", id);
                 parameters.put("ts1", dateTimeInGMT.format(new Date()));
                 return parameters;
             }

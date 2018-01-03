@@ -87,6 +87,7 @@ public class onClickDeliveredCard extends AppCompatActivity {
 
         saleid = getIntent().getStringExtra("sid");
 
+        amountDue.setText(buyerLedger.buyercb+"");
         sharedPreferences = getSharedPreferences("details", MODE_PRIVATE);
 
         back.setOnClickListener(new View.OnClickListener() {
@@ -134,7 +135,6 @@ public class onClickDeliveredCard extends AppCompatActivity {
             @Override
             public void onResponse(String response) {
 
-                Log.e("responsebuyer", response);
                 try {
                     JSONObject object = new JSONObject(response);
                     JSONObject details = object.getJSONObject("Details");
@@ -144,7 +144,7 @@ public class onClickDeliveredCard extends AppCompatActivity {
                     sid.setText("Seller Id :"+details.getString("sale_id"));
                     weight.setText(details.getString("w2")+" kgs");
                     rate.setText(details.getString("rate")+"/kg");
-                    amountDue.setText(details.getString("amount_due"));
+                   // amountDue.setText(details.getString("amount_due"));
 
                     double weight1 = Double.parseDouble(details.getString("weight"));
                     double weight2 = Double.parseDouble(details.getString("w2"));
@@ -202,6 +202,7 @@ public class onClickDeliveredCard extends AppCompatActivity {
             public void onResponse(String response) {
 
                 getSaleDetail(onClickDeliveredCard.this);
+                buyerLedger.click.performClick();
                 lc.dismissDialog();
                 finish();
             }
@@ -257,8 +258,15 @@ public class onClickDeliveredCard extends AppCompatActivity {
                     String amount = am.getText().toString();
                     String ref = re.getText().toString();
                     String remark = rem.getText().toString();
-                    collectPayment(amount, ref, remark);
-                    dialog.dismiss();
+                    if(amount.length() !=0 && ref.length() != 0 && remark.length() != 0) {
+                        double amt = Double.parseDouble(amount);
+                        if(amt <= buyerLedger.buyercb) {
+                            collectPayment(amount, ref, remark);
+                            dialog.dismiss();
+                        }else
+                            Toast.makeText(onClickDeliveredCard.this, "Requested Amount Greater Than Buyer Current Balance.", Toast.LENGTH_SHORT).show();
+                    }else
+                        Toast.makeText(onClickDeliveredCard.this, "All Fields Are Compulsory.", Toast.LENGTH_SHORT).show();
                 }
             });
 

@@ -285,7 +285,7 @@ public class add_executive extends Fragment {
                                                         if (error) {
                                                             Toast.makeText(getActivity(), jobj.getString("error_message"), Toast.LENGTH_SHORT).show();
                                                         } else {
-                                                            Toast.makeText(getActivity(), "Successfully added executive", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(getActivity(), "Successfully added executive.Please refresh" , Toast.LENGTH_LONG).show();
                                                             getActivity().getSupportFragmentManager().popBackStackImmediate();
                                                         }
                                                         progressBar.setVisibility(View.GONE);
@@ -383,7 +383,7 @@ public class add_executive extends Fragment {
                                     if (error) {
                                         Toast.makeText(getActivity(), jobj.getString("error_message"), Toast.LENGTH_SHORT).show();
                                     } else {
-                                        Toast.makeText(getActivity(), "Successfully added executive", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getActivity(), "Successfully added executive. Please refresh.", Toast.LENGTH_LONG).show();
                                         getActivity().getSupportFragmentManager().popBackStackImmediate();
                                     }
                                     progressBar.setVisibility(View.GONE);

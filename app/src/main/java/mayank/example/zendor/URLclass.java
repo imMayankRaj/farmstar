@@ -4,7 +4,7 @@ package mayank.example.zendor;
  * Created by mayank on 10/31/2017.
  */
 
-public class URLclass {
+public final class URLclass {
 
     public static String LOGIN = "http://farmstar.in/zendorRestApi/login.php";
     public static String SELLERSDATA = "http://farmstar.in/zendorRestApi/sellerData.php";
@@ -59,9 +59,8 @@ public class URLclass {
     public static String UPDATE_SELLER_BANK_DETAILS = "http://farmstar.in/zendorRestApi/updateSellerBankDetails.php";
     public static String UPLOAD_IMAGES = "http://farmstar.in/zendorRestApi/uploadImage.php";
     public static String UPDATE_BUYER_DETAILS = "http://farmstar.in/zendorRestApi/updateBuyerDetails.php";
-
-
-
+    public static String ADD_BUYER = "http://farmstar.in/zendorRestApi/addBuyer.php";
+    public static String ADMIN_DIRECT_REQUEST = "http://farmstar.in/zendorRestApi/RequestForExecutiveForAdmin.php";
 
 
 

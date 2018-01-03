@@ -64,6 +64,7 @@ public class details_zonal_manager extends Fragment {
     private String num[];
     private Button call;
     private ProgressBar pbar;
+    public static int status;
 
     public details_zonal_manager() {
         // Required empty public constructor
@@ -82,6 +83,7 @@ public class details_zonal_manager extends Fragment {
         {
             id=bundle.getString("id");
             zname=bundle.getString("zname");
+            status = bundle.getInt("status");
         }
         name_val=rootview.findViewById(R.id.name_value);
         address_val=rootview.findViewById(R.id.address_value);

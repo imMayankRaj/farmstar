@@ -39,7 +39,7 @@ public class executive_recycler_adapter extends RecyclerView.Adapter<executive_r
     private Fragment fragment1;
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView name, username_info, password_info, zone_info, curbal_info, eid;
+        public TextView name, username_info, password_info, zone_info, curbal_info, eid, status;
         public ImageView active;
         public View view1;
         private Button call;
@@ -54,6 +54,7 @@ public class executive_recycler_adapter extends RecyclerView.Adapter<executive_r
             curbal_info = view.findViewById(R.id.curbal_info);
             active = view.findViewById(R.id.active);
             eid = view.findViewById(R.id.id);
+            status = view.findViewById(R.id.status);
             call = view.findViewById(R.id.call);
 
 
@@ -76,16 +77,18 @@ public class executive_recycler_adapter extends RecyclerView.Adapter<executive_r
         return new executive_recycler_adapter.MyViewHolder(itemView);
     }
 
-    View.OnClickListener onClickListener = new View.OnClickListener() {
+    private View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             TextView ID = v.findViewById(R.id.id);
             TextView name = v.findViewById(R.id.zone_info);
+            TextView status = v.findViewById(R.id.status);
             String NAME =name.getText().toString();
             String EID = ID.getText().toString();
             Intent intent = new Intent(mContext, onClickExecutiveCard.class);
             intent.putExtra("exec_id", EID);
             intent.putExtra("name", NAME);
+            intent.putExtra("status", status.getText().toString());
             mContext.startActivity(intent);
 
         }
@@ -114,6 +117,8 @@ public class executive_recycler_adapter extends RecyclerView.Adapter<executive_r
                 transaction.commit();
             }
         });*/
+        holder.curbal_info.setText('\u20B9'+zonal_manager_card.getCb());
+
 
         holder.call.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -126,6 +131,7 @@ public class executive_recycler_adapter extends RecyclerView.Adapter<executive_r
         });
 
         int status = zonal_manager_card.getStatus();
+        holder.status.setText(zonal_manager_card.getStatus()+"");
         if (status == 1) {
             holder.active.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.green));
         } else {

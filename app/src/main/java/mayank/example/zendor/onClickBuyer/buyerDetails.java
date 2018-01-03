@@ -72,7 +72,7 @@ public class buyerDetails extends Fragment {
     private TextView companyName;
     private TextView registeredBy;
     private TextView address;
-    private TextView amountDue;
+    public static TextView amountDue;
     private TextView gstNumber;
     private TextView sale;
     private String number, othermob;
@@ -117,7 +117,7 @@ public class buyerDetails extends Fragment {
         companyName = view.findViewById(R.id.companyName);
         registeredBy = view.findViewById(R.id.registererName);
         address = view.findViewById(R.id.address);
-        amountDue = view.findViewById(R.id.amount_due);
+        amountDue = view.findViewById(R.id.amountDue);
         gstNumber = view.findViewById(R.id.gstNumber);
         commodities = view.findViewById(R.id.commodities);
         sale = view.findViewById(R.id.sale);
