@@ -27,12 +27,7 @@ public class FetchAddressIntentService extends IntentService {
     protected ResultReceiver mReceiver;
 
 
-    /**
-     * Creates an IntentService.  Invoked by your subclass's constructor.
-     *
-     * @param name Used to name the worker thread, important only for debugging.
-     */
-    public FetchAddressIntentService(String name) {
+   public FetchAddressIntentService(String name) {
         super(name);
     }
 

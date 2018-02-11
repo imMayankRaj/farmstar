@@ -2,6 +2,7 @@ package mayank.example.zendor.onClickExecutive;
 
 
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -9,6 +10,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -33,8 +36,11 @@ import mayank.example.zendor.URLclass;
 import mayank.example.zendor.onClickBuyer.onClickDispatchedCard;
 import mayank.example.zendor.onClickSeller.sellerPurchaseClass;
 import mayank.example.zendor.onClickSeller.sellerPurchasesAdapter;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.MainActivity.showToast;
+import static mayank.example.zendor.onClickExecutive.onClickExecutiveCard.header;
 
 public class executive_allpurchases extends Fragment {
 
@@ -45,6 +51,9 @@ public class executive_allpurchases extends Fragment {
     private static String EXEC_ID = "exec_id";
     private String exec_id;
     private LoadingClass lc;
+    private LinearLayout layout;
+    private TextView textView;
+
 
 
 
@@ -84,6 +93,10 @@ public class executive_allpurchases extends Fragment {
         recyclerView.setLayoutManager(llm);
         recyclerView.setHasFixedSize(true);
 
+        layout = view.findViewById(R.id.noDataLayout);
+        textView = view.findViewById(R.id.text);
+
+
         getSellerPurchaseData();
 
 
@@ -92,7 +105,9 @@ public class executive_allpurchases extends Fragment {
 
     private void getSellerPurchaseData(){
         lc.showDialog();
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.SELLER_PURCHASE_DATA, new Response.Listener<String>() {
+        layout.setVisibility(View.GONE);
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.EXE_PURCHASES, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 Log.e("response", response);
@@ -103,6 +118,8 @@ public class executive_allpurchases extends Fragment {
                     for (int i =0;i<purchases.length();i++){
                         JSONObject sellerPurchases = purchases.getJSONObject(i);
                         String flag = sellerPurchases.getString("flag");
+                        String pid = sellerPurchases.getString("pid");
+
 
                         if(flag.equals("bk")){
                             String booked_ts = sellerPurchases.getString("booked_ts");
@@ -110,21 +127,21 @@ public class executive_allpurchases extends Fragment {
                             String rate = sellerPurchases.getString("rate");
                             String commodity = sellerPurchases.getString("commodities");
                             String name = sellerPurchases.getString("booker");
-                            arrayList.add(new sellerPurchaseClass(commodity, rate, est_weight, booked_ts, name, flag));
+                            arrayList.add(new sellerPurchaseClass(commodity, rate, est_weight, booked_ts, name, flag,pid));
                         }else if(flag.equals("pk")){
                             String picked_ts = sellerPurchases.getString("picked_ts");
                             String actual_weight = sellerPurchases.getString("actual_weight");
                             String rate = sellerPurchases.getString("rate");
                             String commodity = sellerPurchases.getString("commodities");
                             String name = sellerPurchases.getString("picker");
-                            arrayList.add(new sellerPurchaseClass(commodity, rate, actual_weight, picked_ts, name, flag));
+                            arrayList.add(new sellerPurchaseClass(commodity, rate, actual_weight, picked_ts, name, flag, pid));
                         }else if(flag.equals("co")){
                             String collected_ts = sellerPurchases.getString("collected_ts");
                             String collected_weight = sellerPurchases.getString("collected_weight");
                             String rate = sellerPurchases.getString("rate");
                             String commodity = sellerPurchases.getString("commodities");
                             String name = sellerPurchases.getString("collected_by");
-                            arrayList.add(new sellerPurchaseClass(commodity, rate, collected_weight, collected_ts, name, flag));
+                            arrayList.add(new sellerPurchaseClass(commodity, rate, collected_weight, collected_ts, name, flag, pid));
                         }else if(flag.equals("cn")){
                             String cancelled_ts = sellerPurchases.getString("cancelled_ts");
                             String roc_b = sellerPurchases.getString("roc_b");
@@ -133,7 +150,7 @@ public class executive_allpurchases extends Fragment {
                             String commodity = sellerPurchases.getString("commodities");
                             String name = sellerPurchases.getString("cancelled_by");
                             String roc = roc_b.equals("null") ?roc_p :roc_b;
-                            arrayList.add(new sellerPurchaseClass(commodity, rate, roc, cancelled_ts, name, flag));
+                            arrayList.add(new sellerPurchaseClass(commodity, rate, roc, cancelled_ts, name, flag, pid));
                         }
 
                     }
@@ -162,10 +179,20 @@ public class executive_allpurchases extends Fragment {
                     sellerPurchasesAdapter adapter = new sellerPurchasesAdapter(getActivity(), finalList);
                     recyclerView.setAdapter(adapter);
 
+
+                    if(finalList.size() == 0){
+                        layout.setVisibility(View.VISIBLE);
+                        textView.setText("No Purchase For This Executive.");
+                    }
+
+
                     lc.dismissDialog();
                 } catch (JSONException e) {
                     lc.dismissDialog();
                     Log.e("respo", e+"");
+                    layout.setVisibility(View.VISIBLE);
+                    textView.setText("No Purchase For This Executive.");
+
                 }
 
             }
@@ -188,11 +215,11 @@ public class executive_allpurchases extends Fragment {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> map = new HashMap<>();
-                map.put("id", exec_id);
+                map.put("eid", exec_id);
                 return map;
             }
         };
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
 
     }
 

@@ -3,8 +3,7 @@
     android:layout_width="match_parent"
     android:background="#ffffff"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context="com.abc.xendorp1.fragments.add_zonal_manager">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <ProgressBar
         android:id="@+id/progressbar"
         android:visibility="gone"
@@ -13,11 +12,21 @@
         android:layout_height="wrap_content" />
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar1"
-        android:background="@color/colorPrimary"
+        android:background="@drawable/button_background"
         app:titleTextColor="#ffffff"
+        android:layout_margin="@dimen/toolBarMargin"
         android:layout_alignParentTop="true"
         android:layout_width="match_parent"
         android:layout_height="50dp">
+
+        <TextView
+            android:textColor="@color/lightGreen"
+            android:textSize="@dimen/toolBarTextDimen"
+            android:gravity="center|start"
+            android:text="Add Zonal Manager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
     </android.support.v7.widget.Toolbar>
     <ScrollView
         android:isScrollContainer="false"
@@ -203,35 +212,41 @@
     </RelativeLayout>
     </ScrollView>
     <LinearLayout
+        android:layout_margin="3dp"
         android:id="@+id/buttons"
         android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
         android:weightSum="2"
+        android:background="@drawable/background_larger_radius"
         android:layout_height="50dp">
         <RelativeLayout
             android:id="@+id/cancel"
             android:layout_width="match_parent"
             android:layout_weight="1"
-            android:layout_height="50dp"
-            android:background="@color/gray">
+            android:layout_height="50dp">
             <TextView
                 android:layout_centerInParent="true"
-                android:textSize="20dp"
-                android:textColor="#ffffff"
+                android:textSize="18sp"
+                android:textColor="@android:color/holo_red_dark"
                 android:layout_width="wrap_content"
                 android:text="Cancel"
                 android:layout_height="wrap_content" />
         </RelativeLayout>
+
+        <View
+            android:layout_gravity="center"
+            android:background="@color/gray"
+            android:layout_width="1dp"
+            android:layout_height="45dp"/>
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_weight="1"
             android:id="@+id/submit"
-            android:background="@color/green"
             android:layout_height="50dp">
             <TextView
                 android:layout_centerInParent="true"
-                android:textSize="20dp"
-                android:textColor="#ffffff"
+                android:textSize="18sp"
+                android:textColor="@color/darkGreen"
                 android:layout_width="wrap_content"
                 android:text="Submit"
                 android:layout_height="wrap_content" />

@@ -56,6 +56,7 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,6 +66,7 @@ import mayank.example.zendor.ApplicationQueue;
 import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
+import mayank.example.zendor.addBuyerCommodity;
 import mayank.example.zendor.commoditiesActivity;
 import mayank.example.zendor.landingPageFragment.booked;
 import mayank.example.zendor.sellerExtraData;
@@ -77,6 +79,7 @@ import static android.app.Activity.RESULT_OK;
 import static android.content.ContentValues.TAG;
 import static android.content.Context.MODE_PRIVATE;
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.addBuyerCommodity.addComm;
 import static xendorp1.fragments.add_executive.addInCb;
 
 /**
@@ -90,7 +93,6 @@ public class add_buyer extends Fragment {
     private Button choose;
     private LinearLayout commodities;
     private Toolbar toolbar;
-    private ProgressBar progressBar;
     private EditText company;
     private Boolean photoChanged;
     private RelativeLayout cancel;
@@ -105,6 +107,7 @@ public class add_buyer extends Fragment {
     private LoadingClass lc;
     private ArrayList<String> commList;
     private String imgPath;
+    public static TextView ADDCOMM;
 
     public add_buyer() {
         // Required empty public constructor
@@ -118,6 +121,7 @@ public class add_buyer extends Fragment {
         rootview = inflater.inflate(R.layout.fragment_add_buyer, container, false);
         zonecont = rootview.findViewById(R.id.zonecont);
         zone = rootview.findViewById(R.id.zone_values);
+        ADDCOMM = rootview.findViewById(R.id.addComm);
         sharedPreferences = getActivity().getSharedPreferences("details", MODE_PRIVATE);
         pos = sharedPreferences.getString("position", "");
         if (pos.equals("0")) {
@@ -129,7 +133,6 @@ public class add_buyer extends Fragment {
         addnum = rootview.findViewById(R.id.add_num);
         profilepic = rootview.findViewById(R.id.profilepic);
         toolbar = rootview.findViewById(R.id.toolbar1);
-        progressBar = rootview.findViewById(R.id.progressbar);
         cancel = rootview.findViewById(R.id.cancel);
         submit = rootview.findViewById(R.id.submit);
         address = rootview.findViewById(R.id.address_value);
@@ -144,7 +147,13 @@ public class add_buyer extends Fragment {
         commList = new ArrayList<>();
         getCommodity();
 
-        toolbar.setTitle("Add a Buyer");
+        ADDCOMM.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateLayout(addComm);
+            }
+        });
+
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -173,51 +182,16 @@ public class add_buyer extends Fragment {
                 });
             }
         });
+
+
         choose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                ScrollView scrollView = new ScrollView(getActivity());
-                final LinearLayout ll = new LinearLayout(getActivity());
-                ll.setOrientation(LinearLayout.VERTICAL);
-                for (int i = 0; i < commList.size(); i++) {
-                    View v = LayoutInflater.from(getActivity()).inflate(R.layout.cb_layout, ll, false);
-                    CheckBox cb = v.findViewById(R.id.cb);
-                    cb.setText(commList.get(i));
-                    ll.addView(v);
-                }
-
-                scrollView.addView(ll);
-                final AlertDialog dialog = new AlertDialog.Builder(getActivity())
-                        .setView(scrollView)
-                        .create();
-
-                dialog.setButton(AlertDialog.BUTTON_POSITIVE, "select", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int k) {
-                        commodities.removeAllViews();
-                        for (int i = 0; i < ll.getChildCount(); i++) {
-                            CheckBox cb = (CheckBox) ll.getChildAt(i);
-                            if (cb.isChecked()) {
-                                final View view1 = inflater.inflate(R.layout.commodity_add, null);
-                                commodities.addView(view1);
-                                TextView tv1 = view1.findViewById(R.id.comname);
-                                tv1.setText(cb.getText());
-                                ImageView remove = view1.findViewById(R.id.remove);
-                                remove.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View view) {
-                                        commodities.removeView(view1);
-                                    }
-                                });
-                            }
-                        }
-                    }
-                });
-                dialog.show();
-
+                startActivity(new Intent(getActivity(), addBuyerCommodity.class));
             }
         });
+
+
         profilepic.setScaleType(ImageView.ScaleType.CENTER);
         profilepic.setImageDrawable(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_add_a_photo_black_24dp));
         photoChanged = false;
@@ -260,6 +234,7 @@ public class add_buyer extends Fragment {
                 } else if (primary_phone.getText().length() != 10) {
                     Toast.makeText(getActivity(), "Please enter a valid phone number", Toast.LENGTH_SHORT).show();
                 } else {
+                    lc.showDialog();
                     final String nameval = name.getText().toString();
                     final String primarymob = primary_phone.getText().toString();
                     final String addressval = address.getText().toString();
@@ -273,21 +248,12 @@ public class add_buyer extends Fragment {
                         if (numedit.getText().length() == 10) {
                             other_nos = other_nos + numedit.getText().toString() + ",";
                         } else {
+                            lc.dismissDialog();
                             Toast.makeText(getActivity(), "Please enter a valid phone number", Toast.LENGTH_SHORT).show();
                             return;
                         }
                     }
                     final String finalOther_nos = other_nos;
-                    progressBar.setVisibility(View.VISIBLE);
-                    String commodities_val = "";
-                    for (int i = 0; i < commodities.getChildCount(); i++) {
-                        View child_view = commodities.getChildAt(i);
-                        TextView textview = child_view.findViewById(R.id.comname);
-                        if (textview.getText().length() != 0) {
-                            commodities_val = commodities_val + textview.getText().toString() + ",";
-                        }
-                    }
-                    final String finalCommodities_val = commodities_val;
 
                     if (photoChanged) {
                         lc.showDialog();
@@ -300,7 +266,7 @@ public class add_buyer extends Fragment {
                                     .addFileToUpload(imgPath, "image")
                                     .addParameter("name", path)
                                     .setNotificationConfig(new UploadNotificationConfig())
-                                    .setMaxRetries(2)
+                                    .setMaxRetries(10)
                                     .setDelegate(new UploadStatusDelegate() {
                                         @Override
                                         public void onProgress(Context context, UploadInfo uploadInfo) {
@@ -310,16 +276,24 @@ public class add_buyer extends Fragment {
                                         @Override
                                         public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception exception) {
 
+                                            lc.dismissDialog();
+                                            Toast.makeText(getActivity(), "Error Occured.Please Retry.", Toast.LENGTH_SHORT).show();
+                                             /*   if (exception instanceof TimeoutError) {
+                                                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                                                } else
+                                                    showError(exception, add_buyer.class.getName(), getActivity());*/
                                         }
 
                                         @Override
                                         public void onCompleted(Context context, UploadInfo uploadInfo, ServerResponse serverResponse) {
 
+                                            Log.e("serverResps", serverResponse.getBodyAsString());
+
                                             StringRequest strReq = new StringRequest(Request.Method.POST,
                                                     AppConfig.URL_ADD_BUYER, new Response.Listener<String>() {
                                                 @Override
                                                 public void onResponse(String response) {
-                                                    Log.d(TAG, "Register Response: " + response.toString());
+                                                    Log.e(TAG, "Register Response: " + response.toString());
                                                     try {
                                                         addBuyerCb();
                                                         JSONObject jobj = new JSONObject(response);
@@ -330,10 +304,8 @@ public class add_buyer extends Fragment {
                                                             Toast.makeText(getActivity(), "Successfully added buyer", Toast.LENGTH_SHORT).show();
                                                             getActivity().getSupportFragmentManager().popBackStackImmediate();
                                                         }
-                                                        progressBar.setVisibility(View.GONE);
                                                     } catch (Exception e) {
                                                         Toast.makeText(getActivity(), "Some network error occured. Please try again", Toast.LENGTH_SHORT).show();
-                                                        progressBar.setVisibility(View.GONE);
                                                         e.printStackTrace();
                                                     }
                                                     buyers.click.performClick();
@@ -345,7 +317,6 @@ public class add_buyer extends Fragment {
                                                 public void onErrorResponse(VolleyError error) {
                                                     Log.e(TAG, "" + error.getMessage());
                                                     Toast.makeText(getActivity(), "Some network error occured. Please try again", Toast.LENGTH_SHORT).show();
-                                                    progressBar.setVisibility(View.GONE);
                                                     lc.dismissDialog();
 
                                                     if (error instanceof TimeoutError) {
@@ -364,7 +335,7 @@ public class add_buyer extends Fragment {
                                                     params.put("name", nameval);
                                                     params.put("mob", primarymob);
                                                     params.put("address", addressval);
-                                                    params.put("commodities", finalCommodities_val.substring(0, finalCommodities_val.length() - 1));
+                                                    params.put("commodities", addComm);
                                                     params.put("capacity", capacityval);
                                                     if (gstval.length() != 0)
                                                         params.put("gstin", gstval);
@@ -397,7 +368,7 @@ public class add_buyer extends Fragment {
 
                                         @Override
                                         public void onCancelled(Context context, UploadInfo uploadInfo) {
-
+                                            lc.dismissDialog();
                                         }
                                     })
                                     .startUpload();
@@ -421,13 +392,12 @@ public class add_buyer extends Fragment {
                                         Toast.makeText(getActivity(), "Successfully added buyer", Toast.LENGTH_SHORT).show();
                                         getActivity().getSupportFragmentManager().popBackStackImmediate();
                                     }
-                                    progressBar.setVisibility(View.GONE);
                                 } catch (Exception e) {
                                     Toast.makeText(getActivity(), "Some network error occured. Please try again", Toast.LENGTH_SHORT).show();
-                                    progressBar.setVisibility(View.GONE);
                                     e.printStackTrace();
                                 }
 
+                                lc.dismissDialog();
                                 buyers.click.performClick();
 
                             }
@@ -437,8 +407,8 @@ public class add_buyer extends Fragment {
                             public void onErrorResponse(VolleyError error) {
                                 Log.e(TAG, "" + error.getMessage());
                                 Toast.makeText(getActivity(), "Some network error occured. Please try again", Toast.LENGTH_SHORT).show();
-                                progressBar.setVisibility(View.GONE);
 
+                                lc.dismissDialog();
 
                                 if (error instanceof TimeoutError) {
                                     Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
@@ -456,7 +426,7 @@ public class add_buyer extends Fragment {
                                 params.put("name", nameval);
                                 params.put("mob", primarymob);
                                 params.put("address", addressval);
-                                params.put("commodities", finalCommodities_val.substring(0, finalCommodities_val.length() - 1));
+                                params.put("commodities", addComm);
                                 params.put("capacity", capacityval);
                                 if (gstval.length() != 0)
                                     params.put("gstin", gstval);
@@ -489,6 +459,26 @@ public class add_buyer extends Fragment {
         return rootview;
     }
 
+    private void updateLayout(String comm) {
+        commodities.removeAllViews();
+        String COMM[] = comm.split(",");
+        for (int i = 0; i < COMM.length; i++) {
+            TextView textView = new TextView(getActivity());
+            textView.setPadding(10, 10, 10, 10);
+            textView.setTextSize(18);
+            textView.setTag(COMM[i]);
+            textView.setBackgroundResource(R.drawable.border);
+            textView.setGravity(Gravity.CENTER);
+            LinearLayout.LayoutParams params = (new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            params.setMargins(0, 5, 0, 5);
+            textView.setLayoutParams(params);
+            textView.setText(COMM[i]);
+            commodities.addView(textView);
+        }
+    }
+
+
+
     private void openImageIntent() {
         Intent intent = CropImage.activity().setGuidelines(CropImageView.Guidelines.ON).setCropShape(CropImageView.CropShape.RECTANGLE)
                 .setAspectRatio(120, 120)
@@ -504,10 +494,15 @@ public class add_buyer extends Fragment {
                 CropImage.ActivityResult result = CropImage.getActivityResult(data);
                 if (resultCode == RESULT_OK) {
                     Uri resultUri = result.getUri();
-                    imgPath = resultUri.getPath();
                     try {
                         Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), resultUri);
-                        File file = new File(resultUri.getPath());
+                        String filename = System.currentTimeMillis()+".jpg";
+                        File file = new File(getActivity().getFilesDir(), filename);
+
+                        FileOutputStream out = new FileOutputStream(file);
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 15, out);
+
+                        imgPath = file.getPath();
                         profilepic.setScaleType(ImageView.ScaleType.FIT_XY);
                         profilepic.setImageBitmap(bitmap);
                         photoChanged = true;
@@ -638,7 +633,7 @@ public class add_buyer extends Fragment {
             }
         });
 
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
     private void addBuyerCb(){
@@ -653,7 +648,7 @@ public class add_buyer extends Fragment {
 
             }
         });
-        ApplicationQueue.getInstance(getActivity()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 

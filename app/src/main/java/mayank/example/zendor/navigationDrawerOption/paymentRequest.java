@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -43,22 +44,22 @@ import mayank.example.zendor.onClickSeller.OnClickSellerCard;
 import mayank.example.zendor.onClickSeller.sellerDetails;
 import mayank.example.zendor.onClickSeller.sellerLedger;
 import mayank.example.zendor.onClickSeller.sellerPurchases;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
 
 public class paymentRequest extends AppCompatActivity {
 
 
-    TabLayout header;
+    public static TabLayout header;
     ViewPager paymentRequestViewpager;
     public static TextView check;
     private static ArrayList<requestClass> requestList;
     private static ArrayList<requestClass> approvedList;
     private static ArrayList<requestClass> rejectedList;
     LoadingClass lc;
-    private ImageView back;
     private SharedPreferences sharedPreferences;
-
+    private Toolbar toolbar;
 
 
     @Override
@@ -70,14 +71,17 @@ public class paymentRequest extends AppCompatActivity {
         header = findViewById(R.id.header);
         check = findViewById(R.id.click);
         lc = new LoadingClass(this);
-        back = findViewById(R.id.back);
+        toolbar = findViewById(R.id.toolbar);
 
-        back.setOnClickListener(new View.OnClickListener() {
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
+
 
         check.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,7 +100,6 @@ public class paymentRequest extends AppCompatActivity {
         header.setupWithViewPager(paymentRequestViewpager);
 
 
-        createpager();
         getRequests(this);
     }
 
@@ -178,7 +181,6 @@ public class paymentRequest extends AppCompatActivity {
                             case "j":
                                 rejectedList.add(new requestClass(pid, rejectedBy, rejectedAt, flag, remark, raj));
                                 break;
-
                         }
                     }
 
@@ -199,7 +201,7 @@ public class paymentRequest extends AppCompatActivity {
                     Toast.makeText(paymentRequest.this, "Time out. Reload.", Toast.LENGTH_SHORT).show();
                 } else
                     showError(error, paymentRequest.this.getClass().getName(), paymentRequest.this);
-
+                lc.dismissDialog();
 
             }
         }){
@@ -217,7 +219,7 @@ public class paymentRequest extends AppCompatActivity {
                 return params;
             }
         };
-        ApplicationQueue.getInstance(context.getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 

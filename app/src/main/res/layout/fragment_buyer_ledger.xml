@@ -16,7 +16,7 @@
         android:id="@+id/sellerNameAndZone"
         android:layout_marginTop="10dp"
         android:gravity="center"
-        android:textSize="16sp"
+        android:textSize="12sp"
         android:text="SellerName - Zone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
@@ -39,11 +39,12 @@
 
 
             <TextView
-                android:textColor="#000"
-                android:gravity="center"
-                android:text="CURRENT BALANCE"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Current Balance"
+                android:textColor="#000"
+                android:textSize="18dp" />
 
             <LinearLayout
                 android:layout_marginTop="5dp"
@@ -53,18 +54,20 @@
                 android:layout_height="wrap_content">
 
                 <ImageView
+                    android:visibility="gone"
                     android:src="@drawable/ic_rupee_indian"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent" />
 
                 <TextView
                     android:id="@+id/cb"
-                    android:textColor="#000"
-                    android:textSize="16sp"
-                    android:gravity="center"
-                    android:text="0"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="\u20B92000"
+                    android:textColor="#000"
+                    android:textSize="30sp" /> />
             </LinearLayout>
 
         </LinearLayout>

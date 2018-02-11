@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,6 +16,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -47,8 +50,12 @@ import mayank.example.zendor.URLclass;
 import mayank.example.zendor.apiConnect;
 import mayank.example.zendor.commoditiesActivity;
 import mayank.example.zendor.sellerDetailActivity;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.MainActivity.showToast;
+import static mayank.example.zendor.MainActivity.tabLayout;
+import static mayank.example.zendor.MainActivity.toast;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -68,6 +75,9 @@ public class sellers extends Fragment implements View.OnClickListener{
     private SwipeRefreshLayout swipeRefreshLayout;
     public static sellerAdapter adapter;
     private LoadingClass lc;
+    private LinearLayout layout;
+    private TextView textView;
+
 
     public sellers() {
 
@@ -86,6 +96,10 @@ public class sellers extends Fragment implements View.OnClickListener{
         sharedPreferences = getActivity().getSharedPreferences("details", Context.MODE_PRIVATE);
 
         llm = new LinearLayoutManager(getActivity());
+
+        layout = view.findViewById(R.id.noDataLayout);
+        textView = view.findViewById(R.id.text);
+
 
         recyclerView.setLayoutManager(llm);
         recyclerView.setHasFixedSize(true);
@@ -108,6 +122,7 @@ public class sellers extends Fragment implements View.OnClickListener{
         fab.setOnClickListener(this);
         getSellersData();
 
+
         return view;
     }
     private void getSellersData(){
@@ -115,6 +130,8 @@ public class sellers extends Fragment implements View.OnClickListener{
             @Override
             public void onResponse(String response) {
                 Log.e("seller res", response);
+                layout.setVisibility(View.GONE);
+
                 try {
                     arrayList.clear();
                     JSONObject json = new JSONObject(response);
@@ -139,6 +156,13 @@ public class sellers extends Fragment implements View.OnClickListener{
                 }
 
                 lc.dismissDialog();
+
+
+
+                if(arrayList.size() == 0){
+                    layout.setVisibility(View.VISIBLE);
+                    textView.setText("No Sellers Available.");
+                }
 
 
                 adapter = new sellerAdapter(getActivity(), arrayList);
@@ -171,9 +195,14 @@ public class sellers extends Fragment implements View.OnClickListener{
                 map.put("zid",zoneid);
                 return map;
             }
+
+            @Override
+            public Priority getPriority() {
+                return Priority.HIGH;
+            }
         };
 
-        ApplicationQueue.getInstance(getActivity()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 

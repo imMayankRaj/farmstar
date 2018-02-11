@@ -1,10 +1,33 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:padding="3dp"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:background="@drawable/button_background"
+        app:titleTextColor="#ffffff"
+        android:layout_margin="@dimen/toolBarMargin"
+
+        android:layout_alignParentTop="true"
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+
+        <TextView
+            android:textColor="@color/lightGreen"
+            android:textSize="@dimen/toolBarTextDimen"
+            android:gravity="center|start"
+            android:text="Picked"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </android.support.v7.widget.Toolbar>
+
     <android.support.v7.widget.CardView
+        android:layout_below="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -33,7 +56,7 @@
                     <TextView
                         android:textStyle="bold"
                         android:id="@+id/sellerNameAndZone"
-                        android:textColor="#ff8a80"
+                        android:textColor="@color/darkGreen"
                         android:textSize="18sp"
                         android:gravity="start"
                         android:text="Seller Name - Zone"
@@ -43,7 +66,7 @@
                     <TextView
                         android:textStyle="bold"
                         android:id="@+id/sellerId"
-                        android:textColor="#ff8a80"
+                        android:textColor="@color/darkGreen"
                         android:textSize="18sp"
                         android:gravity="start"
                         android:text="Seller Id"
@@ -59,7 +82,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent">
                     <TextView
-                        android:background="@drawable/rounded_edge"
+                        android:background="@drawable/background_larger_radius"
                         android:text="CALL"
                         android:textSize="16sp"
                         android:textColor="#000"
@@ -422,13 +445,12 @@
     </android.support.v7.widget.CardView>
 
 
-    <android.support.v7.widget.CardView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="5sp"
-        android:layout_alignParentBottom="true"
-        app:cardCornerRadius="5sp"
-        app:cardElevation="5sp">
+        android:layout_margin="3dp"
+        android:background="@drawable/background_larger_radius"
+        android:layout_alignParentBottom="true">
 
         <LinearLayout
             android:orientation="horizontal"
@@ -458,7 +480,7 @@
                 android:gravity="center"
                 android:text="Collect"
                 android:textStyle="bold"
-                android:textColor="#000"
+                android:textColor="@color/darkGreen"
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="match_parent" />
@@ -467,5 +489,5 @@
 
 
 
-    </android.support.v7.widget.CardView>
+    </LinearLayout>
 </RelativeLayout>

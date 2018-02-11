@@ -7,9 +7,18 @@ package xendorp1.cards;
 public class buyer_card {
     String name,buyer_id;
     private String number;
+    private String cb;
     public buyer_card()
     {
 
+    }
+
+    public void setCb(String cb) {
+        this.cb = cb;
+    }
+
+    public String getCb() {
+        return cb;
     }
 
     public void setNumber(String number) {

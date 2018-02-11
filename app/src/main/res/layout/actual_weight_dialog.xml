@@ -10,6 +10,7 @@
     app:cardUseCompatPadding="false">
 
     <LinearLayout
+        android:background="@drawable/green_background"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -78,7 +79,7 @@
                 android:gravity="center"
                 android:text="Submit"
                 android:textStyle="bold"
-                android:textColor="#000"
+                android:textColor="@color/darkGreen"
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="match_parent" />

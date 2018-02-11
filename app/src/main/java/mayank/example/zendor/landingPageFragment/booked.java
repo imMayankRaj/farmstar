@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
@@ -14,7 +16,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -38,9 +43,14 @@ import mayank.example.zendor.ApplicationQueue;
 import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.MainActivity;
 import mayank.example.zendor.R;
+import mayank.example.zendor.ShowToast;
 import mayank.example.zendor.URLclass;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.MainActivity.showToast;
+import static mayank.example.zendor.MainActivity.tabLayout;
+import static mayank.example.zendor.MainActivity.toast;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -54,6 +64,8 @@ public class booked extends Fragment {
     private LinearLayoutManager llm;
     private LoadingClass lc;
     private SwipeRefreshLayout swipe;
+    private LinearLayout layout;
+    private TextView textView;
 
     public booked() {
 
@@ -68,6 +80,11 @@ public class booked extends Fragment {
         sharedPreferences = getActivity().getSharedPreferences("details", Context.MODE_PRIVATE);
         bookedRecyclerView = view.findViewById(R.id.bookedrecyclerView);
         swipe = view.findViewById(R.id.swipe);
+
+
+        layout = view.findViewById(R.id.noDataLayout);
+        textView = view.findViewById(R.id.text);
+
 
         lc = new LoadingClass(getActivity());
         llm = new LinearLayoutManager(getActivity());
@@ -87,10 +104,13 @@ public class booked extends Fragment {
 
         getPurchaseData();
 
+
         return view;
     }
 
     public void getPurchaseData(){
+        layout.setVisibility(View.GONE);
+
         lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.BOOKED_DATA, new Response.Listener<String>() {
             @Override
@@ -118,10 +138,19 @@ public class booked extends Fragment {
                    lc.dismissDialog();
                 }
 
+
+
                 bookedAdapter adapter = new bookedAdapter(getActivity(), bookedList);
                 bookedRecyclerView.setAdapter(adapter);
 
                 MainActivity.tabLayout.getTabAt(1).setText("BOOKED"+"("+bookedList.size()+")");
+
+
+                if(bookedList.size() == 0){
+                    layout.setVisibility(View.VISIBLE);
+                    textView.setText("No Booked Data Available.");
+                }
+
 
                 lc.dismissDialog();
                 swipe.setRefreshing(false);
@@ -152,7 +181,11 @@ public class booked extends Fragment {
                 map.put("flag","bk");
                 return map;
             }
+            @Override
+            public Priority getPriority() {
+                return Priority.NORMAL;
+            }
         };
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 }

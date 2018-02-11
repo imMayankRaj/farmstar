@@ -13,6 +13,9 @@
         android:layout_height="match_parent">
 
         <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_margin="@dimen/toolBarMargin"
+            android:background="@drawable/button_background"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -21,19 +24,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <ImageView
-                    android:id="@+id/back"
-                    android:src="@drawable/ic_arrow_back_black_24dp1"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent" />
-
             <TextView
                 android:layout_marginStart="10dp"
                 android:id="@+id/commodity"
                 android:text="Wheat"
-                android:textSize="18sp"
-                android:textColor="#000"
+                android:textSize="@dimen/toolBarTextDimen"
+                android:textColor="@color/lightGreen"
                 android:layout_weight="8"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content" />

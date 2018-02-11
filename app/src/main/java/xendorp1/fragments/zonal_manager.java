@@ -46,7 +46,7 @@ public class zonal_manager extends Fragment {
     private Toolbar toolbar;
     private view_pager_adapter_zonal_manager view_pager_adapter_zonal_manager;
     private RelativeLayout disable,add_executive;
-    private TabLayout pagerSlidingTabStrip;
+    public static TabLayout pagerSlidingTabStrip;
     private ViewPager viewPager;
     private String id;
     private LinearLayout linearLayout;
@@ -69,7 +69,6 @@ public class zonal_manager extends Fragment {
         }
 
         toolbar=rootview.findViewById(R.id.toolbar1);
-        toolbar.setTitle("Zonal Manager");
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -151,6 +150,7 @@ public class zonal_manager extends Fragment {
             }
         });
         add_executive=rootview.findViewById(R.id.add_executive);
+
         add_executive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -163,6 +163,7 @@ public class zonal_manager extends Fragment {
                 transaction.commit();
             }
         });
+
         pagerSlidingTabStrip=rootview.findViewById(R.id.pagerSlidingTabStrip);
         viewPager=rootview.findViewById(R.id.view_pager);
         viewPager.setOffscreenPageLimit(3);

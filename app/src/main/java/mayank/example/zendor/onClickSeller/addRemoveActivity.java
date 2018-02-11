@@ -37,6 +37,7 @@ import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
 import mayank.example.zendor.onClickPicked.onClickPickedCard;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
 
@@ -148,7 +149,7 @@ public class addRemoveActivity extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-
+                lc.dismissDialog();
                 if (error instanceof TimeoutError) {
                     Toast.makeText(addRemoveActivity.this, "Time out. Reload.", Toast.LENGTH_SHORT).show();
                 } else
@@ -159,7 +160,7 @@ public class addRemoveActivity extends AppCompatActivity {
             }
         });
 
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
     public class commodity {
@@ -303,6 +304,8 @@ public class addRemoveActivity extends AppCompatActivity {
             @Override
             public void onErrorResponse(VolleyError error) {
 
+                lc.dismissDialog();
+
                 if (error instanceof TimeoutError) {
                     Toast.makeText(addRemoveActivity.this, "Time out. Reload.", Toast.LENGTH_SHORT).show();
                 } else
@@ -318,7 +321,7 @@ public class addRemoveActivity extends AppCompatActivity {
                 return params;
             }
         };
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
     private void checkCommodities(String[] seller_comm) {
@@ -388,7 +391,7 @@ public class addRemoveActivity extends AppCompatActivity {
             }
         };
 
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 }

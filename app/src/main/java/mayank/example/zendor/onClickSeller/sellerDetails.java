@@ -8,11 +8,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -23,9 +26,11 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -66,6 +71,7 @@ import mayank.example.zendor.onClickBooked.onClickBookedCard;
 import mayank.example.zendor.onClickPicked.onClickPickedCard;
 import mayank.example.zendor.showErrorDialogs;
 import xendorp1.application_classes.AppConfig;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
 
@@ -77,6 +83,7 @@ public class sellerDetails extends Fragment {
     private Intent intent;
     private String com, num[];
     private LoadingClass lc;
+    private String zid;
 
     public sellerDetails() {
 
@@ -110,6 +117,8 @@ public class sellerDetails extends Fragment {
     private String geoLocation;
     private ImageView chequeImage;
     private ProgressBar pbar;
+    private RelativeLayout otherPic;
+    private View parentLayout;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -139,6 +148,8 @@ public class sellerDetails extends Fragment {
         locateSeller = view.findViewById(R.id.locateSeller);
         chequeImage = view.findViewById(R.id.chequeImage);
         pbar = view.findViewById(R.id.pbar);
+        parentLayout = view.findViewById(R.id.parent);
+        otherPic = view.findViewById(R.id.otherPic);
 
         locateSeller.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -179,7 +190,6 @@ public class sellerDetails extends Fragment {
         getSellerDetails();
 
 
-
         click.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -215,16 +225,18 @@ public class sellerDetails extends Fragment {
                     @Override
                     public void onResponse(String response) {
                         try {
+                            Log.e("asdasd", response);
                             JSONObject json = new JSONObject(response);
                             JSONObject parseJson = json.getJSONObject("values");
 
                             sellerName.setText(parseJson.getString("name"));
                             address.setText(parseJson.getString("address"));
-                            bankDetails.setText(parseJson.getString("account") + ", " + parseJson.getString("ifsc"));
+                            bankDetails.setText(parseJson.getString("an") + "\n" + parseJson.getString("account") + "\n" + parseJson.getString("ifsc"));
                             registeredBy.setText(parseJson.getString("addby"));
                             String COMM = parseJson.getString("commodities");
                             gpsaddress.setText(parseJson.getString("gpsAddress"));
                             com = parseJson.getString("commodities");
+                            zid = parseJson.getString("zid");
 
                             String othermob = parseJson.getString("othermob");
                             num = othermob.split(",");
@@ -232,6 +244,18 @@ public class sellerDetails extends Fragment {
                             String picpath = parseJson.getString("path");
 
                             updateLayout(COMM);
+
+                            if (bankDetails.getText().length() == 2) {
+                                bankDetails.setTypeface(null, Typeface.BOLD);
+                                bankDetails.setText("\b\bBank Details Not Available.");
+                            }
+
+                            otherPic.setVisibility(View.VISIBLE);
+
+                            if(picpath.equals("")){
+                                otherPic.setVisibility(View.GONE);
+                            }
+
 
                             Glide.with(getActivity()).load(URLclass.CHEQUE_PIC_PATH + picpath)
                                     .listener(new RequestListener<Drawable>() {
@@ -276,7 +300,7 @@ public class sellerDetails extends Fragment {
                 return parameters;
             }
         };
-        ApplicationQueue.getInstance(getActivity()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
 
     }
 
@@ -286,6 +310,8 @@ public class sellerDetails extends Fragment {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setCancelable(false);
         dialog.setContentView(R.layout.on_purchase_dialog);
+        if (dialog.getWindow() != null)
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
         final EditText est_weight = dialog.findViewById(R.id.estWeight);
         final EditText rate = dialog.findViewById(R.id.rate);
         final Spinner spinner = dialog.findViewById(R.id.commodity);
@@ -375,6 +401,8 @@ public class sellerDetails extends Fragment {
             protected Map<String, String> getParams() throws AuthFailureError {
                 String id = sharedPreferences.getString("id", "");
                 String zoneid = sharedPreferences.getString("zid", "");
+                String pos =  sharedPreferences.getString("position", "");
+
 
                 SimpleDateFormat dateTimeInGMT = new SimpleDateFormat("yyyy-MMM-dd hh:mm:ss aa", Locale.ENGLISH);
                 dateTimeInGMT.setTimeZone(TimeZone.getTimeZone("GMT+05:30"));
@@ -382,7 +410,7 @@ public class sellerDetails extends Fragment {
                 Map<String, String> parameters = new HashMap<>();
                 parameters.put("seller_id", sid.substring(11));
                 parameters.put("booker_id", id);
-                parameters.put("zid", zoneid);
+                parameters.put("zid", zid);
                 parameters.put("flag", "bk");
                 parameters.put("com_code", commodity);
                 parameters.put("rate", rt);
@@ -391,7 +419,7 @@ public class sellerDetails extends Fragment {
                 return parameters;
             }
         };
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
     private void callDialog(final String a[]) {

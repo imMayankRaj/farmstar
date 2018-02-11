@@ -2,6 +2,7 @@ package xendorp1.fragments;
 
 
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,6 +11,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -35,6 +38,8 @@ import xendorp1.cards.zonal_manager_card;
 
 import static android.content.ContentValues.TAG;
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.MainActivity.showToast;
+import static xendorp1.fragments.zonal_manager.pagerSlidingTabStrip;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -45,6 +50,10 @@ public class executive_zonal_manager extends Fragment implements SwipeRefreshLay
     private SwipeRefreshLayout swipeRefreshLayout;
     private executive_recycler_adapter executive_recycler_adapter;
     private String id;
+    private List<zonal_manager_card> zonal_manager_cardList;
+    private LinearLayout layout;
+    private TextView textView;
+
 
     public executive_zonal_manager() {
         // Required empty public constructor
@@ -68,11 +77,22 @@ public class executive_zonal_manager extends Fragment implements SwipeRefreshLay
         recyclerView.setLayoutManager(llm);
         swipeRefreshLayout=rootview.findViewById(R.id.swiperefresh);
         swipeRefreshLayout.setOnRefreshListener(this);
+
+        zonal_manager_cardList = new ArrayList<>();
+
+        layout = rootview.findViewById(R.id.noDataLayout);
+        textView = rootview.findViewById(R.id.text);
+
+
+
         getExecutives();
         return rootview;
     }
     void getExecutives()
     {
+        layout.setVisibility(View.GONE);
+
+        zonal_manager_cardList.clear();
         swipeRefreshLayout.setRefreshing(true);
         StringRequest strReq = new StringRequest(Request.Method.POST,
                 AppConfig.URL_GET_EXECUTIVES, new Response.Listener<String>() {
@@ -80,7 +100,6 @@ public class executive_zonal_manager extends Fragment implements SwipeRefreshLay
             public void onResponse(String response) {
                 Log.d(TAG, "Register Response: " + response.toString());
                 try {
-                    List<zonal_manager_card> zonal_manager_cardList=new ArrayList<>();
                     JSONArray jsonArray = new JSONArray(response);
                     for (int i=0;i<jsonArray.length();i++) {
                         JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -104,6 +123,9 @@ public class executive_zonal_manager extends Fragment implements SwipeRefreshLay
                     swipeRefreshLayout.setRefreshing(false);
                     recyclerView.setAdapter(null);
                     e.printStackTrace();
+                    layout.setVisibility(View.VISIBLE);
+                    textView.setText("No Executives .");
+
                 }
             }
         }, new Response.ErrorListener() {

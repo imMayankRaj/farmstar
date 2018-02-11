@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
@@ -14,6 +15,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -38,8 +41,12 @@ import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.MainActivity;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.MainActivity.showToast;
+import static mayank.example.zendor.MainActivity.tabLayout;
+import static mayank.example.zendor.MainActivity.toast;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -52,6 +59,9 @@ public class picked extends Fragment {
     private LinearLayoutManager llm;
     private LoadingClass lc;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private LinearLayout layout;
+    private TextView textView;
+
 
 
     public picked() {
@@ -71,6 +81,10 @@ public class picked extends Fragment {
         lc = new LoadingClass(getActivity());
         llm = new LinearLayoutManager(getActivity());
 
+        layout = view.findViewById(R.id.noDataLayout);
+        textView = view.findViewById(R.id.text);
+
+
         pickedRecyclerView.setLayoutManager(llm);
         pickedRecyclerView.setHasFixedSize(true);
 
@@ -85,6 +99,8 @@ public class picked extends Fragment {
             }
         });
 
+
+
         getPickedData();
 
         return view;
@@ -92,6 +108,8 @@ public class picked extends Fragment {
 
     public void getPickedData(){
         lc.showDialog();
+        layout.setVisibility(View.GONE);
+
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.PICKED_DATA, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -119,6 +137,14 @@ public class picked extends Fragment {
                     lc.dismissDialog();
 
                 }
+
+                if(pickedList.size() == 0){
+                    layout.setVisibility(View.VISIBLE);
+                    textView.setText("No Picked Data Available.");
+                }
+
+
+
 
                 pickedAdapter adapter = new pickedAdapter(getActivity(), pickedList);
                 pickedRecyclerView.setAdapter(adapter);
@@ -153,7 +179,11 @@ public class picked extends Fragment {
                 map.put("flag","pk");
                 return map;
             }
+            @Override
+            public Priority getPriority() {
+                return Priority.LOW;
+            }
         };
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 }

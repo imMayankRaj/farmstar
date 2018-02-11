@@ -10,12 +10,51 @@
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar1"
-        android:background="@color/colorPrimary"
+        android:background="@drawable/button_background"
+        android:layout_margin="@dimen/toolBarMargin"
         app:titleTextColor="#ffffff"
         android:layout_alignParentTop="true"
         android:layout_width="match_parent"
         android:layout_height="50dp">
+
+        <TextView
+            android:textColor="@color/lightGreen"
+            android:textSize="@dimen/toolBarTextDimen"
+            android:gravity="center|start"
+            android:text="Executives"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
     </android.support.v7.widget.Toolbar>
+
+
+    <LinearLayout
+        android:visibility="gone"
+        android:id="@+id/noDataLayout"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+        <ImageView
+            android:layout_gravity="center"
+            android:scaleType="centerCrop"
+            android:src="@drawable/no_data"
+            android:layout_width="100dp"
+            android:layout_height="100dp" />
+
+        <TextView
+            android:id="@+id/text"
+            android:textColor="#DD000000"
+            android:textSize="16sp"
+            android:text="No Booked Data Available"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+
     <FrameLayout
         android:layout_below="@+id/toolbar1"
         android:layout_above="@+id/next"
@@ -39,14 +78,15 @@
     </FrameLayout>
     <RelativeLayout
         android:id="@+id/next"
-        android:background="@color/green"
-        android:layout_alignParentBottom="true"
+        android:layout_margin="@dimen/toolBarMargin"
+        android:background="@drawable/background_larger_radius"
+       android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
         android:layout_height="50dp">
         <TextView
             android:layout_centerInParent="true"
-            android:textSize="20dp"
-            android:textColor="#ffffff"
+            android:textColor="@color/darkGreen"
+            android:textSize="18sp"
             android:layout_width="wrap_content"
             android:text="Add Executive"
             android:layout_height="wrap_content" />

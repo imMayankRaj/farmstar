@@ -2,6 +2,7 @@ package xendorp1.fragments;
 
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -12,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,11 +40,14 @@ import xendorp1.cards.zonal_manager_card;
 
 import static android.content.ContentValues.TAG;
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.MainActivity.showToast;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class zonal_managers extends Fragment implements SwipeRefreshLayout.OnRefreshListener{
+
+public class zonal_managers extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+
     private View rootview;
     private Toolbar toolbar;
     private RelativeLayout next;
@@ -51,6 +56,10 @@ public class zonal_managers extends Fragment implements SwipeRefreshLayout.OnRef
     private SwipeRefreshLayout swipeRefreshLayout;
     private String zid;
     public static TextView click;
+    private View parentLayout;
+    private LinearLayout layout;
+    private TextView textView;
+
 
     public zonal_managers() {
         // Required empty public constructor
@@ -58,20 +67,19 @@ public class zonal_managers extends Fragment implements SwipeRefreshLayout.OnRef
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@Nullable LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        rootview= inflater.inflate(R.layout.fragment_zonal_managers, container, false);
-        final Bundle bundle=this.getArguments();
-        zid=null;
-        if(bundle!=null)
-        {
-            zid=bundle.getString("zid");
+        rootview = inflater.inflate(R.layout.fragment_zonal_managers, container, false);
+        final Bundle bundle = this.getArguments();
+        zid = null;
+        if (bundle != null) {
+            zid = bundle.getString("zid");
         }
-        Log.d("zid",zid);
-        next=rootview.findViewById(R.id.next);
+        Log.d("zid", zid);
+        next = rootview.findViewById(R.id.next);
         click = rootview.findViewById(R.id.click);
-        toolbar=rootview.findViewById(R.id.toolbar1);
+        toolbar = rootview.findViewById(R.id.toolbar1);
         toolbar.setTitle("Zonal Managers");
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -80,19 +88,26 @@ public class zonal_managers extends Fragment implements SwipeRefreshLayout.OnRef
                 getActivity().getSupportFragmentManager().popBackStackImmediate();
             }
         });
-        recyclerView=rootview.findViewById(R.id.recycler);
+        recyclerView = rootview.findViewById(R.id.recycler);
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(llm);
-        swipeRefreshLayout=rootview.findViewById(R.id.swiperefresh);
+        swipeRefreshLayout = rootview.findViewById(R.id.swiperefresh);
         swipeRefreshLayout.setOnRefreshListener(this);
-        next=rootview.findViewById(R.id.next);
+        next = rootview.findViewById(R.id.next);
+        parentLayout = rootview.findViewById(R.id.parent);
+
+        layout = rootview.findViewById(R.id.noDataLayout);
+        textView = rootview.findViewById(R.id.text);
+
+
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Fragment fragment=new add_zonal_manager();
-                FragmentTransaction transaction=getActivity().getSupportFragmentManager().beginTransaction();
-                transaction.add(R.id.drawer_layout,fragment);
+
+                Fragment fragment = new add_zonal_manager();
+                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                transaction.add(R.id.drawer_layout, fragment);
 
                 Bundle bundle1 = new Bundle();
                 bundle1.putString("zid", zid);
@@ -101,6 +116,7 @@ public class zonal_managers extends Fragment implements SwipeRefreshLayout.OnRef
                 transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 transaction.addToBackStack(null);
                 transaction.commit();
+
             }
         });
 
@@ -114,20 +130,23 @@ public class zonal_managers extends Fragment implements SwipeRefreshLayout.OnRef
         getZonalManagers();
         return rootview;
     }
-    void getZonalManagers()
-    {
+
+    void getZonalManagers() {
         swipeRefreshLayout.setRefreshing(true);
         StringRequest strReq = new StringRequest(Request.Method.POST,
                 AppConfig.URL_GET_ZONAL_MANAGERS, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 Log.d(TAG, "Register Response: " + response.toString());
+                layout.setVisibility(View.GONE);
+
                 try {
-                    List<zonal_manager_card> zonal_manager_cardList=new ArrayList<>();
+                    List<zonal_manager_card> zonal_manager_cardList = new ArrayList<>();
                     JSONArray jsonArray = new JSONArray(response);
-                    for (int i=0;i<jsonArray.length();i++) {
+
+                    for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject jsonObject = jsonArray.getJSONObject(i);
-                        zonal_manager_card zonal_manager_card=new zonal_manager_card();
+                        zonal_manager_card zonal_manager_card = new zonal_manager_card();
                         zonal_manager_card.setName(jsonObject.getString("name"));
                         zonal_manager_card.setZid(jsonObject.getString("zid"));
                         zonal_manager_card.setUsername(jsonObject.getString("mob"));
@@ -136,10 +155,10 @@ public class zonal_managers extends Fragment implements SwipeRefreshLayout.OnRef
                         zonal_manager_card.setStatus(jsonObject.getInt("status"));
                         zonal_manager_card.setId(jsonObject.getString("id"));
                         zonal_manager_card.setCb(jsonObject.getString("cb"));
-                        zonal_manager_card.setNumber(jsonObject.getString("mob")+","+jsonObject.getString("othermob"));
+                        zonal_manager_card.setNumber(jsonObject.getString("mob") + "," + jsonObject.getString("othermob"));
                         zonal_manager_cardList.add(zonal_manager_card);
                     }
-                    zonal_manager_recycler_adapter=new zonal_manager_recycler_adapter(getActivity(),zonal_manager_cardList,zonal_managers.this);
+                    zonal_manager_recycler_adapter = new zonal_manager_recycler_adapter(getActivity(), zonal_manager_cardList, zonal_managers.this);
                     recyclerView.setAdapter(zonal_manager_recycler_adapter);
                     swipeRefreshLayout.setRefreshing(false);
 
@@ -147,7 +166,11 @@ public class zonal_managers extends Fragment implements SwipeRefreshLayout.OnRef
                     swipeRefreshLayout.setRefreshing(false);
                     recyclerView.setAdapter(null);
                     e.printStackTrace();
+                    layout.setVisibility(View.VISIBLE);
+                    textView.setText("No Zonal Managers Available.");
+
                 }
+
             }
         }, new Response.ErrorListener() {
 
@@ -165,21 +188,23 @@ public class zonal_managers extends Fragment implements SwipeRefreshLayout.OnRef
 
 
             }
-        }){
+        }) {
 
             @Override
             protected Map<String, String> getParams() {
                 // Posting params to register url
                 Map<String, String> params = new HashMap<String, String>();
-                params.put("zid",zid);
+                params.put("zid", zid);
                 return params;
             }
         };
         AppController.getInstance().addToRequestQueue(strReq, "getzonalmanagers");
     }
+
     @Override
     public void onRefresh() {
         getZonalManagers();
     }
+
 
 }

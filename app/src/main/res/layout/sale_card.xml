@@ -25,6 +25,7 @@
                 android:textSize="16sp"
                 android:gravity="start"
                 android:text="Buyer Name "
+                android:textColor="@color/darkGreen"
                 android:id="@+id/bname"
                 android:layout_weight="1"
                 android:layout_width="0dp"
@@ -42,6 +43,7 @@
                 android:gravity="end"
                 android:textSize="16sp"
                 android:text="Sale Id"
+                android:textColor="@color/darkGreen"
                 android:id="@+id/sid"
                 android:layout_weight="1"
                 android:layout_width="0dp"
@@ -58,7 +60,8 @@
 
             <TextView
                 android:textSize="16sp"
-                android:gravity="center"
+                android:paddingStart="2dp"
+                android:gravity="center|start"
                 android:text="Commodity :"
                 android:layout_weight="1"
                 android:layout_width="0dp"
@@ -88,7 +91,8 @@
 
             <TextView
                 android:textSize="16sp"
-                android:gravity="center"
+                android:paddingStart="2dp"
+                android:gravity="center|start"
                 android:text="Weight :"
                 android:layout_weight="1"
                 android:layout_width="0dp"
@@ -118,7 +122,8 @@
 
             <TextView
                 android:textSize="16sp"
-                android:gravity="center"
+                android:paddingStart="2dp"
+                android:gravity="center|start"
                 android:text="Rate :"
                 android:layout_weight="1"
                 android:layout_width="0dp"
@@ -149,7 +154,8 @@
 
             <TextView
                 android:textSize="16sp"
-                android:gravity="center"
+                android:paddingStart="2dp"
+                android:gravity="center|start"
                 android:text="Total Amount :"
                 android:layout_weight="1"
                 android:layout_width="0dp"
@@ -186,7 +192,7 @@
 
         <LinearLayout
             android:padding="5dp"
-            android:background="#aeaeae"
+            android:background="#e0e0e0"
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -195,6 +201,7 @@
                 android:textSize="16sp"
                 android:gravity="start"
                 android:text="Dispatched :"
+                android:textColor="@color/darkGreen"
                 android:layout_weight="1"
                 android:id="@+id/saleFlag"
                 android:layout_width="0dp"
@@ -202,11 +209,11 @@
 
 
             <TextView
+                android:textColor="@color/darkGreen"
                 android:gravity="end"
                 android:id="@+id/ts"
                 android:layout_weight="1.5"
                 android:textSize="16sp"
-                android:textColor="#000"
                 android:text="12-06-2017 12:08:29 AM"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content" />

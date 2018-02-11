@@ -6,9 +6,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -31,8 +34,10 @@ import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
 import mayank.example.zendor.landingPageFragment.picked;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.MainActivity.showToast;
 
 public class allPurchases extends AppCompatActivity {
 
@@ -40,8 +45,11 @@ public class allPurchases extends AppCompatActivity {
     private LinearLayoutManager llm;
     private SharedPreferences sharedPreferences;
     private ArrayList<purchaseClass> arrayList;
-    private ImageView back;
+    private Toolbar toolbar;
     LoadingClass lc ;
+    private LinearLayout layout;
+    private TextView textView;
+
 
 
     @Override
@@ -49,15 +57,21 @@ public class allPurchases extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_purchases);
         recyclerView = findViewById(R.id.purchaseRecyclerView);
+        toolbar = findViewById(R.id.toolbar);
         sharedPreferences = getSharedPreferences("details", Context.MODE_PRIVATE);
-        back = findViewById(R.id.back);
 
-        back.setOnClickListener(new View.OnClickListener() {
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
+
+        layout = findViewById(R.id.noDataLayout);
+        textView = findViewById(R.id.text);
+
 
         llm = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(llm);
@@ -70,6 +84,8 @@ public class allPurchases extends AppCompatActivity {
 
     private void getPurchaseData(){
         lc.showDialog();
+
+        layout.setVisibility(View.GONE);
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.GET_PURCHASE_DATA, new Response.Listener<String>() {
             @Override
@@ -102,12 +118,18 @@ public class allPurchases extends AppCompatActivity {
                                         booker, picker, picked, roc_b, roc_p, collected_ts, cancellation_ts4, collected_weight, collected_by, cancelled_by, flag));
                     }
 
+                    if(arrayList.size() == 0){
+                        layout.setVisibility(View.VISIBLE);
+                        textView.setText("No Purchases Done.");
+                    }
+
                     allPurchaseAdapter adapter = new allPurchaseAdapter(allPurchases.this,arrayList);
                     recyclerView.setAdapter(adapter);
 
                 } catch (JSONException e) {
-                    Toast.makeText(allPurchases.this, "Error Occured", Toast.LENGTH_SHORT).show();
                     lc.dismissDialog();
+                    layout.setVisibility(View.VISIBLE);
+                    textView.setText("No Purchases Done.");
                 }
 
                 lc.dismissDialog();
@@ -141,7 +163,7 @@ public class allPurchases extends AppCompatActivity {
                 return parameters;
             }
         };
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 }

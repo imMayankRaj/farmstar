@@ -56,6 +56,14 @@ public class saleAdapter extends RecyclerView.Adapter<saleAdapter.saleHolder>{
                     mContext.startActivity(intent1);
                     break;
 
+                case "ps":
+                    Intent intent3 = new Intent(mContext, OnClickPaymentRequestCard.class);
+                    intent3.putExtra("sid", SID.substring(9));
+                    intent3.putExtra("flag", FLAG);
+                    intent3.putExtra("f", f+"");
+                    mContext.startActivity(intent3);
+                    break;
+
             }
 
 

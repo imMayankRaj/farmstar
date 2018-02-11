@@ -35,7 +35,8 @@ public class buyer_recycler_adapter extends RecyclerView.Adapter<buyer_recycler_
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView name, buyer_id;
         public View view1;
-        private Button call;
+        private TextView call;
+        private TextView due_amount_volume;
 
         public MyViewHolder(View view) {
             super(view);
@@ -43,6 +44,7 @@ public class buyer_recycler_adapter extends RecyclerView.Adapter<buyer_recycler_
             name = view.findViewById(R.id.name);
             buyer_id=view.findViewById(R.id.buyer_id);
             call = view.findViewById(R.id.call);
+            due_amount_volume = view.findViewById(R.id.due_amount_volume);
         }
     }
     public buyer_recycler_adapter(Context mContext, List<buyer_card> buyer_cardList) {
@@ -76,6 +78,7 @@ public class buyer_recycler_adapter extends RecyclerView.Adapter<buyer_recycler_
         final buyer_card buyer_card =buyer_cardList.get(position);
         holder.name.setText(buyer_card.getName());
         holder.buyer_id.setText(buyer_card.getBuyer_id());
+        holder.due_amount_volume.setText('\u20B9'+buyer_card.getCb());
 
         holder.call.setOnClickListener(new View.OnClickListener() {
             @Override

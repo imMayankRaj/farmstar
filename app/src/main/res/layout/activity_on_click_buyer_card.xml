@@ -4,8 +4,28 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:background="@drawable/button_background"
+        android:layout_margin="@dimen/toolBarMargin"
+
+        android:layout_alignParentTop="true"
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+
+        <TextView
+            android:textColor="@color/lightGreen"
+            android:textSize="@dimen/toolBarTextDimen"
+            android:gravity="center|start"
+            android:text="Buyer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </android.support.v7.widget.Toolbar>
+
     <android.support.design.widget.TabLayout
         android:id="@+id/header"
+        android:background="@color/textBgColour"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -26,9 +46,10 @@
 
         <TextView
             android:id="@+id/saleButton"
-            android:background="#000"
+            android:layout_margin="3dp"
+            android:background="@drawable/background_larger_radius"
+            android:textColor="@color/darkGreen"
             android:text="Sale"
-            android:textColor="#fff"
             android:gravity="center"
             android:textSize="24sp"
             android:layout_alignParentBottom="true"

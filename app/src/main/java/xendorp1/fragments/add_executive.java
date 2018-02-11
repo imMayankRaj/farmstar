@@ -53,10 +53,12 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import mayank.example.zendor.ApplicationQueue;
+import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
 import mayank.example.zendor.sellerExtraData;
@@ -88,9 +90,9 @@ public class add_executive extends Fragment {
     private EditText primary_ph_no;
     private String zid;
     private String id;
-    private ProgressBar progressBar;
     private xendorp1.adapters.zone_card_spinner_adapter zone_card_spinner_adapter;
     private String imgPath;
+    private LoadingClass lc;
 
     public add_executive() {
         // Required empty public constructor
@@ -110,7 +112,6 @@ public class add_executive extends Fragment {
         Log.d("id1", id);
         rootview = inflater.inflate(R.layout.fragment_add_executive, container, false);
         photoChanged = false;
-        progressBar = rootview.findViewById(R.id.progressbar);
         addnum = rootview.findViewById(R.id.add_num);
         toolbar = rootview.findViewById(R.id.toolbar1);
         cancel = rootview.findViewById(R.id.cancel);
@@ -121,6 +122,8 @@ public class add_executive extends Fragment {
         username = rootview.findViewById(R.id.username_value);
         address = rootview.findViewById(R.id.address_value);
         password = rootview.findViewById(R.id.password_value);
+        lc = new LoadingClass(getActivity());
+
         password.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -157,7 +160,6 @@ public class add_executive extends Fragment {
 
             }
         });
-        toolbar.setTitle("Add Executive");
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -229,7 +231,8 @@ public class add_executive extends Fragment {
                 } else if (primary_ph_no.getText().length() != 10) {
                     Toast.makeText(getActivity(), "Please enter a valid phone number", Toast.LENGTH_LONG).show();
                 } else {
-                    progressBar.setVisibility(View.VISIBLE);
+                    lc.showDialog();
+
 
                     if (photoChanged) {
 
@@ -242,7 +245,7 @@ public class add_executive extends Fragment {
                                     .addFileToUpload(imgPath, "image")
                                     .addParameter("name", path)
                                     .setNotificationConfig(new UploadNotificationConfig())
-                                    .setMaxRetries(2)
+                                    .setMaxRetries(10)
                                     .setDelegate(new UploadStatusDelegate() {
                                         @Override
                                         public void onProgress(Context context, UploadInfo uploadInfo) {
@@ -251,6 +254,8 @@ public class add_executive extends Fragment {
 
                                         @Override
                                         public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception exception) {
+                                            Toast.makeText(getActivity(), "Error Occured.Please Retry.", Toast.LENGTH_SHORT).show();
+
 
                                         }
 
@@ -288,13 +293,12 @@ public class add_executive extends Fragment {
                                                             Toast.makeText(getActivity(), "Successfully added executive.Please refresh" , Toast.LENGTH_LONG).show();
                                                             getActivity().getSupportFragmentManager().popBackStackImmediate();
                                                         }
-                                                        progressBar.setVisibility(View.GONE);
                                                     } catch (Exception e) {
                                                         Toast.makeText(getActivity(), "Some network error occured. Please try again", Toast.LENGTH_SHORT).show();
-                                                        progressBar.setVisibility(View.GONE);
                                                         e.printStackTrace();
                                                     }
 
+                                                    lc.dismissDialog();
                                                  /*   executives.click1.performClick();
                                                     getActivity().getFragmentManager().popBackStack();*/
 
@@ -304,9 +308,8 @@ public class add_executive extends Fragment {
                                                 @Override
                                                 public void onErrorResponse(VolleyError error) {
                                                     Log.e(TAG, "" + error.getMessage());
-                                                    progressBar.setVisibility(View.GONE);
                                                     Toast.makeText(getActivity(), "Some network error occured. Please try again", Toast.LENGTH_SHORT).show();
-
+                                                    lc.dismissDialog();
 
 
                                                     if (error instanceof TimeoutError) {
@@ -386,13 +389,12 @@ public class add_executive extends Fragment {
                                         Toast.makeText(getActivity(), "Successfully added executive. Please refresh.", Toast.LENGTH_LONG).show();
                                         getActivity().getSupportFragmentManager().popBackStackImmediate();
                                     }
-                                    progressBar.setVisibility(View.GONE);
                                 } catch (Exception e) {
                                     Toast.makeText(getActivity(), "Some network error occured. Please try again", Toast.LENGTH_SHORT).show();
-                                    progressBar.setVisibility(View.GONE);
                                     e.printStackTrace();
                                 }
 
+                                lc.dismissDialog();
                               /*  executives.click1.performClick();
                                 getActivity().getFragmentManager().popBackStack();*/
 
@@ -402,9 +404,9 @@ public class add_executive extends Fragment {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.e(TAG, "" + error.getMessage());
-                                progressBar.setVisibility(View.GONE);
                                 Toast.makeText(getActivity(), "Some network error occured. Please try again", Toast.LENGTH_SHORT).show();
 
+                                lc.dismissDialog();
                                 if (error instanceof TimeoutError) {
                                     Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
                                 } else
@@ -455,14 +457,19 @@ public class add_executive extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
             if (requestCode == 5) {
-                Log.d("here", "here111");
                 CropImage.ActivityResult result = CropImage.getActivityResult(data);
                 if (resultCode == RESULT_OK) {
                     Uri resultUri = result.getUri();
-                    imgPath = resultUri.getPath();
                     try {
                         Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), resultUri);
-                        File file = new File(resultUri.getPath());
+                        String filename = System.currentTimeMillis()+".jpg";
+                        File file = new File(getActivity().getFilesDir(), filename);
+
+                        FileOutputStream out = new FileOutputStream(file);
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 15, out);
+
+                        imgPath = file.getPath();
+
                         profilepic.setScaleType(ImageView.ScaleType.FIT_XY);
                         profilepic.setImageBitmap(bitmap);
                         photoChanged = true;
@@ -526,7 +533,7 @@ public class add_executive extends Fragment {
             }
         });
 
-        ApplicationQueue.getInstance(context).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 

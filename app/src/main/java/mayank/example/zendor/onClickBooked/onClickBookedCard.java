@@ -8,11 +8,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -53,6 +55,7 @@ import mayank.example.zendor.URLclass;
 import mayank.example.zendor.frequentlyUsedClass;
 import mayank.example.zendor.landingPageFragment.booked;
 import mayank.example.zendor.onClickPicked.onClickPickedCard;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
 
@@ -79,6 +82,7 @@ public class onClickBookedCard extends AppCompatActivity {
     private String SNUM[], BNUM[];
     private LoadingClass lc;
     private String Rate, Commodity;
+    private Toolbar toolbar;
 
 
     @Override
@@ -97,6 +101,17 @@ public class onClickBookedCard extends AppCompatActivity {
         callBooker = findViewById(R.id.callBooker);
         cancel = findViewById(R.id.cancel);
         pick = findViewById(R.id.pick);
+        toolbar = findViewById(R.id.toolbar);
+
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
 
         lc = new LoadingClass(this);
 
@@ -178,7 +193,7 @@ public class onClickBookedCard extends AppCompatActivity {
                 return parameters;
             }
         };
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
 
     }
 
@@ -221,7 +236,7 @@ public class onClickBookedCard extends AppCompatActivity {
                 return parameters;
             }
         };
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
 
     }
 
@@ -287,13 +302,15 @@ public class onClickBookedCard extends AppCompatActivity {
                 return parameters;
             }
         };
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
 
     }
 
     private void cancellationDialog(){
         final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.reason_for_cancellation_dialog);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
         dialog.setCancelable(true);
         final RadioGroup rd = dialog.findViewById(R.id.rg);
         final RadioButton rb1 = dialog.findViewById(R.id.rb1);
@@ -329,6 +346,7 @@ public class onClickBookedCard extends AppCompatActivity {
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                roc = "";
                 switch (rd.getCheckedRadioButtonId()){
                     case R.id.rb1:
                         text.setVisibility(View.GONE);
@@ -342,12 +360,14 @@ public class onClickBookedCard extends AppCompatActivity {
                         text.setVisibility(View.VISIBLE);
                         roc = text.getText().toString();
                         break;
+
                 }
-                dialog.dismiss();
                 if(roc.length() == 0){
                     Toast.makeText(onClickBookedCard.this, "Add some reaons.", Toast.LENGTH_SHORT).show();
-                }else
+                }else {
+                    dialog.dismiss();
                     addCancelDetails();
+                }
             }
         });
         dialog.show();
@@ -358,6 +378,7 @@ public class onClickBookedCard extends AppCompatActivity {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.actual_weight_dialog);
         dialog.setCancelable(true);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
         final EditText aw = dialog.findViewById(R.id.actualWeight);
         TextView cancel = dialog.findViewById(R.id.cancel);
         TextView submit = dialog.findViewById(R.id.submit);

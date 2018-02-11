@@ -7,9 +7,16 @@
     android:layout_height="match_parent"
     tools:context="mayank.example.zendor.onClickSeller.OnClickSellerCard">
 
-    <android.support.v7.widget.Toolbar
-        android:background="#0069c0"
+    <TextView
+        android:visibility="gone"
+        android:id="@+id/recreate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
+    <android.support.v7.widget.Toolbar
+        android:layout_margin="@dimen/toolBarMargin"
+        android:background="@drawable/button_background"
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -18,18 +25,10 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <ImageView
-                android:id="@+id/back"
-                android:src="@drawable/ic_arrow_back_black_24dp1"
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent" />
-
-            <TextView
-                android:text="SALES"
-                android:layout_marginStart="10dp"
-                android:textColor="#000"
-                android:textSize="18sp"
+         <TextView
+                android:text="Sales"
+                android:textColor="@color/lightGreen"
+                android:textSize="@dimen/toolBarTextDimen"
                 android:layout_weight="8"
                 android:layout_width="0dp"
                 android:layout_height="match_parent" />
@@ -38,6 +37,9 @@
     </android.support.v7.widget.Toolbar>
     <android.support.design.widget.TabLayout
         android:id="@+id/header"
+        android:background="@color/textBgColour"
+        app:tabIndicatorColor="@color/darkGreen"
+
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 

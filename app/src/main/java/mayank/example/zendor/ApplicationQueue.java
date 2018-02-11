@@ -20,7 +20,7 @@ import com.android.volley.toolbox.Volley;
  * Created by mayank on 12/1/2017.
  */
 
-public class ApplicationQueue extends Application {
+public class ApplicationQueue  {
 
     private static ApplicationQueue mInstance;
     private RequestQueue mRequestQueue;

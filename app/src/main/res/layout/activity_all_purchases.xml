@@ -12,7 +12,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
     <android.support.v7.widget.Toolbar
-        android:background="#0069c0"
+        android:layout_margin="@dimen/toolBarMargin"
+        android:id="@+id/toolbar"
+        android:background="@drawable/button_background"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -21,22 +23,42 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <ImageView
-                android:id="@+id/back"
-                android:src="@drawable/ic_arrow_back_black_24dp1"
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent" />
         <TextView
-            android:layout_marginStart="10dp"
             android:text="All Purchases"
-            android:textSize="18sp"
-            android:textColor="#000"
+            android:textSize="@dimen/toolBarTextDimen"
+            android:textColor="@color/lightGreen"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
         </LinearLayout>
     </android.support.v7.widget.Toolbar>
+
+
+        <LinearLayout
+            android:visibility="gone"
+            android:id="@+id/noDataLayout"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+            <ImageView
+                android:layout_gravity="center"
+                android:scaleType="centerCrop"
+                android:src="@drawable/no_data"
+                android:layout_width="100dp"
+                android:layout_height="100dp" />
+
+            <TextView
+                android:id="@+id/text"
+                android:textColor="#DD000000"
+                android:textSize="16sp"
+                android:text="No Booked Data Available"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
     <android.support.v7.widget.RecyclerView
         android:id="@+id/purchaseRecyclerView"
         android:layout_width="match_parent"

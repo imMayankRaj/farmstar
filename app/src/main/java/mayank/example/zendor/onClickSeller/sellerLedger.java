@@ -36,6 +36,7 @@ import mayank.example.zendor.ApplicationQueue;
 import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
+import xendorp1.application_classes.AppController;
 
 import static android.content.Context.MODE_PRIVATE;
 import static mayank.example.zendor.MainActivity.showError;
@@ -54,7 +55,7 @@ public class sellerLedger extends Fragment {
     private SharedPreferences sharedPreferences;
     private TextView transfer;
     private LoadingClass lc;
-    private int ucb;
+    private double ucb;
     public static double sellerCb;
 
     public sellerLedger() {
@@ -72,7 +73,7 @@ public class sellerLedger extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(getArguments() != null){
+        if (getArguments() != null) {
             sid = getArguments().getString(SELLER_ID);
         }
 
@@ -96,16 +97,20 @@ public class sellerLedger extends Fragment {
         getSellerLedger();
         getUserCb();
 
-        final String pos = sharedPreferences.getString("position","");
+        final String pos = sharedPreferences.getString("position", "");
 
 
         transfer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if((ucb < 0 || ucb == 0) && !pos.equals("0"))
+                if ((ucb < 0 || ucb == 0) && !pos.equals("0"))
                     Toast.makeText(getActivity(), "Not Enough Credits.", Toast.LENGTH_SHORT).show();
-                else
-                    requestDialog();
+                else {
+                    if (sellerCb <= 0) {
+
+                    } else
+                        requestDialog();
+                }
             }
         });
 
@@ -113,7 +118,7 @@ public class sellerLedger extends Fragment {
         return view;
     }
 
-    private void getUserCb(){
+    private void getUserCb() {
         lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.SELLER_CB, new Response.Listener<String>() {
             @Override
@@ -121,7 +126,7 @@ public class sellerLedger extends Fragment {
                 try {
                     JSONObject json = new JSONObject(response);
                     String CB = json.getString("current_balance");
-                    ucb = Integer.parseInt(CB);
+                    ucb = Double.parseDouble(CB);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -140,22 +145,22 @@ public class sellerLedger extends Fragment {
 
                 lc.dismissDialog();
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
-                String id = sharedPreferences.getString("id","");
+                String id = sharedPreferences.getString("id", "");
 
 
                 Map<String, String> parameters = new HashMap<>();
-                parameters.put("id",id);
+                parameters.put("id", id);
                 return parameters;
             }
         };
 
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
-    private void getSellerCb(){
+    private void getSellerCb() {
 
         lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.SELLER_CB, new Response.Listener<String>() {
@@ -164,9 +169,9 @@ public class sellerLedger extends Fragment {
                 try {
                     JSONObject json = new JSONObject(response);
                     String CB = json.getString("current_balance");
-                    cb.setText(CB);
+                    cb.setText('\u20B9' + CB);
                     sellerCb = Double.parseDouble(CB);
-                    amountDue.setText('\u20B9'+" "+CB);
+                    amountDue.setText('\u20B9' + " " + CB);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -186,19 +191,19 @@ public class sellerLedger extends Fragment {
 
                 lc.dismissDialog();
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> parameters = new HashMap<>();
-                parameters.put("id",sid.substring(11));
+                parameters.put("id", sid.substring(11));
                 return parameters;
             }
         };
 
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
-    private void getSellerLedger(){
+    private void getSellerLedger() {
         lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.SELL_LEDGER, new Response.Listener<String>() {
             @Override
@@ -208,25 +213,30 @@ public class sellerLedger extends Fragment {
                     JSONObject json = new JSONObject(response);
                     JSONArray ledgerArray = json.getJSONArray("ledger");
 
-                    for(int i =0;i<ledgerArray.length();i++){
+                    for (int i = 0; i < ledgerArray.length(); i++) {
                         JSONObject ledger = ledgerArray.getJSONObject(i);
                         String date = ledger.getString("date");
                         String pid = ledger.getString("pid");
                         String dc = ledger.getString("dc");
                         String balance = ledger.getString("Balance");
-                        ledgerList.add(new ledgerClass(date, pid, dc,'\u20B9'+balance));
+                        try {
+                            if (dc.substring(dc.lastIndexOf(" ")).equals(" cr") || dc.substring(dc.lastIndexOf(" ")).equals(" dr"))
+                                dc = '\u20B9' + dc;
+                        } catch (Exception e) {
+                        }
+                        ledgerList.add(new ledgerClass(date, pid, dc, '\u20B9' + balance));
                     }
 
                     JSONObject details = json.getJSONObject("details");
                     String name = details.getString("zm");
                     String szone = details.getString("zm_zone");
-                    sellerNameAndZone.setText(name+" - "+szone);
+                    sellerNameAndZone.setText(name + " - " + szone);
 
                 } catch (JSONException e) {
-                    Log.e("error e", e+"");
+                    Log.e("error e", e + "");
                 }
 
-                ledgerAdapter adapter = new ledgerAdapter(getActivity(),0, ledgerList);
+                ledgerAdapter adapter = new ledgerAdapter(getActivity(), 0, ledgerList);
                 sellerLedgerView.setAdapter(adapter);
                 lc.dismissDialog();
             }
@@ -242,26 +252,26 @@ public class sellerLedger extends Fragment {
                     showError(error, sellerLedger.class.getName(), getActivity());
 
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> parameters = new HashMap<>();
-                parameters.put("id",sid.substring(11));
+                parameters.put("id", sid.substring(11));
                 return parameters;
             }
         };
 
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
-    public static class ledgerClass{
+    public static class ledgerClass {
 
         private String date;
         private String transaction;
         private String status;
         private String balance;
 
-        public ledgerClass(String date, String transaction, String status, String balance){
+        public ledgerClass(String date, String transaction, String status, String balance) {
 
             this.date = date;
             this.transaction = transaction;
@@ -286,7 +296,7 @@ public class sellerLedger extends Fragment {
         }
     }
 
-    private void requestDialog(){
+    private void requestDialog() {
 
         final Dialog dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -317,13 +327,13 @@ public class sellerLedger extends Fragment {
             public void onClick(View v) {
                 String amt = amount.getText().toString();
                 String description = desc.getText().toString();
-                if(amt.length() == 0 || description.length() == 0){
+                if (amt.length() == 0 || description.length() == 0) {
                     Toast.makeText(getActivity(), "All fields are compulsory.", Toast.LENGTH_SHORT).show();
-                }else {
+                } else {
                     double AMT = Double.parseDouble(amt);
-                    if(AMT > sellerCb){
+                    if (AMT > sellerCb) {
                         Toast.makeText(getActivity(), "Requested amount greater than Seller current balance.", Toast.LENGTH_SHORT).show();
-                    }else {
+                    } else {
                         sendRequest(amt, description);
                         dialog.dismiss();
                     }
@@ -334,7 +344,7 @@ public class sellerLedger extends Fragment {
         dialog.show();
     }
 
-    private void sendRequest(final String amt, final String desc){
+    private void sendRequest(final String amt, final String desc) {
 
         lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.SELLER_REQUEST, new Response.Listener<String>() {
@@ -347,21 +357,29 @@ public class sellerLedger extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
 
+                lc.dismissDialog();
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, sellerLedger.class.getName(), getActivity());
+
+
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
-                String id = sharedPreferences.getString("id","");
+                String id = sharedPreferences.getString("id", "");
 
                 Map<String, String> parameters = new HashMap<>();
-                parameters.put("rid",sid.substring(11));
+                parameters.put("rid", sid.substring(11));
                 parameters.put("sid", id);
                 parameters.put("amt", amt);
                 parameters.put("des", desc);
                 return parameters;
             }
         };
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 }

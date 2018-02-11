@@ -12,14 +12,20 @@ public class sellerPurchaseClass {
     private String name;
     private String timestamp;
     private String flag;
+    private String pid;
 
-    public sellerPurchaseClass(String commodity, String rate, String weight, String timestamp, String name, String flag){
+    public sellerPurchaseClass(String commodity, String rate, String weight, String timestamp, String name, String flag, String pid){
         this.commodity = commodity;
         this.rate = rate;
         this.weight = weight;
         this.timestamp = timestamp;
         this.name = name;
         this.flag = flag;
+        this.pid = pid;
+    }
+
+    public String getPid() {
+        return pid;
     }
 
     public String getFlag() {

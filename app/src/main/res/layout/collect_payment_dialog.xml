@@ -10,6 +10,7 @@
     app:cardUseCompatPadding="false">
 
     <LinearLayout
+        android:background="@drawable/green_background"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -29,7 +30,7 @@
 
             <EditText
                 android:gravity="center"
-                android:inputType="number"
+                android:inputType="numberDecimal"
                 android:id="@+id/amount"
                 android:layout_weight="1"
                 android:layout_width="0dp"

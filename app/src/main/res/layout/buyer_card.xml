@@ -8,8 +8,8 @@
     android:layout_height="wrap_content">
     <RelativeLayout
         android:layout_width="match_parent"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
+        android:padding="10dp"
+
         android:layout_height="match_parent">
         <RelativeLayout
             android:id="@+id/identification"
@@ -19,16 +19,18 @@
         <TextView
             android:id="@+id/name"
             android:maxLines="1"
+            android:textColor="@color/darkGreen"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_width="wrap_content"
-            android:textSize="20dp"
+            android:textSize="16sp"
             android:layout_toRightOf="@+id/buyer_id"
             android:text="Name"
             android:layout_height="wrap_content" />
             <TextView
                 android:id="@+id/buyer_id"
-                android:textSize="20dp"
+                android:textColor="@color/darkGreen"
+                android:textSize="16sp"
                 android:text="Buyer Id"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
@@ -43,22 +45,29 @@
             <TextView
                 android:id="@+id/amount_due"
                 android:layout_width="wrap_content"
-                android:textSize="20dp"
+                android:textSize="16sp"
+                android:textColor="@color/lightGreen"
                 android:text="Amount Due:"
                 android:layout_height="wrap_content" />
+
             <TextView
+                android:textSize="16sp"
+                android:textStyle="bold"
                 android:id="@+id/due_amount_volume"
-                android:layout_below="@+id/amount_due"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:layout_alignRight="@+id/amount_due"
-                android:layout_alignEnd="@+id/amount_due" />
-            <Button
+                android:layout_alignBottom="@+id/amount_due"
+                android:layout_marginStart="9dp"
+                android:layout_toEndOf="@+id/amount_due" />
+            <TextView
+                android:background="@drawable/background_larger_radius"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
-                android:text="Call"
+                android:text="CALL"
+                android:textStyle="bold"
+                android:paddingStart="30dp"
+                android:paddingEnd="30dp"
+                android:textSize="18sp"
                 android:id="@+id/call"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />

@@ -30,6 +30,7 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.theartofdev.edmodo.cropper.CropImage;
@@ -46,10 +47,15 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import mayank.example.zendor.navigationDrawerOption.addCommodities;
+import mayank.example.zendor.onClickBuyer.onClickBuyerCard;
+import xendorp1.application_classes.AppController;
+
+import static mayank.example.zendor.MainActivity.showError;
 
 public class sellerExtraData extends AppCompatActivity {
 
@@ -59,13 +65,12 @@ public class sellerExtraData extends AppCompatActivity {
     private TextView submit;
     private ImageView camera, addnumber;
     private SharedPreferences sharedPreferences;
-    private RequestQueue requestQueue;
     private Toolbar toolbar;
     private boolean photoChanged;
-    private ProgressDialog progressDialog;
     private String azone_id;
     private String comm;
     private String imgPath;
+    private LoadingClass lc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,9 +92,7 @@ public class sellerExtraData extends AppCompatActivity {
         camera = findViewById(R.id.camera);
         addnumber = findViewById(R.id.addNumber);
         toolbar = findViewById(R.id.toolbar);
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Uploading...");
-        progressDialog.setCancelable(false);
+        lc = new LoadingClass(this);
 
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -154,8 +157,6 @@ public class sellerExtraData extends AppCompatActivity {
         });
 
 
-        apiConnect connect = new apiConnect(this, "detail");
-        requestQueue = connect.getRequestQueue();
         final Bundle bundle = getIntent().getBundleExtra("sellerDetail");
         final Bundle bun = getIntent().getBundleExtra("comm");
 
@@ -220,7 +221,7 @@ public class sellerExtraData extends AppCompatActivity {
                     Toast.makeText(sellerExtraData.this, "Incorrect Number Entered", Toast.LENGTH_SHORT).show();
                 else {
                     if (photoChanged){
-                        progressDialog.show();
+                        lc.showDialog();
                         long time = System.currentTimeMillis();
                         final String path =   "_" + time + imgPath.substring(imgPath.lastIndexOf("."));
 
@@ -232,7 +233,7 @@ public class sellerExtraData extends AppCompatActivity {
                                     .addFileToUpload(imgPath, "image")
                                     .addParameter("name", path)
                                     .setNotificationConfig(new UploadNotificationConfig())
-                                    .setMaxRetries(2)
+                                    .setMaxRetries(10)
                                     .setDelegate(new UploadStatusDelegate() {
                                         @Override
                                         public void onProgress(Context context, UploadInfo uploadInfo) {
@@ -241,7 +242,7 @@ public class sellerExtraData extends AppCompatActivity {
 
                                         @Override
                                         public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception exception) {
-
+                                            Toast.makeText(sellerExtraData.this, "Error Occured. Please Retry.", Toast.LENGTH_SHORT).show();
                                         }
 
                                         @Override
@@ -284,9 +285,15 @@ public class sellerExtraData extends AppCompatActivity {
                 CropImage.ActivityResult result = CropImage.getActivityResult(data);
                 if (resultCode == RESULT_OK) {
                     Uri resultUri = result.getUri();
-                    imgPath = resultUri.getPath();
                     try {
                         Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), resultUri);
+                        String filename = System.currentTimeMillis()+".jpg";
+                        File file = new File(getFilesDir(), filename);
+
+                        FileOutputStream out = new FileOutputStream(file);
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 40, out);
+
+                        imgPath = file.getPath();
                         camera.setScaleType(ImageView.ScaleType.FIT_XY);
                         camera.setImageBitmap(bitmap);
                         photoChanged = true;
@@ -304,7 +311,7 @@ public class sellerExtraData extends AppCompatActivity {
     }
 
     private void pushExtraData(final String an, final String aname, final String ifsc, final String finalNumber, final String name, final String address, final String pincode, final String gpsAddress, final String path) {
-        progressDialog.show();
+        lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.PUSHDATA, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -316,18 +323,19 @@ public class sellerExtraData extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                progressDialog.dismiss();
-                Toast.makeText(sellerExtraData.this, "Seller Added Successfully", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(sellerExtraData.this, LoginActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                finish();
+
 
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                progressDialog.dismiss();
+                lc.dismissDialog();
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(sellerExtraData.this, "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, sellerExtraData.this.getClass().getName(), sellerExtraData.this);
+
             }
         }) {
             @Override
@@ -358,9 +366,8 @@ public class sellerExtraData extends AppCompatActivity {
                 return map;
             }
         };
-        stringRequest.setShouldCache(false);
-        requestQueue.add(stringRequest);
 
+        AppController.getInstance().addToRequestQueue(stringRequest);
 
     }
 
@@ -392,27 +399,42 @@ public class sellerExtraData extends AppCompatActivity {
 
 
     private void storeCommodities(final String comm, final String seller_id) {
-
+        lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ADD_COMMODITY, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-
+               lc.dismissDialog();
+                Toast.makeText(sellerExtraData.this, "Seller Added Successfully", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(sellerExtraData.this, LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                lc.dismissDialog();
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(sellerExtraData.this, "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, sellerExtraData.this.getClass().getName(), sellerExtraData.this);
+
 
             }
         }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
+
+                Log.e("commodities", comm);
+
                 Map<String, String> parameters = new HashMap<>();
                 parameters.put("seller_id", seller_id);
                 parameters.put("str", comm);
                 return parameters;
             }
         };
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 }

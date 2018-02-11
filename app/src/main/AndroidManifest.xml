@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="mayank.example.zendor">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -8,6 +9,8 @@
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <application
         android:name="xendorp1.application_classes.AppController"
@@ -16,11 +19,12 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:largeHeap="true"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
             android:name=".LoginActivity"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -40,30 +44,76 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="stateAlwaysHidden" />
-        <activity android:name=".sellerDetailActivity" />
-        <activity android:name=".sellerExtraData" />
-        <activity android:name=".sellerOtpVerify" />
+        <activity
+            android:name=".sellerDetailActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".sellerExtraData"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".sellerOtpVerify"
+            android:screenOrientation="portrait" />
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/Base.Theme.AppCompat" />
-        <activity android:name=".commoditiesActivity" />
-        <activity android:name=".onClickSeller.OnClickSellerCard" />
-        <activity android:name=".onClickBooked.onClickBookedCard" />
-        <activity android:name=".onClickPicked.onClickPickedCard" />
-        <activity android:name=".onClickBuyer.onClickBuyerCard" />
-        <activity android:name=".navigationDrawerOption.allPurchases" />
-        <activity android:name=".navigationDrawerOption.addCommodities" />
-        <activity android:name=".navigationDrawerOption.onClickCommodityList" />
-        <activity android:name=".onClickBuyer.onClickDispatchedCard" />
-        <activity android:name=".onClickBuyer.onClickDeliveredCard" />
-        <activity android:name=".navigationDrawerOption.sale" />
-        <activity android:name=".navigationDrawerOption.wallet" />
-        <activity android:name=".navigationDrawerOption.paymentRequest" />
-        <activity android:name=".onClickExecutive.onClickExecutiveCard" />
-        <activity android:name=".onClickSeller.addRemoveActivity" />
-        <activity android:name=".onClickSeller.sellerEdit"></activity>
+        <activity
+            android:name=".commoditiesActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".onClickSeller.OnClickSellerCard"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".onClickBooked.onClickBookedCard"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".onClickPicked.onClickPickedCard"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".onClickBuyer.onClickBuyerCard"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".navigationDrawerOption.allPurchases"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".navigationDrawerOption.addCommodities"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".navigationDrawerOption.onClickCommodityList"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".onClickBuyer.onClickDispatchedCard"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".onClickBuyer.onClickDeliveredCard"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".navigationDrawerOption.sale"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".navigationDrawerOption.wallet"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".navigationDrawerOption.paymentRequest"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".onClickExecutive.onClickExecutiveCard"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".onClickSeller.addRemoveActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".onClickSeller.sellerEdit"
+            android:screenOrientation="portrait" />
+        <activity android:name=".dialogActivity" />
+        <activity android:name=".navigationDrawerOption.onClickCollectedCard" />
+        <activity android:name=".navigationDrawerOption.onClickCancelledCard" />
+        <activity android:name=".addBuyerCommodity" />
+        <activity android:name=".ContactAtivity" />
+        <activity android:name=".onClickBuyer.OnClickPaymentRequestCard"></activity>
     </application>
 
 </manifest>

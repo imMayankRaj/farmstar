@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 
 import mayank.example.zendor.R;
 import mayank.example.zendor.onClickSeller.sellerPurchases;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
 
@@ -122,7 +123,6 @@ public class commoditiesActivity extends AppCompatActivity {
             @Override
             public void onResponse(String response) {
 
-                Log.e("comres", response);
                 arrayList.clear();
                 try {
                     JSONObject json = new JSONObject(response);
@@ -148,6 +148,7 @@ public class commoditiesActivity extends AppCompatActivity {
 
                 Log.e("server", error+"");
 
+                lc.dismissDialog();
                 if (error instanceof TimeoutError) {
                     Toast.makeText(commoditiesActivity.this, "Time out. Reload.", Toast.LENGTH_SHORT).show();
                 } else
@@ -157,7 +158,7 @@ public class commoditiesActivity extends AppCompatActivity {
             }
         });
 
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
     public class commodity{
@@ -277,7 +278,7 @@ public class commoditiesActivity extends AppCompatActivity {
             }else {
                 cb.setVisibility(View.VISIBLE);
                 cb.setChecked(true);
-                commo[a]=id.substring(1);
+                commo[a]=id.replaceAll("[0-9]", "");
             }
         }
     };

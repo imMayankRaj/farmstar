@@ -1,8 +1,10 @@
 package mayank.example.zendor.onClickBuyer;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -10,6 +12,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -31,8 +35,12 @@ import mayank.example.zendor.ApplicationQueue;
 import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.MainActivity.showToast;
+import static mayank.example.zendor.navigationDrawerOption.sale.headerSale;
+import static mayank.example.zendor.onClickBuyer.onClickBuyerCard.header;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -46,6 +54,9 @@ public class buyerSale extends Fragment {
     private LinearLayoutManager llm;
     private static ArrayList<saleClass> arrayList;
     private static LoadingClass lc;
+    private static LinearLayout layout;
+    private static TextView textView;
+
 
     public buyerSale() {
         // Required empty public constructor
@@ -78,8 +89,12 @@ public class buyerSale extends Fragment {
         recyclerView.setHasFixedSize(true);
         lc = new LoadingClass(getActivity());
 
+        layout = view.findViewById(R.id.noDataLayout);
+        textView = view.findViewById(R.id.text);
+
 
         getSaleDetail(getActivity());
+
 
         return view;
     }
@@ -87,6 +102,7 @@ public class buyerSale extends Fragment {
     public static void getSaleDetail(final Context context){
         lc.showDialog();
         arrayList = new ArrayList<>();
+        layout.setVisibility(View.GONE);
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.BUYER_SALE_TAB, new Response.Listener<String>() {
             @Override
@@ -119,9 +135,21 @@ public class buyerSale extends Fragment {
                         }
                         if(!flag.equals("cn"))
                             arrayList.add(new saleClass(bname, sid, commodity, weight, rate, flag, ts));
+
+                        if(arrayList.size() == 0){
+                            layout.setVisibility(View.VISIBLE);
+                            textView.setText("No Sales For This Buyer.");
+                        }else
+                            layout.setVisibility(View.GONE);
+
+
+
                     }
                 } catch (JSONException e) {
                     Log.e("json error", e+"");
+                    layout.setVisibility(View.VISIBLE);
+                    textView.setText("No Sales For This Buyer.");
+
                 }
 
 
@@ -132,6 +160,14 @@ public class buyerSale extends Fragment {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+
+                lc.dismissDialog();
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(context, "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, buyerLedger.class.getName(), (Activity) context);
+
 
 
             }
@@ -144,7 +180,7 @@ public class buyerSale extends Fragment {
             }
         };
 
-        ApplicationQueue.getInstance(context.getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
     public static class saleClass{

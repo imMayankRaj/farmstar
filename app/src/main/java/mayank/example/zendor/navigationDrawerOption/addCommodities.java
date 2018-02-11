@@ -15,6 +15,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -22,6 +23,7 @@ import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -48,6 +50,7 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -61,9 +64,12 @@ import mayank.example.zendor.ApplicationQueue;
 import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
+import mayank.example.zendor.landingPageFragment.booked;
 import mayank.example.zendor.landingPageFragment.picked;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.MainActivity.showToast;
 
 public class addCommodities extends AppCompatActivity {
 
@@ -72,10 +78,12 @@ public class addCommodities extends AppCompatActivity {
     private String[] commTypes;
     private TextView addComm;
     private LoadingClass ld;
-    private ImageView back;
     private ImageView compic;
     private boolean photoChanged = false;
     private String imgPath;
+    private LinearLayout layout;
+    private TextView textView;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,14 +91,20 @@ public class addCommodities extends AppCompatActivity {
         setContentView(R.layout.activity_add_commodities);
         commodityListView = findViewById(R.id.commodityList);
         addComm = findViewById(R.id.addNewComm);
-        back = findViewById(R.id.back);
+        toolbar = findViewById(R.id.toolbar);
 
-        back.setOnClickListener(new View.OnClickListener() {
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
+
+        layout = findViewById(R.id.noDataLayout);
+        textView = findViewById(R.id.text);
+
 
         commodityList = new ArrayList<>();
 
@@ -121,16 +135,26 @@ public class addCommodities extends AppCompatActivity {
 
     private void getCommodity() {
         ld.showDialog();
+        layout.setVisibility(View.GONE);
+
         StringRequest stringRequest = new StringRequest(Request.Method.GET, URLclass.GET_COMMODITY, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
+                if(!response.equals("")) {
+                    String[] COMM = response.split(",");
+                    commodityList = Arrays.asList(COMM);
+                }
 
-                String[] COMM = response.split(",");
-                commodityList = Arrays.asList(COMM);
                 commodityListView.setAdapter(new ArrayAdapter<String>(addCommodities.this,
                         android.R.layout.simple_list_item_1, commodityList));
 
                 ld.dismissDialog();
+
+                if(commodityList.size() == 0){
+                    layout.setVisibility(View.VISIBLE);
+                    textView.setText("No Commodities Available.");
+                }
+
             }
         }, new Response.ErrorListener() {
             @Override
@@ -142,7 +166,7 @@ public class addCommodities extends AppCompatActivity {
 
             }
         });
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
     private void addCommDialog() {
@@ -178,7 +202,7 @@ public class addCommodities extends AppCompatActivity {
                                 .addFileToUpload(imgPath, "image")
                                 .addParameter("name", path)
                                 .setNotificationConfig(new UploadNotificationConfig())
-                                .setMaxRetries(2)
+                                .setMaxRetries(10)
                                 .setDelegate(new UploadStatusDelegate() {
                                     @Override
                                     public void onProgress(Context context, UploadInfo uploadInfo) {
@@ -187,7 +211,7 @@ public class addCommodities extends AppCompatActivity {
 
                                     @Override
                                     public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception exception) {
-
+                                        Toast.makeText(addCommodities.this, "Error Occure. Please Retry.", Toast.LENGTH_SHORT).show();
                                     }
 
                                     @Override
@@ -238,9 +262,15 @@ public class addCommodities extends AppCompatActivity {
             if (requestCode == 5) {
                 CropImage.ActivityResult result = CropImage.getActivityResult(data);
                 Uri resultUri = result.getUri();
-                imgPath = resultUri.getPath();
                 try {
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), resultUri);
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), resultUri);
+                    String filename = System.currentTimeMillis()+".jpg";
+                    File file = new File(getFilesDir(), filename);
+
+                    FileOutputStream out = new FileOutputStream(file);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 20, out);
+
+                    imgPath = file.getPath();
                     compic.setScaleType(ImageView.ScaleType.FIT_XY);
                     compic.setImageBitmap(bitmap);
                     photoChanged = true;
@@ -263,7 +293,7 @@ public class addCommodities extends AppCompatActivity {
     }
 
     private void addNewCommodity(final String cname, final String type, final String path) {
-
+        ld.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ADD_NEW_COMM, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -273,6 +303,14 @@ public class addCommodities extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(addCommodities.this, "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, booked.class.getName(), addCommodities.this);
+
+                ld.dismissDialog();
+
 
             }
         }) {
@@ -287,7 +325,7 @@ public class addCommodities extends AppCompatActivity {
             }
         };
 
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 }

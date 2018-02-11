@@ -38,6 +38,7 @@ import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
 import mayank.example.zendor.onClickSeller.ledgerAdapter;
 import mayank.example.zendor.onClickSeller.sellerLedger;
+import xendorp1.application_classes.AppController;
 
 import static android.content.Context.MODE_PRIVATE;
 import static mayank.example.zendor.MainActivity.showError;
@@ -58,8 +59,8 @@ public class buyerLedger extends Fragment {
     public static TextView click;
     private TextView transfer;
     private SharedPreferences sharedPreferences;
-    private int ucb;
-    public static int buyercb;
+    private double ucb;
+    public static double buyercb;
 
 
 
@@ -126,7 +127,7 @@ public class buyerLedger extends Fragment {
                 try {
                     JSONObject json = new JSONObject(response);
                     String CB = json.getString("current_balance");
-                    ucb = Integer.parseInt(CB);
+                    ucb = Double.parseDouble(CB);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -157,7 +158,7 @@ public class buyerLedger extends Fragment {
             }
         };
 
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 
@@ -169,8 +170,8 @@ public class buyerLedger extends Fragment {
                 try {
                     JSONObject json = new JSONObject(response);
                     String CB = json.getString("current_balance");
-                    cb.setText(CB);
-                    buyercb = Integer.parseInt(CB);
+                    cb.setText('\u20B9'+CB);
+                    buyercb = Double.parseDouble(CB);
                     buyerDetails.amountDue.setText('\u20B9'+" "+CB);
 
                 } catch (JSONException e) {
@@ -182,6 +183,13 @@ public class buyerLedger extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
 
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, buyerLedger.class.getName(), getActivity());
+
+
             }
         }){
             @Override
@@ -192,7 +200,7 @@ public class buyerLedger extends Fragment {
                 return parameters;
             }
         };
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
     private void getBuyerLedger(){
@@ -212,6 +220,10 @@ public class buyerLedger extends Fragment {
                         String pid = ledger.getString("pid");
                         String dc = ledger.getString("dc");
                         String balance = ledger.getString("balance");
+                        try {
+                            if (dc.substring(dc.lastIndexOf(" ")).equals(" cr") || dc.substring(dc.lastIndexOf(" ")).equals(" dr"))
+                                dc = '\u20B9' + dc;
+                        }catch (Exception e){}
                         ledgerList.add(new sellerLedger.ledgerClass(date, pid, dc, '\u20B9'+balance));
                     }
                     String name = json.getString("buyer_name");
@@ -229,6 +241,13 @@ public class buyerLedger extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
 
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, buyerLedger.class.getName(), getActivity());
+
+
                 lc.dismissDialog();
             }
         }){
@@ -240,7 +259,7 @@ public class buyerLedger extends Fragment {
             }
         };
 
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 

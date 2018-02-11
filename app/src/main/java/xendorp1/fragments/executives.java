@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,6 +55,8 @@ public class executives extends Fragment implements SwipeRefreshLayout.OnRefresh
     private SwipeRefreshLayout swipeRefreshLayout;
     private String id;
     public static TextView click1;
+    private LinearLayout layout;
+    private TextView textView;
 
     public executives() {
         // Required empty public constructor
@@ -75,7 +78,11 @@ public class executives extends Fragment implements SwipeRefreshLayout.OnRefresh
         next=rootview.findViewById(R.id.next);
         click1 = rootview.findViewById(R.id.executivesClick);
         toolbar=rootview.findViewById(R.id.toolbar1);
-        toolbar.setTitle("Executives");
+
+        layout = rootview.findViewById(R.id.noDataLayout);
+        textView = rootview.findViewById(R.id.text);
+
+
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -122,6 +129,7 @@ public class executives extends Fragment implements SwipeRefreshLayout.OnRefresh
     }
     void getZonalManagers()
     {
+        layout.setVisibility(View.GONE);
         swipeRefreshLayout.setRefreshing(true);
         StringRequest strReq = new StringRequest(Request.Method.POST,
                 AppConfig.URL_GET_EXECUTIVES, new Response.Listener<String>() {
@@ -153,6 +161,9 @@ public class executives extends Fragment implements SwipeRefreshLayout.OnRefresh
                     swipeRefreshLayout.setRefreshing(false);
                     recyclerView.setAdapter(null);
                     Log.e("wertyui", e+"");
+                    layout.setVisibility(View.VISIBLE);
+                    textView.setText("No Zones.");
+
                 }
             }
         }, new Response.ErrorListener() {

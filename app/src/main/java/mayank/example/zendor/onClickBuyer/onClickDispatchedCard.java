@@ -3,10 +3,13 @@ package mayank.example.zendor.onClickBuyer;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -36,6 +39,7 @@ import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
 import mayank.example.zendor.frequentlyUsedClass;
 import mayank.example.zendor.navigationDrawerOption.sale;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
 import static mayank.example.zendor.onClickBuyer.buyerSale.getSaleDetail;
@@ -56,9 +60,9 @@ public class onClickDispatchedCard extends AppCompatActivity {
     private TextView cancel;
     private TextView delivered;
     private TextView toolbarSaleId;
+    private Toolbar toolbar;
     private String sid;
     private SharedPreferences sharedPreferences;
-    private ImageView back;
     public static boolean check = false;
     private LoadingClass lc;
 
@@ -80,15 +84,18 @@ public class onClickDispatchedCard extends AppCompatActivity {
         dispatchedDate = findViewById(R.id.ddate);
         cancel = findViewById(R.id.cancel);
         delivered = findViewById(R.id.delivered);
-        back = findViewById(R.id.back);
+        toolbar = findViewById(R.id.toolbar);
 
-        lc = new LoadingClass(this);
-        back.setOnClickListener(new View.OnClickListener() {
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
+
+        lc = new LoadingClass(this);
 
         toolbarSaleId = findViewById(R.id.tsid);
 
@@ -109,9 +116,9 @@ public class onClickDispatchedCard extends AppCompatActivity {
 
         sharedPreferences = getSharedPreferences("details", MODE_PRIVATE);
 
-        String pos = sharedPreferences.getString("position","");
+        String pos = sharedPreferences.getString("position", "");
 
-        if(!pos.equals("0")){
+        if (!pos.equals("0")) {
             cancel.setVisibility(View.GONE);
         }
         cancel.setOnClickListener(new View.OnClickListener() {
@@ -121,15 +128,15 @@ public class onClickDispatchedCard extends AppCompatActivity {
             }
         });
 
-        if(getIntent().getStringExtra("f").equals("0")){
+       /* if(getIntent().getStringExtra("f").equals("0")){
             cancel.setVisibility(View.GONE);
             delivered.setVisibility(View.GONE);
-        }
+        }*/
 
     }
 
 
-    private void onClickDispatchedDetails(){
+    private void onClickDispatchedDetails() {
 
         lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ON_CLICK_SALE_CARD, new Response.Listener<String>() {
@@ -139,22 +146,22 @@ public class onClickDispatchedCard extends AppCompatActivity {
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     JSONObject details = jsonObject.getJSONObject("values");
-                    buyerName.setText("Buyer : "+details.getString("bname"));
-                    saleId.setText("Sale Id : "+details.getString("saleid"));
+                    buyerName.setText("Buyer : " + details.getString("bname"));
+                    saleId.setText("Sale Id : " + details.getString("saleid"));
                     commodity.setText(details.getString("commodities"));
-                    weight.setText(details.getString("w1")+" kgs");
+                    weight.setText(details.getString("w1") + " kgs");
                     deliveryAddress.setText(details.getString("delivery_addr"));
                     billingAddress.setText(details.getString("billing"));
                     dispatchedDate.setText(details.getString("ts1"));
-                    rate.setText(details.getString("rate")+"/kg");
-                    buyerId.setText("Buyer Id :"+details.getString("buyer_id"));
+                    rate.setText(details.getString("rate") + "/kg");
+                    buyerId.setText("Buyer Id :" + details.getString("buyer_id"));
 
                     double RATE = Double.parseDouble(details.getString("rate"));
                     double w1 = Double.parseDouble(details.getString("w1"));
-                    totalAmount.setText((RATE*w1)+"");
+                    totalAmount.setText((RATE * w1) + "");
 
                 } catch (JSONException e) {
-                    Log.e("error", e+"");
+                    Log.e("error", e + "");
                     lc.dismissDialog();
                 }
                 lc.dismissDialog();
@@ -173,7 +180,7 @@ public class onClickDispatchedCard extends AppCompatActivity {
 
 
             }
-        }){
+        }) {
 
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
@@ -183,14 +190,16 @@ public class onClickDispatchedCard extends AppCompatActivity {
             }
         };
 
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
 
     }
 
 
-    private void deliveryDialog(){
+    private void deliveryDialog() {
         final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.on_click_delivery_button);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
         dialog.setCancelable(true);
         final EditText aa = dialog.findViewById(R.id.approvedAmount);
         final EditText remark = dialog.findViewById(R.id.remark);
@@ -204,11 +213,11 @@ public class onClickDispatchedCard extends AppCompatActivity {
                 String approved = aa.getText().toString();
                 String re = remark.getText().toString();
                 String dew = deliveredWe.getText().toString();
-                if(approved.length() !=0 && re.length() != 0 && dew.length() != 0) {
+                if (approved.length() != 0 && re.length() != 0 && dew.length() != 0) {
                     onSubmitClick(approved, re, dew);
                     dialog.dismiss();
-                    frequentlyUsedClass.sendOTP(buyerDetails.num[0], "Your Foodmonk verification code is " + " Dispatched " + " . Happy food ordering :)", onClickDispatchedCard.this);
-                }else
+                    // frequentlyUsedClass.sendOTP(buyerDetails.num[0], "Your Foodmonk verification code is " + " Dispatched " + " . Happy food ordering :)", onClickDispatchedCard.this);
+                } else
                     Toast.makeText(onClickDispatchedCard.this, "All Fields Are Compulsory.", Toast.LENGTH_SHORT).show();
             }
         });
@@ -224,15 +233,24 @@ public class onClickDispatchedCard extends AppCompatActivity {
         dialog.show();
     }
 
-    private void onSubmitClick(final String aa, final String remark, final String dw){
+    private void onSubmitClick(final String aa, final String remark, final String dw) {
         lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ON_CLICK_DELIVERED_BUTTON, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
 
+                if (getIntent().getStringExtra("f").equals("0")) {
+                    Intent intent = new Intent(onClickDispatchedCard.this, sale.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                }else
+                    getSaleDetail(onClickDispatchedCard.this);
+
+
+
+
                 check = true;
                 lc.dismissDialog();
-                getSaleDetail(onClickDispatchedCard.this);
                 finish();
             }
         }, new Response.ErrorListener() {
@@ -247,7 +265,7 @@ public class onClickDispatchedCard extends AppCompatActivity {
 
                 lc.dismissDialog();
             }
-        }){
+        }) {
 
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
@@ -266,11 +284,11 @@ public class onClickDispatchedCard extends AppCompatActivity {
             }
         };
 
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 
-    private void onClickCancelButton(){
+    private void onClickCancelButton() {
 
         lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ON_CLICK_DELIVERED_SALE_CARD_CANCEL_BUTTON, new Response.Listener<String>() {
@@ -279,7 +297,14 @@ public class onClickDispatchedCard extends AppCompatActivity {
 
                 lc.dismissDialog();
                 check = true;
-               getSaleDetail(onClickDispatchedCard.this);
+
+                if (getIntent().getStringExtra("f").equals("0")) {
+                    Intent intent = new Intent(onClickDispatchedCard.this, sale.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                }else
+                    getSaleDetail(onClickDispatchedCard.this);
+
                 finish();
 
 
@@ -288,6 +313,7 @@ public class onClickDispatchedCard extends AppCompatActivity {
             @Override
             public void onErrorResponse(VolleyError error) {
 
+                lc.dismissDialog();
                 if (error instanceof TimeoutError) {
                     Toast.makeText(onClickDispatchedCard.this, "Time out. Reload.", Toast.LENGTH_SHORT).show();
                 } else
@@ -295,7 +321,7 @@ public class onClickDispatchedCard extends AppCompatActivity {
 
 
             }
-        }){
+        }) {
 
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
@@ -305,7 +331,7 @@ public class onClickDispatchedCard extends AppCompatActivity {
             }
         };
 
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
 
     }
 }

@@ -1,7 +1,9 @@
 package mayank.example.zendor.onClickSeller;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +14,10 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import mayank.example.zendor.R;
+import mayank.example.zendor.navigationDrawerOption.onClickCancelledCard;
+import mayank.example.zendor.navigationDrawerOption.onClickCollectedCard;
+import mayank.example.zendor.onClickBooked.onClickBookedCard;
+import mayank.example.zendor.onClickPicked.onClickPickedCard;
 
 /**
  * Created by mayank on 12/6/2017.
@@ -32,15 +38,15 @@ public class sellerPurchasesAdapter extends RecyclerView.Adapter<sellerPurchases
     public purchaseHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view;
         view = LayoutInflater.from(mContext).inflate(R.layout.booked_card_data, parent, false);
-        purchaseHolder holder = new purchaseHolder(view);
-        return holder;
+        return new purchaseHolder(view);
     }
 
     @Override
     public void onBindViewHolder(purchaseHolder holder, int position) {
 
-        sellerPurchaseClass current = list.get(position);
+        final sellerPurchaseClass current = list.get(position);
         switch (current.getFlag()){
+
             case "bk":
                 holder.weightText.setText("Est. Weight");
                 holder.status_text.setText("Booked By");
@@ -72,7 +78,44 @@ public class sellerPurchasesAdapter extends RecyclerView.Adapter<sellerPurchases
                 holder.ts_text.setTextColor(Color.parseColor("#7cb342"));
                 setCard(holder, current);
                 break;
+
         }
+        holder.view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bundle bundle = new Bundle();
+                bundle.putString("pid", current.getPid());
+                switch (current.getFlag()){
+                    case "bk":
+                        Intent intent = new Intent(mContext, onClickBookedCard.class);
+                        intent.putExtra("pid",current.getPid());
+                        mContext.startActivity(intent);
+                        break;
+
+                    case "pk":
+                        Intent intent1 = new Intent(mContext, onClickPickedCard.class);
+                        intent1.putExtra("pid",current.getPid());
+                        mContext.startActivity(intent1);
+                        break;
+
+                    case "cn":
+                        Intent intent2 = new Intent(mContext, onClickCancelledCard.class);
+                        bundle.putString("extra", "1");
+                        intent2.putExtra("extras",bundle);
+                        mContext.startActivity(intent2);
+                        break;
+
+                    case "co":
+                        Intent intent3 = new Intent(mContext, onClickCollectedCard.class);
+                        bundle.putString("extra", "1");
+                        intent3.putExtra("extras",bundle);
+                        mContext.startActivity(intent3);
+                        break;
+
+                }
+            }
+        });
+
 
 
 
@@ -84,9 +127,11 @@ public class sellerPurchasesAdapter extends RecyclerView.Adapter<sellerPurchases
     }
 
     public class purchaseHolder extends RecyclerView.ViewHolder {
-        TextView commodity, weight, rate, amount, name, ts, ts_text, weightText, status_text;
+        TextView commodity, weight, rate, amount, name, ts, ts_text, weightText, status_text, pid;
+        View view;
         public purchaseHolder(View itemView) {
             super(itemView);
+            view = itemView;
             commodity = itemView.findViewById(R.id.cname);
             weight = itemView.findViewById(R.id.weight);
             rate = itemView.findViewById(R.id.rate);
@@ -96,6 +141,7 @@ public class sellerPurchasesAdapter extends RecyclerView.Adapter<sellerPurchases
             weightText = itemView.findViewById(R.id.weightText);
             status_text = itemView.findViewById(R.id.statusText);
             ts_text = itemView.findViewById(R.id.status_ts);
+            pid = itemView.findViewById(R.id.pid);
         }
     }
 

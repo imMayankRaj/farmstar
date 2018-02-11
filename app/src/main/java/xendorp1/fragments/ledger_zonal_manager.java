@@ -2,15 +2,18 @@ package xendorp1.fragments;
 
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -36,8 +39,12 @@ import mayank.example.zendor.ApplicationQueue;
 import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
+import mayank.example.zendor.expenseAdapter;
+import mayank.example.zendor.expenseClass;
+import mayank.example.zendor.onClickExecutive.executiveLedger;
 import mayank.example.zendor.onClickSeller.ledgerAdapter;
 import mayank.example.zendor.onClickSeller.sellerLedger;
+import xendorp1.application_classes.AppController;
 
 import static android.content.Context.MODE_PRIVATE;
 import static mayank.example.zendor.MainActivity.showError;
@@ -58,6 +65,10 @@ public class ledger_zonal_manager extends Fragment {
     private SharedPreferences sharedPreferences;
     private LoadingClass lc;
     private String CB;
+    private ImageView paymentRequest;
+    private ArrayList<expenseClass> expenseList;
+    private String pos;
+
 
 
     public ledger_zonal_manager() {
@@ -84,14 +95,21 @@ public class ledger_zonal_manager extends Fragment {
         ledgerList = new ArrayList<>();
         request = view.findViewById(R.id.request);
         addCredit = view.findViewById(R.id.addCredit);
+        paymentRequest = view.findViewById(R.id.paymentRequest);
+
 
         lc = new LoadingClass(getActivity());
         sharedPreferences = getActivity().getSharedPreferences("details", MODE_PRIVATE);
 
+        pos = sharedPreferences.getString("position", "");
+
+        if(pos.equals("2") || pos.equals("1"))
+            paymentRequest.setVisibility(View.GONE);
 
         getZmCb();
         getZmLedger();
 
+        expenseList = new ArrayList<>();
         request.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -118,8 +136,191 @@ public class ledger_zonal_manager extends Fragment {
             }
         });
 
+        paymentRequest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getExpensesDetails();
+            }
+        });
+
         return view;
     }
+
+    private void getExpensesDetails(){
+        expenseList.clear();
+        lc.showDialog();
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.EXPENSES, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+
+                    JSONObject jsonObject  =new JSONObject(response);
+                    JSONArray details = jsonObject.getJSONArray("details");
+
+                    for(int i = 0;i<details.length();i++){
+                        String rid = details.getJSONObject(i).getString("rid");
+                        String t_details = details.getJSONObject(i).getString("details");
+                        String amount = details.getJSONObject(i).getString("amount");
+                        expenseList.add(new expenseClass(amount, rid, t_details));
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+
+                }
+
+                lc.dismissDialog();
+                showExpenseDialog();
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                lc.dismissDialog();
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, executiveLedger.class.getName(), getActivity());
+
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("id", zmid);
+                return params;
+            }
+        };
+
+        AppController.getInstance().addToRequestQueue(stringRequest);
+
+    }
+
+    private void showExpenseDialog(){
+
+        AlertDialog.Builder builderSingle = new AlertDialog.Builder(getActivity());
+        builderSingle.setTitle("Expenses : ");
+
+
+        final ArrayAdapter<expenseClass> arrayAdapter = new expenseAdapter(getActivity(), expenseList);
+
+        builderSingle.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        builderSingle.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                createExpenseOnClickDialog(dialog, which);
+            }
+        });
+        builderSingle.create();
+        builderSingle.show();
+
+    }
+
+    private void createExpenseOnClickDialog(final DialogInterface d, int position){
+
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.expense_on_click);
+
+        TextView accept = dialog.findViewById(R.id.accept);
+        TextView reject = dialog.findViewById(R.id.reject);
+        ImageView back = dialog.findViewById(R.id.back);
+        final EditText remarks = dialog.findViewById(R.id.remarks);
+
+
+        TextView det = dialog.findViewById(R.id.details);
+        TextView amt = dialog.findViewById(R.id.amount);
+
+
+        final String rid = expenseList.get(position).getRid();
+        final String amount = expenseList.get(position).getAmount();
+        String details = expenseList.get(position).getDetails();
+
+        det.setText(details);
+        amt.setText('\u20B9'+ amount);
+
+
+
+        back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        accept.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String rem = remarks.getText().toString();
+                lc.showDialog();
+                updateExpenseStatus("a", rid, amount, rem);
+                dialog.dismiss();
+                d.dismiss();
+            }
+        });
+
+        reject.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String rem = remarks.getText().toString();
+                if(rem.length() == 0){
+                    Toast.makeText(getActivity(), "Please specify reasons.", Toast.LENGTH_SHORT).show();
+                }else {
+                    lc.showDialog();
+                    updateExpenseStatus("j", rid, amount, rem);
+                    dialog.dismiss();
+                    d.dismiss();
+                }
+            }
+        });
+
+        dialog.show();
+    }
+    private void updateExpenseStatus(final String state, final String id, final String amount, final String rem){
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.EXPENSES_ON_CLICK,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        lc.dismissDialog();
+                        getZmCb();
+                        getZmLedger();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                lc.dismissDialog();
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, executiveLedger.class.getName(), getActivity());
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                String uid = sharedPreferences.getString("id", "");
+
+                Map<String, String> params = new HashMap<>();
+                params.put("status", state);
+                params.put("rid", id);
+                params.put("amount", amount);
+                params.put("id", zmid);
+                params.put("uid", uid);
+                params.put("rem", rem);
+                return params;
+            }
+        };
+
+        AppController.getInstance().addToRequestQueue(stringRequest);
+
+    }
+
 
 
     private void getZmCb() {
@@ -131,7 +332,7 @@ public class ledger_zonal_manager extends Fragment {
                 try {
                     JSONObject json = new JSONObject(response);
                     CB = json.getString("current_balance");
-                    cb.setText(CB);
+                    cb.setText('\u20B9'+CB);
                 } catch (JSONException e) {
                     e.printStackTrace();
                     lc.dismissDialog();
@@ -163,7 +364,7 @@ public class ledger_zonal_manager extends Fragment {
             }
         };
 
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
     private void getZmLedger() {
@@ -178,11 +379,16 @@ public class ledger_zonal_manager extends Fragment {
                     JSONObject json = new JSONObject(response);
                     JSONArray ledgerArray = json.getJSONArray("ledger");
                     for (int i = 0; i < ledgerArray.length(); i++) {
+
                         JSONObject ledger = ledgerArray.getJSONObject(i);
                         String date = ledger.getString("date");
                         String pid = ledger.getString("pid");
                         String balance = ledger.getString("Balance");
                         String cd = ledger.getString("cd");
+                        try {
+                            if (cd.substring(cd.lastIndexOf(" ")).equals(" cr") || cd.substring(cd.lastIndexOf(" ")).equals(" dr"))
+                                cd = '\u20B9' + cd;
+                        }catch (Exception e){}
                         ledgerList.add(new sellerLedger.ledgerClass(date, pid, cd, '\u20B9' + balance));
                     }
 
@@ -223,7 +429,7 @@ public class ledger_zonal_manager extends Fragment {
             }
         };
 
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
     private void addCreditDialog() {
@@ -297,11 +503,14 @@ public class ledger_zonal_manager extends Fragment {
             public void onClick(View v) {
                 String amt = amount.getText().toString();
                 String description = desc.getText().toString();
-                int a = Integer.parseInt(amt);
+                double a = Double.parseDouble(amt);
                 double cb = Double.parseDouble(CB);
-                if (a <= cb)
-                    sendRequest(amt, description);
-                else
+                if (a <= cb) {
+                    if (pos.equals("0")) {
+                        sendRequestAdmin(amt, description);
+                    } else
+                        sendRequest(amt, description);
+                } else
                     Toast.makeText(getActivity(), "Not Enough Credits.", Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
             }
@@ -346,7 +555,7 @@ public class ledger_zonal_manager extends Fragment {
             }
         };
 
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
     private void addCredit(final String amt, final String desc) {
@@ -387,8 +596,49 @@ public class ledger_zonal_manager extends Fragment {
             }
         };
 
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
+
+    private void sendRequestAdmin(final String amt, final String desc) {
+
+        lc.showDialog();
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ADMIN_DIRECT_REQUEST,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+
+                        getZmCb();
+                        getZmLedger();
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                lc.dismissDialog();
+                Toast.makeText(getActivity(), "Some Error Occured", Toast.LENGTH_SHORT).show();
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, executiveLedger.class.getName(), getActivity());
+
+
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                String id = sharedPreferences.getString("id", "");
+
+                Map<String, String> parameters = new HashMap<>();
+                parameters.put("id", zmid);
+                parameters.put("amt", amt);
+                parameters.put("des", desc);
+                parameters.put("rec", id);
+                return parameters;
+            }
+        };
+        AppController.getInstance().addToRequestQueue(stringRequest);
+    }
 
 }

@@ -63,7 +63,7 @@
 
 
             <EditText
-                android:inputType="number"
+                android:inputType="numberDecimal"
                 android:gravity="center"
                 android:id="@+id/amount"
                 android:layout_weight="1"

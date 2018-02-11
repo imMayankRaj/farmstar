@@ -20,7 +20,7 @@ public class LoadingClass {
     }
 
     public static LoadingClass getInstance(Context context) {
-        return new LoadingClass(context);
+        return new LoadingClass(context.getApplicationContext());
     }
 
     private void instantiateDialog(){

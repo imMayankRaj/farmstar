@@ -1,19 +1,30 @@
 package mayank.example.zendor;
 
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.app.job.JobScheduler;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.ColorDrawable;
+import android.net.ConnectivityManager;
 import android.net.Network;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -37,10 +48,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -56,7 +69,11 @@ import com.bumptech.glide.Glide;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.security.Permission;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,6 +91,7 @@ import mayank.example.zendor.navigationDrawerOption.allPurchases;
 import mayank.example.zendor.navigationDrawerOption.paymentRequest;
 import mayank.example.zendor.navigationDrawerOption.sale;
 import mayank.example.zendor.navigationDrawerOption.wallet;
+import xendorp1.application_classes.AppController;
 import xendorp1.fragments.buyers;
 import xendorp1.fragments.executive_zonal_manager;
 import xendorp1.fragments.executives;
@@ -97,6 +115,12 @@ public class MainActivity extends AppCompatActivity
     public static ArrayList<searchClass> searchList1;
     private ImageView cut;
     private searchSellerAdapter adapter;
+    BroadcastReceiver networkChangeReceiver;
+    public static Toast toast;
+    public static View view;
+    Dialog dialog;
+
+    //  private int paddingDp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,13 +142,36 @@ public class MainActivity extends AppCompatActivity
         Name = header.findViewById(R.id.name);
         ImageView imageView = header.findViewById(R.id.imageView);
         cut = findViewById(R.id.cut);
+        view = findViewById(R.id.parent);
 
-        searchSeller.getBackground().mutate().setColorFilter(getResources().getColor(R.color.white), PorterDuff.Mode.SRC_ATOP);
 
+        toast = new Toast(getApplicationContext());
         searchList = new ArrayList<>();
         sellerList = new ArrayList<>();
         searchList1 = new ArrayList<>();
 
+        // Toast.makeText(this, R.string.app_name, Toast.LENGTH_SHORT).show();
+
+
+        networkChangeReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                ConnectivityManager cm = (ConnectivityManager) context
+                        .getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+                boolean isConnected = activeNetwork != null
+                        && activeNetwork.isConnectedOrConnecting();
+
+
+                if (!isConnected) {
+                    Intent i = new Intent(context, dialogActivity.class);
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(i);
+                }
+            }
+        };
+
+        registerReceiver(networkChangeReceiver, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
 
         viewPager.setOffscreenPageLimit(3);
 
@@ -133,10 +180,19 @@ public class MainActivity extends AppCompatActivity
         getSearchData();
         getSearchData2();
 
+        // checkConnection();
+
+      /*  int paddingPixel = 25;
+        float density = getResources().getDisplayMetrics().density;
+        paddingDp = (int)(paddingPixel * density);*/
+
+
         createPager();
         sharedPreferences = getSharedPreferences("details", MODE_PRIVATE);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+
+        toggle.getDrawerArrowDrawable().setColor(getResources().getColor(R.color.darkGrey));
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
@@ -178,21 +234,39 @@ public class MainActivity extends AppCompatActivity
                 if (s.length() != 0) {
                     cut.setImageDrawable(null);
                     cut.setBackgroundResource(R.drawable.ic_cancel_black_24dp);
+                    //   cut.setPadding(paddingDp, paddingDp,paddingDp,paddingDp);
+
 
                     ArrayList<sellerClass> sellerList = new ArrayList<>();
 
-                    for (int i = 0; i < sellers.arrayList.size(); i++) {
-                        String num[] = sellers.arrayList.get(i).getNumber().split(",");
-                        for (int k = 0; k < num.length; k++) {
-                            if (num[k].contains(s)) {
+                    try {
+
+                        int a = Integer.parseInt(searchSeller.getText().toString());
+                        for (int i = 0; i < sellers.arrayList.size(); i++) {
+                            String num[] = sellers.arrayList.get(i).getNumber().split(",");
+                            for (int k = 0; k < num.length; k++) {
+                                if (num[k].contains(s)) {
+                                    sellerList.add(sellers.arrayList.get(i));
+                                }
+                            }
+                        }
+
+                    } catch (Exception e) {
+                        for (int i = 0; i < sellers.arrayList.size(); i++) {
+                            String num = sellers.arrayList.get(i).getName();
+                            if (num.toLowerCase().contains(s.toString().toLowerCase())) {
                                 sellerList.add(sellers.arrayList.get(i));
                             }
+
                         }
                     }
 
                     sellerAdapter adapter = new sellerAdapter(MainActivity.this, sellerList);
                     sellers.recyclerView.setAdapter(adapter);
                 } else {
+
+                    sellerAdapter adapter = new sellerAdapter(MainActivity.this, sellers.arrayList);
+                    sellers.recyclerView.setAdapter(adapter);
                     cut.setImageDrawable(null);
                     cut.setBackgroundResource(R.drawable.ic_search_black_24dp);
                 }
@@ -223,7 +297,15 @@ public class MainActivity extends AppCompatActivity
                 break;
         }
 
+
         contact.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, ContactAtivity.class));
+            }
+        });
+
+      /*  contact.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 final Dialog dialog = new Dialog(MainActivity.this);
@@ -264,7 +346,7 @@ public class MainActivity extends AppCompatActivity
                 drawer.closeDrawer(GravityCompat.START);
 
             }
-        });
+        });*/
 
         navigationView.setNavigationItemSelectedListener(this);
 
@@ -275,6 +357,46 @@ public class MainActivity extends AppCompatActivity
                     0);
         }
     }
+
+    public void isOnline() {
+        try {
+            ConnectivityManager cm = (ConnectivityManager)
+                    getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            boolean isConnected = activeNetwork != null
+                    && activeNetwork.isConnectedOrConnecting();
+
+            if (isConnected) {
+                Process p1 = java.lang.Runtime.getRuntime().exec("ping -c 1 www.google.com");
+                int returnVal = p1.waitFor();
+                Log.e("time lag", returnVal + "");
+                if (returnVal != 0) {
+                    Intent i = new Intent(this, dialogActivity.class);
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(i);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        registerReceiver(networkChangeReceiver, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            unregisterReceiver(networkChangeReceiver);
+        } catch (Exception e) {
+
+        }
+    }
+
 
     @Override
     public void onBackPressed() {
@@ -376,6 +498,51 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        try {
+            unregisterReceiver(networkChangeReceiver);
+        } catch (Exception e) {
+
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(networkChangeReceiver, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
+
+       /* AppController.getInstance().setConnectivityListener(new ConnectivityReceiver.ConnectivityReceiverListener() {
+            @Override
+            public void onNetworkConnectionChanged(boolean isConnected) {
+                showSnack(isConnected);
+            }
+        });*/
+    }
+
+
+    private void showSnack(boolean isConnected) {
+        String message;
+        int color;
+        if (isConnected) {
+            message = "Good! Connected to Internet";
+            color = Color.WHITE;
+        } else {
+            message = "Sorry! Not connected to internet";
+            color = Color.RED;
+        }
+
+        Snackbar snackbar = Snackbar
+                .make(findViewById(R.id.parent), message, Snackbar.LENGTH_LONG);
+
+        View sbView = snackbar.getView();
+        TextView textView = (TextView) sbView.findViewById(android.support.design.R.id.snackbar_text);
+        textView.setTextColor(color);
+        snackbar.show();
+    }
+
+
     public static class ViewPagerAdapter extends FragmentStatePagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();
         private final List<String> mFragmentTitleList = new ArrayList<>();
@@ -463,32 +630,32 @@ public class MainActivity extends AppCompatActivity
 
         });
 
-        ApplicationQueue.getInstance(this).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
     private void getSearchData2() {
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, URLclass.GET_SELLER_DROPDOWN_DETAILS,
                 new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
+                    @Override
+                    public void onResponse(String response) {
 
-                try {
-                    JSONObject json = new JSONObject(response);
-                    JSONArray jArray = json.getJSONArray("seller_details");
-                    for (int i = 0; i < jArray.length(); i++) {
-                        JSONObject details = jArray.getJSONObject(i);
-                        String name = details.getString("name");
-                        String number = details.getString("number");
-                        String id = details.getString("seller_id");
-                        searchList1.add(new searchClass(name, number, id));
+                        try {
+                            JSONObject json = new JSONObject(response);
+                            JSONArray jArray = json.getJSONArray("seller_details");
+                            for (int i = 0; i < jArray.length(); i++) {
+                                JSONObject details = jArray.getJSONObject(i);
+                                String name = details.getString("name");
+                                String number = details.getString("number");
+                                String id = details.getString("seller_id");
+                                searchList1.add(new searchClass(name, number, id));
+                            }
+
+                        } catch (JSONException e) {
+                            Log.e("adapter error", e + "");
+                        }
                     }
-
-                } catch (JSONException e) {
-                    Log.e("adapter error", e + "");
-                }
-            }
-        }, new Response.ErrorListener() {
+                }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(final VolleyError error) {
                 if (error instanceof TimeoutError) {
@@ -499,7 +666,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        ApplicationQueue.getInstance(this).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
 
     }
 
@@ -532,7 +699,11 @@ public class MainActivity extends AppCompatActivity
     public static void showError(final VolleyError error, final String string, final Activity activity) {
         if (error.getClass() == TimeoutError.class) {
             Toast.makeText(activity, "Time Out. Please Reload.", Toast.LENGTH_SHORT).show();
+        } else if (error.getClass() == NoConnectionError.class) {
+            Log.e("error", "Error for network call", error);
+            Toast.makeText(activity, "Something went wrong. Try Again.", Toast.LENGTH_SHORT).show();
         } else {
+
             AlertDialog.Builder builder;
             builder = new AlertDialog.Builder(activity);
             builder.setCancelable(false);
@@ -545,14 +716,111 @@ public class MainActivity extends AppCompatActivity
                             Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
                                     "mailto", "bugs.codebuckets@gmail.com", null));
                             emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Report Error.");
-                            emailIntent.putExtra(Intent.EXTRA_TEXT, error + "\nMessage : "+ error.getMessage()+"\n" + string);
+                            emailIntent.putExtra(Intent.EXTRA_TEXT, error + "\nMessage : " +
+                                    "\n"+ error.getMessage() +"\n\n"+getErroR(error.networkResponse.data)+"\n\n"+ error.getCause()+ "\n\n"+getStackTrace(error) +"\n\n"+ string);
                             activity.startActivity(Intent.createChooser(emailIntent, "Send email using..."));
                             dialog.dismiss();
                         }
                     })
                     .show();
+            Log.e("asdasd", "sadas", error);
+        }
+    }
+    public static String getStackTrace(final Throwable throwable) {
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw, true);
+        throwable.printStackTrace(pw);
+        return sw.getBuffer().toString();
+    }
+
+    public static String getErroR(byte[] b){
+        String s = null;
+        for (int i =0;i<b.length;i++){
+            s = s+b[0];
+        }
+        return s;
+    }
+
+    public static void showToast(Context context, String text) {
+
+        toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        View view = toast.getView();
+        view.setBackgroundResource(R.drawable.toast_background);
+        TextView v = (TextView) toast.getView().findViewById(android.R.id.message);
+        v.setTextColor(Color.parseColor("#166e5e"));
+        toast.show();
+    }
+    String currentVersion, latestVersion;
+
+    private void getCurrentVersion(){
+        PackageManager pm = this.getPackageManager();
+        PackageInfo pInfo = null;
+
+        try {
+            pInfo =  pm.getPackageInfo(this.getPackageName(),0);
+
+        } catch (PackageManager.NameNotFoundException e1) {
+            e1.printStackTrace();
+        }
+        currentVersion = pInfo.versionName;
+
+        new GetLatestVersion().execute();
+
+    }
+
+    private class  GetLatestVersion extends AsyncTask<String, String, JSONObject> {
+
+        private ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected JSONObject doInBackground(String... params) {
+            try {
+        //It retrieves the latest version by scraping the content of current version from play store at runtime
+                Document doc = Jsoup.connect("").get();
+                latestVersion = doc.getElementsByAttributeValue
+                        ("itemprop","softwareVersion").first().text();
+
+            }catch (Exception e){
+                e.printStackTrace();
+
+            }
+
+            return new JSONObject();
+        }
+
+        @Override
+        protected void onPostExecute(JSONObject jsonObject) {
+            if(latestVersion!=null) {
+                if (!currentVersion.equalsIgnoreCase(latestVersion)){
+                    if(!isFinishing()){ //This would help to prevent Error : BinderProxy@45d459c0 is not valid; is your activity running? error
+                        showUpdateDialog();
+                    }
+                }
+            }
+
+            super.onPostExecute(jsonObject);
         }
     }
 
+    private void showUpdateDialog(){
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("A New Update is Available");
+        builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse
+                        ("market://details?id=yourAppPackageName")));
+                dialog.dismiss();
+            }
+        });
 
+        builder.setCancelable(false);
+        dialog = builder.show();
+    }
 }

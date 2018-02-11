@@ -7,10 +7,10 @@
     app:cardElevation="5dp"
     android:layout_marginBottom="10dp"
     android:layout_height="wrap_content">
+
     <RelativeLayout
+        android:padding="10dp"
         android:layout_width="match_parent"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
         android:layout_height="match_parent">
 
         <TextView
@@ -22,11 +22,12 @@
         <TextView
             android:id="@+id/name"
             android:maxLines="1"
+            android:textColor="@color/lightGreen"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:layout_width="wrap_content"
-            android:textSize="20dp"
+            android:textSize="16sp"
             android:text="Name"
             android:layout_height="wrap_content" />
         <Button
@@ -45,13 +46,15 @@
             android:layout_height="wrap_content">
         <TextView
             android:id="@+id/username"
+            android:textColor="@color/lightGreen"
+
             android:text="Username: "
-            android:textSize="20dp"
+            android:textSize="16sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <TextView
             android:id="@+id/username_info"
-            android:textSize="20dp"
+            android:textSize="16sp"
             android:layout_toRightOf="@+id/username"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
@@ -65,12 +68,14 @@
         <TextView
             android:id="@+id/password"
             android:text="Password: "
-            android:textSize="20dp"
+            android:textColor="@color/lightGreen"
+
+            android:textSize="16sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <TextView
             android:id="@+id/password_info"
-            android:textSize="20dp"
+            android:textSize="16sp"
             android:maxLines="1"
             android:layout_toRightOf="@+id/password"
             android:layout_width="wrap_content"
@@ -84,12 +89,14 @@
         <TextView
             android:id="@+id/zonename"
             android:text="Zone Name: "
-            android:textSize="20dp"
+            android:textSize="16sp"
+            android:textColor="@color/lightGreen"
+
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <TextView
             android:id="@+id/zone_info"
-            android:textSize="20dp"
+            android:textSize="16sp"
             android:layout_toRightOf="@+id/zonename"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
@@ -97,13 +104,16 @@
         <TextView
             android:id="@+id/curbal"
             android:text="Current balance: "
-            android:textSize="20dp"
+            android:textColor="@color/lightGreen"
+
+            android:textSize="16sp"
             android:layout_below="@+id/zonecont"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <TextView
             android:id="@+id/curbal_info"
-            android:textSize="20dp"
+            android:textSize="16sp"
+            android:textStyle="bold"
             android:layout_below="@+id/zonecont"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

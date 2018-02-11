@@ -4,9 +4,12 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -35,6 +38,7 @@ import mayank.example.zendor.onClickSeller.OnClickSellerCard;
 import mayank.example.zendor.onClickSeller.sellerDetails;
 import mayank.example.zendor.onClickSeller.sellerLedger;
 import mayank.example.zendor.onClickSeller.sellerPurchases;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
 
@@ -45,9 +49,10 @@ public class sale extends AppCompatActivity {
     private ArrayList<buyerSale.saleClass> deliveredlist;
     private ArrayList<buyerSale.saleClass> paymentReceivedList;
     private ViewPager viewPager;
-    private TabLayout header;
-    private ImageView back;
+    public static TabLayout headerSale;
+    private Toolbar toolbar;
     LoadingClass lc ;
+    public static TextView recreate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,15 +60,24 @@ public class sale extends AppCompatActivity {
         setContentView(R.layout.activity_sale);
 
         viewPager = findViewById(R.id.viewPager);
-        header = findViewById(R.id.header);
-        header.setupWithViewPager(viewPager);
-        back = findViewById(R.id.back);
+        headerSale = findViewById(R.id.header);
+        headerSale.setupWithViewPager(viewPager);
+        toolbar = findViewById(R.id.toolbar);
+        recreate = findViewById(R.id.recreate);
+
         lc = new LoadingClass(this);
 
+        recreate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                recreate();
+            }
+        });
 
         viewPager.setOffscreenPageLimit(3);
 
-        back.setOnClickListener(new View.OnClickListener() {
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
@@ -76,7 +90,7 @@ public class sale extends AppCompatActivity {
 
         getSaleDetail();
 
-        createpager();
+     //   createpager();
     }
 
     private void createpager(){
@@ -89,6 +103,7 @@ public class sale extends AppCompatActivity {
 
     private void getSaleDetail(){
         lc.showDialog();
+
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ALL_SALES, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -106,6 +121,7 @@ public class sale extends AppCompatActivity {
                         String ts = null;
                         String weight = null;
                         switch (flag){
+
                             case "di":
                                 ts = sale.getString("ts1");
                                 weight = sale.getString("w1");
@@ -121,11 +137,11 @@ public class sale extends AppCompatActivity {
                                 weight = sale.getString("w2");
                                 paymentReceivedList.add(new buyerSale.saleClass(bname, sid, commodity, weight, rate, flag, ts));
                                 break;
+
                         }
                     }
                 } catch (JSONException e) {
                     lc.dismissDialog();
-                    Toast.makeText(sale.this, "Some error occured", Toast.LENGTH_SHORT).show();
                     Log.e("sale erros", e+"");
                 }
 
@@ -147,7 +163,7 @@ public class sale extends AppCompatActivity {
             }
         });
 
-        ApplicationQueue.getInstance(this).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 

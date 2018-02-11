@@ -10,6 +10,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -44,6 +45,7 @@ import mayank.example.zendor.onClickSeller.OnClickSellerCard;
 import mayank.example.zendor.onClickSeller.sellerDetails;
 import mayank.example.zendor.onClickSeller.sellerLedger;
 import mayank.example.zendor.onClickSeller.sellerPurchases;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
 import static mayank.example.zendor.onClickBuyer.buyerSale.getSaleDetail;
@@ -52,12 +54,13 @@ public class onClickBuyerCard extends AppCompatActivity {
 
 
     private ViewPager viewPager;
-    private TabLayout header;
+    public static TabLayout header;
     private String buyer_id;
     private TextView saleButton;
     private String commo[];
     private LoadingClass lc;
     private SharedPreferences sharedPreferences;
+    private Toolbar toolbar;
 
 
     @Override
@@ -71,6 +74,16 @@ public class onClickBuyerCard extends AppCompatActivity {
         viewPager = findViewById(R.id.viewPager);
         header = findViewById(R.id.header);
         saleButton = findViewById(R.id.saleButton);
+        toolbar = findViewById(R.id.toolbar);
+
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
         header.setupWithViewPager(viewPager);
         sharedPreferences = getSharedPreferences("details", MODE_PRIVATE);
@@ -84,13 +97,13 @@ public class onClickBuyerCard extends AppCompatActivity {
         });
         viewPager.setOffscreenPageLimit(3);
 
-        if(onClickDispatchedCard.check){
+        if (onClickDispatchedCard.check) {
             onClickDispatchedCard.check = false;
         }
         createPager();
     }
 
-    private void createPager(){
+    private void createPager() {
         viewPagerAdapter adapter = new viewPagerAdapter(getSupportFragmentManager());
         adapter.addFrag(buyerDetails.newInstance(buyer_id), "Details");
         adapter.addFrag(buyerSale.newInstance(buyer_id), "Sale");
@@ -116,7 +129,7 @@ public class onClickBuyerCard extends AppCompatActivity {
             return fragmentArrayList.size();
         }
 
-        public void addFrag(Fragment fragment, String title){
+        public void addFrag(Fragment fragment, String title) {
             fragmentArrayList.add(fragment);
             titleList.add(title);
         }
@@ -127,7 +140,7 @@ public class onClickBuyerCard extends AppCompatActivity {
         }
     }
 
-    private void getCommodities(){
+    private void getCommodities() {
         StringRequest stringRequest = new StringRequest(Request.Method.GET, URLclass.GET_COMMODITY, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -146,11 +159,11 @@ public class onClickBuyerCard extends AppCompatActivity {
 
             }
         });
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 
-    private void addNewSale(final String comm, final String weight, final String rat, final String number, final String dc, final String address, final String baddress){
+    private void addNewSale(final String comm, final String weight, final String rat, final String number, final String dc, final String address, final String baddress) {
 
         lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ON_CLICK_SALE_BUYER_BUTTON, new Response.Listener<String>() {
@@ -171,7 +184,7 @@ public class onClickBuyerCard extends AppCompatActivity {
 
 
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 SimpleDateFormat dateTimeInGMT = new SimpleDateFormat("yyyy-MMM-dd hh:mm:ss aa", Locale.ENGLISH);
@@ -195,11 +208,11 @@ public class onClickBuyerCard extends AppCompatActivity {
             }
         };
 
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 
-    private void showSaleDialog(){
+    private void showSaleDialog() {
         final Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.sale_dialog);
@@ -222,7 +235,7 @@ public class onClickBuyerCard extends AppCompatActivity {
         TextView cancel = dialog.findViewById(R.id.cancel);
         TextView save = dialog.findViewById(R.id.save);
 
-        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item, buyerDetails.comm.split(","));
+        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, buyerDetails.comm.split(","));
         spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); // The drop down view
         comm.setAdapter(spinnerArrayAdapter);
 
@@ -241,14 +254,17 @@ public class onClickBuyerCard extends AppCompatActivity {
                 String r = rate.getText().toString();
                 String vn = vnumber.getText().toString();
                 String dc = driverContact.getText().toString();
-                String da =deliveryAddress.getText().toString();
+                String da = deliveryAddress.getText().toString();
                 String ba = billingAddress.getText().toString();
 
-                addNewSale(commodity, we, r, vn, dc, da, ba);
-                dialog.dismiss();
-                frequentlyUsedClass.sendOTP(buyerDetails.num[0], "Your Foodmonk verification code is "+"Dispatched"+" . Happy food ordering :)", onClickBuyerCard.this);
-                frequentlyUsedClass.sendOTP(dc, "Your Foodmonk verification code is "+ da+" . Happy food ordering :)", onClickBuyerCard.this);
-
+                if (commodity.length() == 0 || we.length() == 0 || r.length() == 0 || vn.length() == 0 || dc.length() == 0 || da.length() == 0 || ba.length() == 0) {
+                    Toast.makeText(onClickBuyerCard.this, "Some Fields Are Left Empty.", Toast.LENGTH_SHORT).show();
+                } else {
+                    addNewSale(commodity, we, r, vn, dc, da, ba);
+                    dialog.dismiss();
+                    frequentlyUsedClass.sendOTP(buyerDetails.num[0], "Your Foodmonk verification code is " + "Dispatched" + " . Happy food ordering :)", onClickBuyerCard.this);
+                    frequentlyUsedClass.sendOTP(dc, "Your Foodmonk verification code is " + da + " . Happy food ordering :)", onClickBuyerCard.this);
+                }
             }
         });
 

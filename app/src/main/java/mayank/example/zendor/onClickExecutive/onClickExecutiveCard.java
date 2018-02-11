@@ -7,6 +7,8 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.View;
 
 import java.util.ArrayList;
 
@@ -19,10 +21,11 @@ import mayank.example.zendor.onClickSeller.sellerPurchases;
 public class onClickExecutiveCard extends AppCompatActivity {
 
     private ViewPager viewPager;
-    private TabLayout header;
+    public static TabLayout header;
     private String eid;
     private String name;
     public static String status;
+    private Toolbar toolbar;
 
 
     @Override
@@ -33,6 +36,16 @@ public class onClickExecutiveCard extends AppCompatActivity {
         viewPager = findViewById(R.id.viewPager);
         header = findViewById(R.id.header);
         header.setupWithViewPager(viewPager);
+        toolbar = findViewById(R.id.toolbar);
+
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
         viewPager.setOffscreenPageLimit(3);
 

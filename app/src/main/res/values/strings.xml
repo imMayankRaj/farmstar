@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Zendor</string>
+    <string name="app_name">Farmstar</string>
     <string name="app_nameC">ZENDOR</string>
     <string name="hint1">User Name</string>
     <string name="hint2">Password</string>

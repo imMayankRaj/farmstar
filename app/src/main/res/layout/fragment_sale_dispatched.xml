@@ -5,6 +5,32 @@
     tools:context="mayank.example.zendor.navigationDrawerOption.saleDispatched">
 
 
+    <LinearLayout
+        android:visibility="gone"
+        android:id="@+id/noDataLayout"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+        <ImageView
+            android:layout_gravity="center"
+            android:scaleType="centerCrop"
+            android:src="@drawable/no_data"
+            android:layout_width="100dp"
+            android:layout_height="100dp" />
+
+        <TextView
+            android:id="@+id/text"
+            android:textColor="#DD000000"
+            android:textSize="16sp"
+            android:text="No Booked Data Available"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/dispatchedRview"
         android:layout_width="match_parent"

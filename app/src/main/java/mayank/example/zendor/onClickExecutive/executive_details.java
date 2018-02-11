@@ -95,6 +95,11 @@ public class executive_details extends Fragment {
         call = rootview.findViewById(R.id.call);
         disable = rootview.findViewById(R.id.disable);
 
+
+        if(onClickExecutiveCard.status.equals("0")){
+            disable.setVisibility(View.GONE);
+        }
+
         disable.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -226,6 +231,7 @@ public class executive_details extends Fragment {
 
     private void disableExecutive(){
 
+        lc.showDialog();
         StringRequest strReq = new StringRequest(Request.Method.POST,
                 AppConfig.URL_DISABLE, new Response.Listener<String>() {
             @Override
@@ -247,6 +253,7 @@ public class executive_details extends Fragment {
                     Toast.makeText(getActivity(), "Some error occured. Please try again", Toast.LENGTH_LONG).show();
                     e.printStackTrace();
                 }
+                lc.dismissDialog();
             }
         }, new Response.ErrorListener() {
 
@@ -254,6 +261,7 @@ public class executive_details extends Fragment {
             public void onErrorResponse(VolleyError error) {
                 Toast.makeText(getActivity(), "Some error occured. Please try again", Toast.LENGTH_LONG).show();
 
+                lc.dismissDialog();
                 if (error instanceof TimeoutError) {
                     Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_LONG).show();
                 } else

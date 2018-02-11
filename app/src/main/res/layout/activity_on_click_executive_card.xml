@@ -7,8 +7,30 @@
     android:layout_height="match_parent"
     tools:context="mayank.example.zendor.onClickSeller.OnClickSellerCard">
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:background="@drawable/button_background"
+        app:titleTextColor="#ffffff"
+        android:layout_margin="@dimen/toolBarMargin"
+
+        android:layout_alignParentTop="true"
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+
+        <TextView
+            android:textColor="@color/lightGreen"
+            android:textSize="@dimen/toolBarTextDimen"
+            android:gravity="center|start"
+            android:text="Executive"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </android.support.v7.widget.Toolbar>
+
     <android.support.design.widget.TabLayout
         android:id="@+id/header"
+        android:background="@color/textBgColour"
+        app:tabIndicatorColor="@color/darkGreen"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 

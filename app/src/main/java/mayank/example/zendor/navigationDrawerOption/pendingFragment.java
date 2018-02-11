@@ -9,10 +9,15 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
 import mayank.example.zendor.R;
+
+import static mayank.example.zendor.MainActivity.showToast;
+import static mayank.example.zendor.navigationDrawerOption.paymentRequest.header;
 
 
 public class pendingFragment extends Fragment {
@@ -22,6 +27,9 @@ public class pendingFragment extends Fragment {
 
     public static String param = "request";
     private ArrayList<paymentRequest.requestClass> list;
+    private LinearLayout layout;
+    private TextView textView;
+
 
 
     public pendingFragment() {
@@ -55,6 +63,18 @@ public class pendingFragment extends Fragment {
         llm = new LinearLayoutManager(getActivity());
         pendingRecyclerView.setLayoutManager(llm);
         pendingRecyclerView.setHasFixedSize(true);
+
+        layout = view.findViewById(R.id.noDataLayout);
+        textView = view.findViewById(R.id.text);
+
+
+        layout.setVisibility(View.GONE);
+
+
+        if(list.size() == 0){
+            layout.setVisibility(View.VISIBLE);
+            textView.setText("No Pending Request.");
+        }
 
         paymentRequestAdapter adapter = new paymentRequestAdapter(getActivity(), list);
         pendingRecyclerView.setAdapter(adapter);

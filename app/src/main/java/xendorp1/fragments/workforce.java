@@ -1,6 +1,7 @@
 package xendorp1.fragments;
 
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -13,7 +14,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -32,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.R;
 import xendorp1.adapters.zone_card_recycler_adapter;
 import xendorp1.application_classes.AppConfig;
@@ -40,18 +44,24 @@ import xendorp1.cards.zone_card;
 
 import static android.content.ContentValues.TAG;
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.MainActivity.showToast;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 
-public class workforce extends Fragment implements SwipeRefreshLayout.OnRefreshListener{
+public class workforce extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private View rootview;
     private Toolbar toolbar;
     private RelativeLayout next;
     private RecyclerView recyclerView;
     private SwipeRefreshLayout swipeRefreshLayout;
     private zone_card_recycler_adapter zone_card_recycler_adapter;
+    private LoadingClass lc;
+    private LinearLayout layout;
+    private TextView textView;
+
+
     public workforce() {
         // Required empty public constructor
     }
@@ -59,18 +69,23 @@ public class workforce extends Fragment implements SwipeRefreshLayout.OnRefreshL
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        rootview=inflater.inflate(R.layout.fragment_workforce,container,false);
-        next=rootview.findViewById(R.id.next);
-        toolbar=rootview.findViewById(R.id.toolbar1);
-        recyclerView=rootview.findViewById(R.id.recycler);
+        rootview = inflater.inflate(R.layout.fragment_workforce, container, false);
+        next = rootview.findViewById(R.id.next);
+        toolbar = rootview.findViewById(R.id.toolbar1);
+        recyclerView = rootview.findViewById(R.id.recycler);
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(llm);
-        swipeRefreshLayout=rootview.findViewById(R.id.swiperefresh);
+        swipeRefreshLayout = rootview.findViewById(R.id.swiperefresh);
         swipeRefreshLayout.setOnRefreshListener(this);
+        lc = new LoadingClass(getActivity());
+        layout = rootview.findViewById(R.id.noDataLayout);
+        textView = rootview.findViewById(R.id.text);
+
         getZones();
-        toolbar.setTitle("Select Zone");
+
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -80,40 +95,36 @@ public class workforce extends Fragment implements SwipeRefreshLayout.OnRefreshL
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final AlertDialog dialog=new AlertDialog.Builder(getActivity())
+                final AlertDialog dialog = new AlertDialog.Builder(getActivity())
                         .setView(R.layout.add_zone)
                         .setCancelable(false)
                         .create();
                 dialog.show();
-                RelativeLayout submit=dialog.findViewById(R.id.submit);
-                RelativeLayout cancel=dialog.findViewById(R.id.cancel);
+                RelativeLayout submit = dialog.findViewById(R.id.submit);
+                RelativeLayout cancel = dialog.findViewById(R.id.cancel);
+
                 submit.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        //TODO
-                        final EditText zone_name=dialog.findViewById(R.id.zone_name_value);
-                        final EditText latitude=dialog.findViewById(R.id.lat_value);
-                        final EditText longitude=dialog.findViewById(R.id.long_value);
-                        if(zone_name.getText().length()==0||latitude.getText().length()==0||longitude.getText().length()==0)
-                        {
+
+                        final EditText zone_name = dialog.findViewById(R.id.zone_name_value);
+                        final EditText latitude = dialog.findViewById(R.id.lat_value);
+                        final EditText longitude = dialog.findViewById(R.id.long_value);
+                        if (zone_name.getText().length() == 0 || latitude.getText().length() == 0 || longitude.getText().length() == 0) {
                             Toast.makeText(getActivity(), "Please enter values of all the fields", Toast.LENGTH_SHORT).show();
-                        }
-                        else
-                        {
+                        } else {
+                            lc.showDialog();
                             StringRequest strReq = new StringRequest(Request.Method.POST,
                                     AppConfig.URL_ADD_ZONE, new Response.Listener<String>() {
                                 @Override
                                 public void onResponse(String response) {
                                     Log.d(TAG, "Register Response: " + response.toString());
                                     try {
-                                        JSONObject jobj=new JSONObject(response);
-                                        boolean error=jobj.getBoolean("error");
-                                        if(error)
-                                        {
+                                        JSONObject jobj = new JSONObject(response);
+                                        boolean error = jobj.getBoolean("error");
+                                        if (error) {
                                             Toast.makeText(getActivity(), "Some error occured. Please try again", Toast.LENGTH_SHORT).show();
-                                        }
-                                        else
-                                        {
+                                        } else {
                                             Toast.makeText(getActivity(), "Successfully added zone", Toast.LENGTH_SHORT).show();
                                             getZones();
                                             dialog.dismiss();
@@ -122,6 +133,7 @@ public class workforce extends Fragment implements SwipeRefreshLayout.OnRefreshL
                                         Toast.makeText(getActivity(), "Some error occured. Please try again", Toast.LENGTH_SHORT).show();
                                         e.printStackTrace();
                                     }
+                                    lc.dismissDialog();
                                 }
                             }, new Response.ErrorListener() {
 
@@ -129,22 +141,22 @@ public class workforce extends Fragment implements SwipeRefreshLayout.OnRefreshL
                                 public void onErrorResponse(VolleyError error) {
                                     Log.e(TAG, "" + error.getMessage());
                                     Toast.makeText(getActivity(), "Some error occured. Please try again", Toast.LENGTH_SHORT).show();
-
+                                    lc.dismissDialog();
                                     if (error instanceof TimeoutError) {
                                         Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
                                     } else
                                         showError(error, workforce.class.getName(), getActivity());
 
                                 }
-                            }){
+                            }) {
 
                                 @Override
                                 protected Map<String, String> getParams() {
                                     // Posting params to register url
                                     Map<String, String> params = new HashMap<String, String>();
-                                    params.put("zname",zone_name.getText().toString());
-                                    params.put("lati",latitude.getText().toString());
-                                    params.put("longi",longitude.getText().toString());
+                                    params.put("zname", zone_name.getText().toString());
+                                    params.put("lati", latitude.getText().toString());
+                                    params.put("longi", longitude.getText().toString());
                                     return params;
                                 }
                             };
@@ -158,8 +170,7 @@ public class workforce extends Fragment implements SwipeRefreshLayout.OnRefreshL
                         dialog.dismiss();
                     }
                 });
-                Toolbar toolbar1=dialog.findViewById(R.id.toolbar2);
-                toolbar1.setTitle("Add Zone");
+                Toolbar toolbar1 = dialog.findViewById(R.id.toolbar2);
                 toolbar1.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
                 toolbar1.setNavigationOnClickListener(new View.OnClickListener() {
                     @Override
@@ -173,23 +184,26 @@ public class workforce extends Fragment implements SwipeRefreshLayout.OnRefreshL
         });
         return rootview;
     }
+
     @Override
     public void onRefresh() {
         getZones();
     }
-    void getZones()
-    {
+
+    void getZones() {
+        lc.showDialog();
         swipeRefreshLayout.setRefreshing(true);
         StringRequest strReq = new StringRequest(Request.Method.GET,
                 AppConfig.URL_GET_ZONES, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
 
+                layout.setVisibility(View.GONE);
                 try {
-                    List<zone_card> zonelist=new ArrayList<>();
+                    List<zone_card> zonelist = new ArrayList<>();
                     JSONArray jsonArray = new JSONArray(response);
 
-                    for (int i=0;i<jsonArray.length();i++) {
+                    for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject jsonObject = jsonArray.getJSONObject(i);
                         zone_card zone_card = new zone_card();
                         zone_card.setZone_name(jsonObject.getString("zname"));
@@ -197,15 +211,20 @@ public class workforce extends Fragment implements SwipeRefreshLayout.OnRefreshL
                         zonelist.add(zone_card);
                     }
 
-                    zone_card_recycler_adapter=new zone_card_recycler_adapter(getActivity(),zonelist,workforce.this);
+                    zone_card_recycler_adapter = new zone_card_recycler_adapter(getActivity(), zonelist, workforce.this);
                     recyclerView.setAdapter(zone_card_recycler_adapter);
                     swipeRefreshLayout.setRefreshing(false);
+
 
                 } catch (JSONException e) {
                     swipeRefreshLayout.setRefreshing(false);
                     recyclerView.setAdapter(null);
                     e.printStackTrace();
+                    layout.setVisibility(View.VISIBLE);
+                    textView.setText("No Zones.");
+
                 }
+                lc.dismissDialog();
 
             }
         }, new Response.ErrorListener() {
@@ -214,6 +233,7 @@ public class workforce extends Fragment implements SwipeRefreshLayout.OnRefreshL
             public void onErrorResponse(VolleyError error) {
                 swipeRefreshLayout.setRefreshing(false);
                 recyclerView.setAdapter(null);
+                lc.dismissDialog();
 
                 if (error instanceof TimeoutError) {
                     Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();

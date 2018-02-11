@@ -17,6 +17,7 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
@@ -26,6 +27,11 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import mayank.example.zendor.onClickSeller.sellerLedger;
+import xendorp1.application_classes.AppController;
+
+import static mayank.example.zendor.MainActivity.showError;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -94,6 +100,7 @@ public class LoginActivity extends AppCompatActivity {
                         String id = res.getString("id");
                         String zid = res.getString("zid");
                         editor.putString("name",name);
+                        editor.putString("number", uname);
                         editor.putString("position",position);
                         editor.putString("path",path);
                         editor.putString("zone",zone);
@@ -119,6 +126,13 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e("error",error+"");
+                progressBar.setVisibility(View.GONE);
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(LoginActivity.this, "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, sellerLedger.class.getName(), LoginActivity.this);
+
                 Snackbar.make(view,"Network Error",BaseTransientBottomBar.LENGTH_LONG).show();
             }
         }){
@@ -130,8 +144,8 @@ public class LoginActivity extends AppCompatActivity {
                 return map;
             }
         };
-        stringRequest.setShouldCache(false);
-        requestQueue.add(stringRequest);
+
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 }

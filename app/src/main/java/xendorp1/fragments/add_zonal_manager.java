@@ -57,11 +57,13 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
 import mayank.example.zendor.sellerExtraData;
@@ -95,10 +97,10 @@ public class add_zonal_manager extends Fragment {
     private TextInputLayout passcont;
     private Spinner zone;
     private EditText primary_ph_no;
-    private ProgressBar progressBar;
     private zone_card_spinner_adapter zone_card_spinner_adapter;
     private String zid;
     private String imgPath;
+    private LoadingClass lc;
 
     public add_zonal_manager() {
         // Required empty public constructor
@@ -116,7 +118,6 @@ public class add_zonal_manager extends Fragment {
 
         rootview= inflater.inflate(R.layout.fragment_add_zonal_manager, container, false);
         photoChanged=false;
-        progressBar=rootview.findViewById(R.id.progressbar);
         addnum=rootview.findViewById(R.id.add_num);
         toolbar=rootview.findViewById(R.id.toolbar1);
         cancel=rootview.findViewById(R.id.cancel);
@@ -128,6 +129,8 @@ public class add_zonal_manager extends Fragment {
         address=rootview.findViewById(R.id.address_value);
         zone=rootview.findViewById(R.id.zone_values);
         password=rootview.findViewById(R.id.password_value);
+        lc = new LoadingClass(getActivity());
+
         getZones();
         password.addTextChangedListener(new TextWatcher() {
             @Override
@@ -164,7 +167,6 @@ public class add_zonal_manager extends Fragment {
 
             }
         });
-        toolbar.setTitle("Add Zonal Manager");
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -243,6 +245,7 @@ public class add_zonal_manager extends Fragment {
                 }
                 else
                 {
+                    lc.showDialog();
                     final String name_val=name.getText().toString();
                     final String phone_num=username.getText().toString();
                     final String address_val=address.getText().toString();
@@ -265,7 +268,6 @@ public class add_zonal_manager extends Fragment {
                         }
                     }
                     final String finalOther_nos = other_nos;
-                    progressBar.setVisibility(View.VISIBLE);
 
 
                     if (photoChanged){
@@ -278,7 +280,7 @@ public class add_zonal_manager extends Fragment {
                                     .addFileToUpload(imgPath, "image")
                                     .addParameter("name", path)
                                     .setNotificationConfig(new UploadNotificationConfig())
-                                    .setMaxRetries(2)
+                                    .setMaxRetries(10)
                                     .setDelegate(new UploadStatusDelegate() {
                                         @Override
                                         public void onProgress(Context context, UploadInfo uploadInfo) {
@@ -287,7 +289,7 @@ public class add_zonal_manager extends Fragment {
 
                                         @Override
                                         public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception exception) {
-
+                                            Toast.makeText(getActivity(), "Error Occured. Please Retry.", Toast.LENGTH_SHORT).show();
                                         }
 
                                         @Override
@@ -308,12 +310,11 @@ public class add_zonal_manager extends Fragment {
                                                             Toast.makeText(getActivity(), "Successfully added zonal manager", Toast.LENGTH_SHORT).show();
                                                             getActivity().getSupportFragmentManager().popBackStackImmediate();
                                                         }
-                                                        progressBar.setVisibility(View.GONE);
                                                     } catch (Exception e) {
-                                                        progressBar.setVisibility(View.GONE);
                                                         Toast.makeText(getActivity(), "Some network error occured. Please try again", Toast.LENGTH_SHORT).show();
                                                         e.printStackTrace();
                                                     }
+                                                    lc.dismissDialog();
 
                                                     zonal_managers.click.performClick();
                                                     getActivity().getFragmentManager().popBackStack();
@@ -323,9 +324,9 @@ public class add_zonal_manager extends Fragment {
                                                 @Override
                                                 public void onErrorResponse(VolleyError error) {
                                                     Log.e(TAG, "" + error.getMessage());
-                                                    progressBar.setVisibility(View.GONE);
                                                     Toast.makeText(getActivity(), "Some network error occured. Please try again", Toast.LENGTH_SHORT).show();
 
+                                                    lc.dismissDialog();
                                                     if (error instanceof TimeoutError) {
                                                         Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
                                                     } else
@@ -387,12 +388,11 @@ public class add_zonal_manager extends Fragment {
                                         Toast.makeText(getActivity(), "Successfully added zonal manager", Toast.LENGTH_SHORT).show();
                                         getActivity().getSupportFragmentManager().popBackStackImmediate();
                                     }
-                                    progressBar.setVisibility(View.GONE);
                                 } catch (Exception e) {
-                                    progressBar.setVisibility(View.GONE);
                                     Toast.makeText(getActivity(), "Some network error occured. Please try again", Toast.LENGTH_SHORT).show();
                                     e.printStackTrace();
                                 }
+                                lc.dismissDialog();
 
                                 zonal_managers.click.performClick();
                                 getActivity().getFragmentManager().popBackStack();
@@ -402,9 +402,9 @@ public class add_zonal_manager extends Fragment {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.e(TAG, "" + error.getMessage());
-                                progressBar.setVisibility(View.GONE);
                                 Toast.makeText(getActivity(), "Some network error occured. Please try again", Toast.LENGTH_SHORT).show();
 
+                                lc.dismissDialog();
                                 if (error instanceof TimeoutError) {
                                     Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
                                 } else
@@ -455,14 +455,18 @@ public class add_zonal_manager extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
             if (requestCode == 5) {
-                Log.d("here","here111");
                 CropImage.ActivityResult result = CropImage.getActivityResult(data);
                 if (resultCode == RESULT_OK) {
                     Uri resultUri = result.getUri();
-                    imgPath = resultUri.getPath();
                     try{
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(),resultUri);
-                        File file = new File(resultUri.getPath());
+                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), resultUri);
+                        String filename = System.currentTimeMillis()+".jpg";
+                        File file = new File(getActivity().getFilesDir(), filename);
+
+                        FileOutputStream out = new FileOutputStream(file);
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 15, out);
+
+                        imgPath = file.getPath();
                         profilepic.setScaleType(ImageView.ScaleType.FIT_XY);
                         profilepic.setImageBitmap(bitmap);
                         photoChanged=true;

@@ -10,10 +10,15 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
 import mayank.example.zendor.R;
+
+import static mayank.example.zendor.MainActivity.showToast;
+import static mayank.example.zendor.navigationDrawerOption.paymentRequest.header;
 
 
 public class processedFragment extends Fragment {
@@ -23,6 +28,10 @@ public class processedFragment extends Fragment {
 
     public static String param = "request";
     private ArrayList<paymentRequest.requestClass> list;
+
+    private LinearLayout layout;
+    private TextView textView;
+
 
 
     public processedFragment() {
@@ -59,6 +68,17 @@ public class processedFragment extends Fragment {
         llm = new LinearLayoutManager(getActivity());
         processedRecyclerView.setLayoutManager(llm);
         processedRecyclerView.setHasFixedSize(true);
+
+        layout = view.findViewById(R.id.noDataLayout);
+        textView = view.findViewById(R.id.text);
+
+
+        layout.setVisibility(View.GONE);
+
+        if(list.size() == 0 ){
+            layout.setVisibility(View.VISIBLE);
+            textView.setText("No Processed Data Available.");
+        }
 
         paymentRequestAdapter adapter = new paymentRequestAdapter(getActivity(), list);
         processedRecyclerView.setAdapter(adapter);

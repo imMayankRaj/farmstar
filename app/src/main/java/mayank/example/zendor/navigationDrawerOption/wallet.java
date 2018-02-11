@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -37,6 +38,7 @@ import mayank.example.zendor.URLclass;
 import mayank.example.zendor.landingPageFragment.picked;
 import mayank.example.zendor.onClickSeller.ledgerAdapter;
 import mayank.example.zendor.onClickSeller.sellerLedger;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
 
@@ -48,10 +50,10 @@ public class wallet extends AppCompatActivity {
     private TextView cb;
     private ArrayList<sellerLedger.ledgerClass> ledgerList;
     private TextView buyerNameAndZone;
-    private ImageView back;
     private LoadingClass ld;
     private ImageView addExpenses;
     private String position;
+    private Toolbar toolbar;
     private LinearLayout ll;
 
     @Override
@@ -65,11 +67,13 @@ public class wallet extends AppCompatActivity {
         buyerListView = findViewById(R.id.ledgerView);
         buyerNameAndZone = findViewById(R.id.name);
         ledgerList = new ArrayList<>();
-        back = findViewById(R.id.back);
         addExpenses = findViewById(R.id.addCredit);
+        toolbar = findViewById(R.id.toolbar);
         ll = findViewById(R.id.ll);
 
-        back.setOnClickListener(new View.OnClickListener() {
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
@@ -105,7 +109,7 @@ public class wallet extends AppCompatActivity {
                 try {
                     JSONObject json = new JSONObject(response);
                     String CB = json.getString("current_balance");
-                    cb.setText(CB);
+                    cb.setText('\u20B9'+CB);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -131,7 +135,7 @@ public class wallet extends AppCompatActivity {
             }
         };
 
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
     private void getLedger(){
@@ -149,6 +153,10 @@ public class wallet extends AppCompatActivity {
                         String pid = ledger.getString("pid");
                         String balance = ledger.getString("Balance");
                         String cd = ledger.getString("cd");
+                        try {
+                            if (cd.substring(cd.lastIndexOf(" ")).equals(" cr") || cd.substring(cd.lastIndexOf(" ")).equals(" dr"))
+                                cd = '\u20B9' + cd;
+                        }catch (Exception e){}
                         ledgerList.add(new sellerLedger.ledgerClass(date, pid, cd,'\u20B9'+ balance));
                     }
 
@@ -190,7 +198,7 @@ public class wallet extends AppCompatActivity {
             }
         };
 
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 
@@ -265,7 +273,7 @@ public class wallet extends AppCompatActivity {
             }
         };
 
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 

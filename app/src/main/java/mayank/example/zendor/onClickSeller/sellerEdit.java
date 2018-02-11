@@ -49,6 +49,7 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,7 +58,9 @@ import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
 import mayank.example.zendor.apiConnect;
+import mayank.example.zendor.navigationDrawerOption.addCommodities;
 import mayank.example.zendor.sellerExtraData;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
 
@@ -68,7 +71,6 @@ public class sellerEdit extends AppCompatActivity {
     private TextView skip;
     private TextView submit;
     private ImageView camera, addnumber;
-    private RequestQueue requestQueue;
     private Toolbar toolbar;
     private boolean photoChanged;
     private String azone_id;
@@ -172,8 +174,6 @@ public class sellerEdit extends AppCompatActivity {
         });
 
 
-        apiConnect connect = new apiConnect(this, "detail");
-        requestQueue = connect.getRequestQueue();
 
 
         submit.setOnClickListener(new View.OnClickListener() {
@@ -213,7 +213,7 @@ public class sellerEdit extends AppCompatActivity {
                                     .addFileToUpload(imgPath, "image")
                                     .addParameter("name", path)
                                     .setNotificationConfig(new UploadNotificationConfig())
-                                    .setMaxRetries(2)
+                                    .setMaxRetries(10)
                                     .setDelegate(new UploadStatusDelegate() {
                                         @Override
                                         public void onProgress(Context context, UploadInfo uploadInfo) {
@@ -222,6 +222,7 @@ public class sellerEdit extends AppCompatActivity {
 
                                         @Override
                                         public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception exception) {
+                                            Toast.makeText(sellerEdit.this, "Error Occure. Please Retry.", Toast.LENGTH_SHORT).show();
 
                                         }
 
@@ -265,10 +266,15 @@ public class sellerEdit extends AppCompatActivity {
                 Log.e("here", "here111");
                 CropImage.ActivityResult result = CropImage.getActivityResult(data);
                 Uri resultUri = result.getUri();
-                imgPath = resultUri.getPath();
                 try {
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), resultUri);
-                    File file = new File(resultUri.getPath());
+                    String filename = System.currentTimeMillis()+".jpg";
+                    File file = new File(getFilesDir(), filename);
+
+                    FileOutputStream out = new FileOutputStream(file);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 40, out);
+
+                    imgPath = file.getPath();
                     camera.setScaleType(ImageView.ScaleType.FIT_XY);
                     camera.setImageBitmap(bitmap);
                     photoChanged = true;
@@ -324,7 +330,7 @@ public class sellerEdit extends AppCompatActivity {
             }
         };
 
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
     public String getStringImage(Bitmap bmp) {
@@ -419,6 +425,6 @@ public class sellerEdit extends AppCompatActivity {
             }
         };
 
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 }

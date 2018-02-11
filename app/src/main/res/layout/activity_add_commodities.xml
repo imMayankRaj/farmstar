@@ -9,6 +9,9 @@
     tools:context="mayank.example.zendor.navigationDrawerOption.addCommodities">
 
     <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_margin="@dimen/toolBarMargin"
+        android:background="@drawable/button_background"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -17,17 +20,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <ImageView
-                android:id="@+id/back"
-                android:src="@drawable/ic_arrow_back_black_24dp1"
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content" />
+
         <TextView
-            android:layout_marginStart="10sp"
             android:text="Commodities/Stock"
-            android:textColor="#000"
-            android:textSize="18sp"
+            android:textColor="@color/lightGreen"
+            android:textSize="@dimen/toolBarTextDimen"
             android:layout_weight="8"
             android:layout_width="0dp"
             android:layout_height="wrap_content" />
@@ -36,21 +33,53 @@
     </android.support.v7.widget.Toolbar>
 
 
+
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+
+
+        <LinearLayout
+            android:visibility="gone"
+            android:id="@+id/noDataLayout"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+            <ImageView
+                android:layout_gravity="center"
+                android:scaleType="centerCrop"
+                android:src="@drawable/no_data"
+                android:layout_width="100dp"
+                android:layout_height="100dp" />
+
+            <TextView
+                android:id="@+id/text"
+                android:textColor="#DD000000"
+                android:textSize="16sp"
+                android:text="No Booked Data Available"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
     <ListView
         android:layout_above="@id/addNewComm"
         android:id="@+id/commodityList"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
     </ListView>
 
     <TextView
+        android:layout_margin="@dimen/toolBarMargin"
         android:id="@+id/addNewComm"
-        android:background="#000"
-        android:textColor="#fff"
+        android:background="@drawable/background_larger_radius"
+        android:textColor="@color/darkGreen"
         android:gravity="center"
         android:textSize="18sp"
         android:text="Add New Commodity"

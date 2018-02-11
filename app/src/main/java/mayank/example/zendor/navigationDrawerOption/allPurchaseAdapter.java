@@ -2,7 +2,9 @@ package mayank.example.zendor.navigationDrawerOption;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,12 +37,33 @@ public class allPurchaseAdapter extends RecyclerView.Adapter<allPurchaseAdapter.
             TextView p = v.findViewById(R.id.pos);
             int pos = Integer.parseInt(p.getText().toString());
             String chk = ck.getText().toString();
+            purchaseClass current = arrayList.get(pos);
+
             switch (chk){
-                case "0":
-                    setDialogCancel(pos);
-                    break;
                 case "1":
-                    setDialogCollect(pos);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("collectedts", current.getCollected_ts());
+                    bundle.putString("collectedby", current.getCollected_by());
+                    bundle.putString("collectedWe", current.getCollected_weight());
+                    bundle.putString("pid", current.getPurchase_id());
+                    Intent intent = new Intent(mContext, onClickCollectedCard.class);
+                    intent.putExtra("extras", bundle);
+                    mContext.startActivity(intent);
+
+                    // setDialogCancel(pos);
+                    break;
+                case "0":
+                    Bundle bundle2 = new Bundle();
+                    String remark = (current.getRoc_b() == null || current.getRoc_b().length() == 0) ? current.getRoc_p() : current.getRoc_b();
+                    bundle2.putString("cancelledts", current.getCancelled_ts());
+                    bundle2.putString("cancelledby", current.getCancelled_by());
+                    bundle2.putString("cancelledre", remark);
+                    bundle2.putString("pid", current.getPurchase_id());
+                    Intent intent1 = new Intent(mContext, onClickCancelledCard.class);
+                    intent1.putExtra("extras", bundle2);
+                    mContext.startActivity(intent1);
+
+                    // setDialogCollect(pos);
                     break;
             }
 
@@ -62,12 +85,16 @@ public class allPurchaseAdapter extends RecyclerView.Adapter<allPurchaseAdapter.
         holder.sname.setText(current.getSellerName());
         holder.pid.setText(current.getPurchase_id());
         String status = null;
+
         if(current.getFlag().equals("cn")){
+
             status = "Cancelled";
             holder.check.setText("0");
             holder.pos.setText(position+"");
             holder.status.setTextColor(Color.parseColor("#d32f2f"));
+
         }else if(current.getFlag().equals("co")) {
+
             status = "Collected";
             holder.check.setText("1");
             holder.pos.setText(position+"");

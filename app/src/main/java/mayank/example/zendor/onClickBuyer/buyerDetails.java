@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -15,6 +16,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +26,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,23 +47,31 @@ import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.lang.reflect.Array;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 
 import mayank.example.zendor.ApplicationQueue;
 import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.MainActivity;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
+import mayank.example.zendor.frequentlyUsedClass;
 import mayank.example.zendor.onClickBooked.onClickBookedCard;
 import xendorp1.application_classes.AppConfig;
+import xendorp1.application_classes.AppController;
 
+import static android.content.Context.MODE_PRIVATE;
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.onClickBuyer.buyerSale.getSaleDetail;
 
 
 public class buyerDetails extends Fragment {
@@ -76,7 +87,7 @@ public class buyerDetails extends Fragment {
     private TextView gstNumber;
     private TextView sale;
     private String number, othermob;
-    private TextView commodities;
+    private LinearLayout commodities;
     public static String num[];
     private Intent intent;
     public static String comm;
@@ -86,6 +97,8 @@ public class buyerDetails extends Fragment {
     private ProgressBar pbar;
     private TextView edit;
     private String GSTNUMBER;
+    private SharedPreferences sharedPreferences;
+
 
     public buyerDetails() {
         // Required empty public constructor
@@ -125,6 +138,9 @@ public class buyerDetails extends Fragment {
         pbar = view.findViewById(R.id.pbar);
         edit = view.findViewById(R.id.buyerEdit);
 
+        sharedPreferences = getActivity().getSharedPreferences("details", MODE_PRIVATE);
+
+
         lc = new LoadingClass(getActivity());
         getBuyerDetails();
 
@@ -145,6 +161,138 @@ public class buyerDetails extends Fragment {
         return view;
     }
 
+    private View.OnClickListener listener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            String comm = (String) v.getTag();
+            showSaleDialog(comm);
+        }
+    };
+
+    private void updateLayout(String comm) {
+        commodities.removeAllViews();
+        String COMM[] = comm.split(",");
+        for (int i = 0; i < COMM.length; i++) {
+            TextView textView = new TextView(getActivity());
+            textView.setPadding(10, 10, 10, 10);
+            textView.setTextSize(18);
+            textView.setTag(COMM[i]);
+            textView.setBackgroundResource(R.drawable.border);
+            textView.setGravity(Gravity.CENTER);
+            LinearLayout.LayoutParams params = (new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            params.setMargins(0, 5, 0, 5);
+            textView.setLayoutParams(params);
+            textView.setText(COMM[i]);
+            textView.setOnClickListener(listener);
+            commodities.addView(textView);
+        }
+    }
+
+
+    private void showSaleDialog(final String COMM){
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.buyer_sale_purchase_dialog);
+        final TextView comm = dialog.findViewById(R.id.commodity);
+        final EditText weight = dialog.findViewById(R.id.weight);
+        final EditText rate = dialog.findViewById(R.id.rate);
+        final EditText vnumber = dialog.findViewById(R.id.vNumber);
+        final EditText driverContact = dialog.findViewById(R.id.driverContact);
+        final EditText deliveryAddress = dialog.findViewById(R.id.deliveryAddress);
+        final EditText billingAddress = dialog.findViewById(R.id.billingAddress);
+        ImageView back = dialog.findViewById(R.id.back);
+
+        comm.setText(COMM);
+        back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        TextView cancel = dialog.findViewById(R.id.cancel);
+        TextView save = dialog.findViewById(R.id.save);
+
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String we = weight.getText().toString();
+                String r = rate.getText().toString();
+                String vn = vnumber.getText().toString();
+                String dc = driverContact.getText().toString();
+                String da =deliveryAddress.getText().toString();
+                String ba = billingAddress.getText().toString();
+
+                if ( we.length() == 0 || r.length() == 0 || vn.length() == 0 || dc.length() == 0 || da.length() == 0 || ba.length() == 0) {
+                    Toast.makeText(getActivity(), "Some Fields Are Left Empty.", Toast.LENGTH_SHORT).show();
+                }else {
+                    addNewSale(COMM, we, r, vn, dc, da, ba);
+                    dialog.dismiss();
+                    frequentlyUsedClass.sendOTP(buyerDetails.num[0], "Your Foodmonk verification code is " + "Dispatched" + " . Happy food ordering :)", getActivity());
+                    frequentlyUsedClass.sendOTP(dc, "Your Foodmonk verification code is " + da + " . Happy food ordering :)", getActivity());
+                }
+            }
+        });
+
+        dialog.show();
+
+    }
+
+    private void addNewSale(final String comm, final String weight, final String rat, final String number, final String dc, final String address, final String baddress){
+
+        lc.showDialog();
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ON_CLICK_SALE_BUYER_BUTTON, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                lc.dismissDialog();
+                getSaleDetail(getActivity());
+                buyerLedger.click.performClick();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, getActivity().getClass().getName(), getActivity());
+
+
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                SimpleDateFormat dateTimeInGMT = new SimpleDateFormat("yyyy-MMM-dd hh:mm:ss aa", Locale.ENGLISH);
+                dateTimeInGMT.setTimeZone(TimeZone.getTimeZone("GMT+05:30"));
+
+                String id = sharedPreferences.getString("id", "");
+
+
+                Map<String, String> parameters = new HashMap<>();
+                parameters.put("com", comm);
+                parameters.put("est", weight);
+                parameters.put("rate", rat);
+                parameters.put("vn", number);
+                parameters.put("dc", dc);
+                parameters.put("da", address);
+                parameters.put("ba", baddress);
+                parameters.put("bid", buyer_id);
+                parameters.put("bookedBy", id);
+                parameters.put("ts1", dateTimeInGMT.format(new Date()));
+                return parameters;
+            }
+        };
+
+        AppController.getInstance().addToRequestQueue(stringRequest);
+    }
 
     private void getBuyerDetails() {
 
@@ -161,7 +309,7 @@ public class buyerDetails extends Fragment {
                     address.setText(json.getString("address"));
                     number = json.getString("mob");
                     othermob = json.getString("othermob");
-                    commodities.setText(json.getString("commodities"));
+                    String COMM = (json.getString("commodities"));
                     picpath = json.getString("picpath");
 
                     GSTNUMBER = json.getString("gst_number");
@@ -173,6 +321,8 @@ public class buyerDetails extends Fragment {
                     comm = json.getString("commodities");
                     number = number + "," + othermob;
                     num = number.split(",");
+
+                    updateLayout(COMM);
 
                     Glide.with(getActivity()).load(URLclass.COMMODITY_PIC_PATH + picpath)
                             .listener(new RequestListener<Drawable>() {
@@ -220,7 +370,7 @@ public class buyerDetails extends Fragment {
             }
         };
 
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
 
     }
 
@@ -242,6 +392,7 @@ public class buyerDetails extends Fragment {
                     public void onClick(DialogInterface dialog, int which) {
                         String number = b[which];
                         intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "+91" + number));
+
                         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
                             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CALL_PHONE},
                                     2);
@@ -360,15 +511,18 @@ public class buyerDetails extends Fragment {
 
 
     private void updateData(final String gstNumber, final String number){
+        lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.UPDATE_BUYER_DETAILS, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
+                lc.dismissDialog();
                 getBuyerDetails();
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
 
+                lc.dismissDialog();
                 if (error instanceof TimeoutError) {
                     Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
                 } else
@@ -386,6 +540,7 @@ public class buyerDetails extends Fragment {
             }
         };
 
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
+
 }

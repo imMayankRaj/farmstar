@@ -8,11 +8,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -51,6 +53,7 @@ import mayank.example.zendor.URLclass;
 import mayank.example.zendor.frequentlyUsedClass;
 import mayank.example.zendor.onClickBooked.onClickBookedCard;
 import mayank.example.zendor.onClickExecutive.executiveLedger;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
 
@@ -74,13 +77,13 @@ public class onClickPickedCard extends AppCompatActivity {
     private TextView collect;
     private SharedPreferences sharedPreferences;
     private Intent intent;
-
     private String pid;
     private String snumber, bnumber, pnumber;
     private String roc;
     private String collectWeight;
     private String[] SNUM, BNUM, PNUM;
     private LoadingClass lc;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +106,17 @@ public class onClickPickedCard extends AppCompatActivity {
         callPicker = findViewById(R.id.callPicker);
         cancel = findViewById(R.id.cancel);
         collect = findViewById(R.id.collect);
+
+        toolbar = findViewById(R.id.toolbar);
+
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
         lc = new LoadingClass(this);
 
@@ -212,7 +226,7 @@ public class onClickPickedCard extends AppCompatActivity {
                 return parameters;
             }
         };
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 
@@ -258,7 +272,7 @@ public class onClickPickedCard extends AppCompatActivity {
                 return parameters;
             }
         };
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
     private void onClickCollectButton(){
@@ -303,7 +317,7 @@ public class onClickPickedCard extends AppCompatActivity {
                 return parameters;
             }
         };
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
 
     }
 
@@ -312,6 +326,8 @@ public class onClickPickedCard extends AppCompatActivity {
         final Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.cancellation_dialog_picked);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+
         dialog.setCancelable(true);
         final EditText remark = dialog.findViewById(R.id.remark);
         TextView submit = dialog.findViewById(R.id.submit);
@@ -342,6 +358,8 @@ public class onClickPickedCard extends AppCompatActivity {
         final Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.collect_dialog_picked);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+
         dialog.setCancelable(true);
         final EditText aw = dialog.findViewById(R.id.collectedWeight);
         TextView cancel = dialog.findViewById(R.id.cancel);

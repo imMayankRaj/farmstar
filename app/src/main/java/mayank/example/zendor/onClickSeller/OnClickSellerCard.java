@@ -7,6 +7,8 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.View;
 
 import java.util.ArrayList;
 
@@ -17,6 +19,7 @@ public class OnClickSellerCard extends AppCompatActivity {
     private ViewPager viewPager;
     private TabLayout header;
     private String sellerId;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +31,16 @@ public class OnClickSellerCard extends AppCompatActivity {
         viewPager = findViewById(R.id.viewPager);
         header = findViewById(R.id.header);
         header.setupWithViewPager(viewPager);
+        toolbar = findViewById(R.id.toolbar);
+
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
         viewPager.setOffscreenPageLimit(3);
 

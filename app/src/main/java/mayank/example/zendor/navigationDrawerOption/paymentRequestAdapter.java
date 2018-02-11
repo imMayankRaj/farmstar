@@ -1,5 +1,6 @@
 package mayank.example.zendor.navigationDrawerOption;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -12,10 +13,12 @@ import android.view.Window;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
@@ -29,9 +32,12 @@ import mayank.example.zendor.ApplicationQueue;
 import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
+import mayank.example.zendor.landingPageFragment.booked;
+import xendorp1.application_classes.AppController;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.android.volley.VolleyLog.e;
+import static mayank.example.zendor.MainActivity.showError;
 
 /**
  * Created by mayank on 12/11/2017.
@@ -263,6 +269,12 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
             public void onErrorResponse(VolleyError error) {
 
                 lc.dismissDialog();
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(mContext, "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, booked.class.getName(), (Activity) mContext);
+
+                lc.dismissDialog();
             }
         }){
 
@@ -281,7 +293,7 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
             }
         };
 
-        ApplicationQueue.getInstance(mContext.getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
 
     }
 
@@ -298,6 +310,13 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                lc.dismissDialog();
+                lc.dismissDialog();
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(mContext, "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, booked.class.getName(), (Activity) mContext);
+
                 lc.dismissDialog();
 
             }
@@ -321,7 +340,7 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
             }
         };
 
-        ApplicationQueue.getInstance(mContext.getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
 
     }
 

@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -31,6 +32,7 @@ import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
 import mayank.example.zendor.landingPageFragment.picked;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
 
@@ -43,8 +45,8 @@ public class onClickCommodityList extends AppCompatActivity {
     private ArrayList<commodityClass> arrayList;
     private TextView commodity;
     private SharedPreferences sharedPreferences;
-    private ImageView back;
     private LoadingClass lc;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +54,16 @@ public class onClickCommodityList extends AppCompatActivity {
         setContentView(R.layout.activity_on_click_commodity_list);
 
         commodityRview = findViewById(R.id.indiCommodityList);
-        back = findViewById(R.id.back);
+        toolbar = findViewById(R.id.toolbar);
+
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
         llm = new LinearLayoutManager(this);
 
@@ -70,12 +81,6 @@ public class onClickCommodityList extends AppCompatActivity {
 
         commodity.setText(comm);
 
-        back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
 
         getCommDetails();
 
@@ -138,7 +143,7 @@ public class onClickCommodityList extends AppCompatActivity {
             }
         };
 
-        ApplicationQueue.getInstance(getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
 

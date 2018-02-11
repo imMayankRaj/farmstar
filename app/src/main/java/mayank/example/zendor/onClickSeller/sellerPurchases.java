@@ -8,6 +8,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -29,8 +31,10 @@ import mayank.example.zendor.ApplicationQueue;
 import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
+import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.MainActivity.showToast;
 
 
 public class sellerPurchases extends Fragment {
@@ -41,6 +45,9 @@ public class sellerPurchases extends Fragment {
     private String seller_id;
     private ArrayList<sellerPurchaseClass> arrayList;
     private LoadingClass lc;
+    private LinearLayout layout;
+    private TextView textView;
+
 
 
     public sellerPurchases() {
@@ -76,6 +83,10 @@ public class sellerPurchases extends Fragment {
         recyclerView.setLayoutManager(llm);
         recyclerView.setHasFixedSize(true);
 
+        layout = view.findViewById(R.id.noDataLayout);
+        textView = view.findViewById(R.id.text);
+
+
         lc = new LoadingClass(getActivity());
 
         getSellerPurchaseData();
@@ -85,6 +96,8 @@ public class sellerPurchases extends Fragment {
 
     private void getSellerPurchaseData(){
         lc.showDialog();
+        layout.setVisibility(View.GONE);
+
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.SELLER_PURCHASE_DATA, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -96,6 +109,7 @@ public class sellerPurchases extends Fragment {
                     for (int i =0;i<purchases.length();i++){
                         JSONObject sellerPurchases = purchases.getJSONObject(i);
                         String flag = sellerPurchases.getString("flag");
+                        String pid = sellerPurchases.getString("purchase_id");
 
                         if(flag.equals("bk")){
                             String booked_ts = sellerPurchases.getString("booked_ts");
@@ -103,21 +117,21 @@ public class sellerPurchases extends Fragment {
                             String rate = sellerPurchases.getString("rate");
                             String commodity = sellerPurchases.getString("commodities");
                             String name = sellerPurchases.getString("booker");
-                            arrayList.add(new sellerPurchaseClass(commodity, rate, est_weight, booked_ts, name, flag));
+                            arrayList.add(new sellerPurchaseClass(commodity, rate, est_weight, booked_ts, name, flag, pid));
                         }else if(flag.equals("pk")){
                             String picked_ts = sellerPurchases.getString("picked_ts");
                             String actual_weight = sellerPurchases.getString("actual_weight");
                             String rate = sellerPurchases.getString("rate");
                             String commodity = sellerPurchases.getString("commodities");
                             String name = sellerPurchases.getString("picker");
-                            arrayList.add(new sellerPurchaseClass(commodity, rate, actual_weight, picked_ts, name, flag));
+                            arrayList.add(new sellerPurchaseClass(commodity, rate, actual_weight, picked_ts, name, flag, pid));
                         }else if(flag.equals("co")){
                             String collected_ts = sellerPurchases.getString("collected_ts");
                             String collected_weight = sellerPurchases.getString("collected_weight");
                             String rate = sellerPurchases.getString("rate");
                             String commodity = sellerPurchases.getString("commodities");
                             String name = sellerPurchases.getString("collected_by");
-                            arrayList.add(new sellerPurchaseClass(commodity, rate, collected_weight, collected_ts, name, flag));
+                            arrayList.add(new sellerPurchaseClass(commodity, rate, collected_weight, collected_ts, name, flag, pid));
                         }else if(flag.equals("cn")){
                             String cancelled_ts = sellerPurchases.getString("cancelled_ts");
                             String roc_b = sellerPurchases.getString("roc_b");
@@ -126,7 +140,7 @@ public class sellerPurchases extends Fragment {
                             String commodity = sellerPurchases.getString("commodities");
                             String name = sellerPurchases.getString("cancelled_by");
                             String roc = roc_b.equals("null") ?roc_p :roc_b;
-                            arrayList.add(new sellerPurchaseClass(commodity, rate, roc, cancelled_ts, name, flag));
+                            arrayList.add(new sellerPurchaseClass(commodity, rate, roc, cancelled_ts, name, flag, pid));
                         }
 
                     }
@@ -151,13 +165,21 @@ public class sellerPurchases extends Fragment {
                    finalList.addAll(co);
                    finalList.addAll(cn);
 
+                   if(finalList.size() == 0){
+                       layout.setVisibility(View.VISIBLE);
+                       textView.setText("No Purchase For This Seller.");
+                   }else
+                       layout.setVisibility(View.GONE);
 
                     sellerPurchasesAdapter adapter = new sellerPurchasesAdapter(getActivity(), finalList);
                     recyclerView.setAdapter(adapter);
 
                 } catch (JSONException e) {
                    Log.e("respo", e+"");
-                }
+                   layout.setVisibility(View.VISIBLE);
+                   textView.setText("No Purchases For This Seller.");
+
+               }
                 lc.dismissDialog();
 
             }
@@ -182,7 +204,7 @@ public class sellerPurchases extends Fragment {
                 return map;
             }
         };
-        ApplicationQueue.getInstance(getActivity().getApplicationContext()).addToRequestQueue(stringRequest);
+        AppController.getInstance().addToRequestQueue(stringRequest);
 
     }
 
