@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.location.Location;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
@@ -33,6 +34,8 @@ import com.android.volley.Response;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -42,6 +45,7 @@ import net.gotev.uploadservice.UploadInfo;
 import net.gotev.uploadservice.UploadNotificationConfig;
 import net.gotev.uploadservice.UploadStatusDelegate;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -71,6 +75,7 @@ public class sellerExtraData extends AppCompatActivity {
     private String comm;
     private String imgPath;
     private LoadingClass lc;
+    private DatabaseReference mDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +99,10 @@ public class sellerExtraData extends AppCompatActivity {
         toolbar = findViewById(R.id.toolbar);
         lc = new LoadingClass(this);
 
+
+        findViewById(R.id.locate).setVisibility(View.GONE);
+        findViewById(R.id.ll).setVisibility(View.GONE);
+
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,6 +112,10 @@ public class sellerExtraData extends AppCompatActivity {
             }
         });
         sharedPreferences = getSharedPreferences("details", MODE_PRIVATE);
+
+        String zid = sharedPreferences.getString("zid", "");
+        mDatabase = FirebaseDatabase.getInstance().getReference().child("sellers").child(zid);
+
         addnumber.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -271,6 +284,7 @@ public class sellerExtraData extends AppCompatActivity {
 
     }
 
+
     private void openImageIntent() {
         Intent intent = CropImage.activity().setGuidelines(CropImageView.Guidelines.ON).setCropShape(CropImageView.CropShape.RECTANGLE)
                 .setAspectRatio(120, 120)
@@ -404,10 +418,14 @@ public class sellerExtraData extends AppCompatActivity {
             @Override
             public void onResponse(String response) {
                lc.dismissDialog();
+
+               long time = System.currentTimeMillis();
+               mDatabase.setValue(time+"");
+
                 Toast.makeText(sellerExtraData.this, "Seller Added Successfully", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(sellerExtraData.this, LoginActivity.class);
+               /* Intent intent = new Intent(sellerExtraData.this, LoginActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
+                startActivity(intent);*/
                 finish();
             }
         }, new Response.ErrorListener() {

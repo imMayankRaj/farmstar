@@ -32,6 +32,8 @@ import com.android.volley.Response;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -58,6 +60,7 @@ import mayank.example.zendor.onClickPicked.onClickPickedCard;
 import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.frequentlyUsedClass.notifyUser;
 
 public class onClickBookedCard extends AppCompatActivity {
 
@@ -83,7 +86,9 @@ public class onClickBookedCard extends AppCompatActivity {
     private LoadingClass lc;
     private String Rate, Commodity;
     private Toolbar toolbar;
-
+    private TextView toolbarText;
+    private DatabaseReference mDatabase;
+    private int count = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +107,7 @@ public class onClickBookedCard extends AppCompatActivity {
         cancel = findViewById(R.id.cancel);
         pick = findViewById(R.id.pick);
         toolbar = findViewById(R.id.toolbar);
+        toolbarText = findViewById(R.id.toolbarText);
 
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
 
@@ -116,10 +122,12 @@ public class onClickBookedCard extends AppCompatActivity {
         lc = new LoadingClass(this);
 
         sharedPreferences = getSharedPreferences("details", Context.MODE_PRIVATE);
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+
 
         Bundle bundle = getIntent().getExtras();
         pid = bundle.getString("pid");
-
+        toolbarText.setText("Booked" + " (PID : " + pid + ")");
         getBookedDetails();
 
         cancel.setOnClickListener(new View.OnClickListener() {
@@ -159,8 +167,14 @@ public class onClickBookedCard extends AppCompatActivity {
             @Override
             public void onResponse(String response) {
                 lc.dismissDialog();
-                Intent intent = new Intent(onClickBookedCard.this, MainActivity.class);
-                startActivity(intent);
+
+                String zid = sharedPreferences.getString("zid", "");
+                long time = System.currentTimeMillis();
+                mDatabase.getParent().getParent().child("booking").child(response).setValue(time+"");
+
+               /* Intent intent = new Intent(onClickBookedCard.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);*/
                 finish();
             }
         }, new Response.ErrorListener() {
@@ -197,6 +211,11 @@ public class onClickBookedCard extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
     private void addPickDetails(){
 
         lc.showDialog();
@@ -204,8 +223,22 @@ public class onClickBookedCard extends AppCompatActivity {
             @Override
             public void onResponse(String response) {
                 lc.dismissDialog();
-                Intent intent = new Intent(onClickBookedCard.this, MainActivity.class);
-                startActivity(intent);
+
+                String name = sharedPreferences.getString("name", "");
+                String pos = sharedPreferences.getString("position", "");
+                String zid = sharedPreferences.getString("zid", "");
+                if (pos.equals("2"))
+                    notifyUser("Commodity Picked", "Purchase Id : "+pid, onClickBookedCard.this, "1", "");
+
+
+                Long time = System.currentTimeMillis();
+                mDatabase.child("Ledger").setValue(time + "");
+                mDatabase.getParent().getParent().child("picking").child(response).setValue(time+"");
+                mDatabase.getParent().getParent().child("booking").child(response).setValue(time+"");
+
+              /*  Intent intent = new Intent(onClickBookedCard.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);*/
                 finish();
             }
         }, new Response.ErrorListener() {
@@ -246,7 +279,7 @@ public class onClickBookedCard extends AppCompatActivity {
             @Override
             public void onResponse(String response) {
                 try {
-                    Log.e("getbooked", response);
+
                     JSONObject jsonObject = new JSONObject(response);
                     JSONObject jsonObject1 = jsonObject.getJSONObject("values");
                     cname.setText(jsonObject1.getString("commodities"));
@@ -271,6 +304,8 @@ public class onClickBookedCard extends AppCompatActivity {
 
                     Rate = jsonObject1.getString("rate");
                     Commodity = jsonObject1.getString("commodities");
+
+                    mDatabase = mDatabase.child("users").child(jsonObject1.getString("seller_id"));
 
 
                 } catch (JSONException e) {

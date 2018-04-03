@@ -305,6 +305,11 @@
 
         </HorizontalScrollView>
 
+        <View
+            android:layout_marginTop="10dp"
+            android:background="@color/gray"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"/>
 
         <TextView
             android:layout_marginTop="10dp"
@@ -320,6 +325,34 @@
             android:layout_height="wrap_content">
             <LinearLayout
                 android:id="@+id/layout11"
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+            </LinearLayout>
+
+        </HorizontalScrollView>
+
+        <View
+            android:layout_marginTop="10dp"
+            android:background="@color/gray"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"/>
+
+        <TextView
+            android:layout_marginTop="10dp"
+            android:textColor="#000"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:text="Others"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <LinearLayout
+                android:id="@+id/layout12"
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">

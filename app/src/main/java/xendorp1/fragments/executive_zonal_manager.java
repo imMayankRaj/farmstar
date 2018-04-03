@@ -53,6 +53,7 @@ public class executive_zonal_manager extends Fragment implements SwipeRefreshLay
     private List<zonal_manager_card> zonal_manager_cardList;
     private LinearLayout layout;
     private TextView textView;
+    public static TextView click1;
 
 
     public executive_zonal_manager() {
@@ -71,6 +72,7 @@ public class executive_zonal_manager extends Fragment implements SwipeRefreshLay
         {
             id=bundle.getString("id");
         }
+        click1 = rootview.findViewById(R.id.executivesClick);
         recyclerView =rootview.findViewById(R.id.recycler);
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
@@ -84,6 +86,12 @@ public class executive_zonal_manager extends Fragment implements SwipeRefreshLay
         textView = rootview.findViewById(R.id.text);
 
 
+        click1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getExecutives();
+            }
+        });
 
         getExecutives();
         return rootview;

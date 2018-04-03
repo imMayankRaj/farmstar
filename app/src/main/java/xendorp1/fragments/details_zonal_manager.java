@@ -41,7 +41,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
@@ -122,13 +124,12 @@ public class details_zonal_manager extends Fragment {
                     mob = mob+","+othermob;
                     num = mob.split(",");
 
-                    if(!(prof==null||prof=="null"))
-                        Glide.with(getActivity()).load(URLclass.COMMODITY_PIC_PATH+prof)
+                    if(prof != null) {
+                        Glide.with(getActivity()).load(URLclass.COMMODITY_PIC_PATH + prof)
                                 .listener(new RequestListener<Drawable>() {
                                     @Override
                                     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
                                         pbar.setVisibility(View.GONE);
-                                        Toast.makeText(getActivity(), "Error Loading Picture.", Toast.LENGTH_SHORT).show();
                                         return false;
                                     }
 
@@ -139,6 +140,7 @@ public class details_zonal_manager extends Fragment {
                                     }
                                 })
                                 .into(profilepic);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -174,6 +176,11 @@ public class details_zonal_manager extends Fragment {
 
         ArrayList<String> numberList = new ArrayList<>(Arrays.asList(a));
         numberList.removeAll(Collections.singleton("null"));
+
+        Set<String> s = new HashSet<>();
+        s.addAll(numberList);
+        numberList.clear();
+        numberList.addAll(s);
 
         final String[] b = numberList.toArray(new String[numberList.size()]);
 

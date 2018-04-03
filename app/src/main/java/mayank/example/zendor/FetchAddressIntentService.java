@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static android.content.ContentValues.TAG;
+
 
 /**
  * Created by mayank on 12/14/2017.
@@ -27,19 +29,21 @@ public class FetchAddressIntentService extends IntentService {
     protected ResultReceiver mReceiver;
 
 
-   public FetchAddressIntentService(String name) {
+    public FetchAddressIntentService(String name) {
         super(name);
     }
 
-    public FetchAddressIntentService(){
-        super("");
-
+    public FetchAddressIntentService() {
+        super("farmstar");
     }
+
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         String errorMessage = null;
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+
+        Log.e("I am here", "onHandleIntent: "+"adfasd" );
 
         Location location = intent.getParcelableExtra(
                 Constants.LOCATION_DATA_EXTRA);
@@ -53,18 +57,15 @@ public class FetchAddressIntentService extends IntentService {
                     location.getLongitude(),
                     1);
         } catch (IOException ioException) {
-            Toast.makeText(this,
-                    "Network Error. Try again",
-                    Toast.LENGTH_LONG).show();
+            Log.e("asdasdas", "onHandleIntent: network error1");
+
             errorMessage = ioException+"";
         } catch (IllegalArgumentException illegalArgumentException) {
-            Toast.makeText(this,
-                    "Network Error. Try again",
-                    Toast.LENGTH_LONG).show();
+            Log.e("asdasdas", "onHandleIntent: network error2");
+
         }catch (Exception e){
-            Toast.makeText(this,
-                    "Network Error. Try again",
-                    Toast.LENGTH_LONG).show();
+            Log.e("asdasdas", "onHandleIntent: network error3");
+
         }
 
         // Handle case where no address was found.
@@ -72,14 +73,18 @@ public class FetchAddressIntentService extends IntentService {
             deliverResultToReceiver(Constants.FAILURE_RESULT, errorMessage);
         } else {
             Address address = addresses.get(0);
+
             ArrayList<String> addressFragments = new ArrayList<String>();
             for(int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
                 addressFragments.add(address.getAddressLine(i));
             }
+            Log.e("asdasdas", "onHandleIntent: "+  TextUtils.join(System.getProperty("line.separator"),
+                    addressFragments));
             deliverResultToReceiver(Constants.SUCCESS_RESULT,
                     TextUtils.join(System.getProperty("line.separator"),
                             addressFragments));
         }
+
     }
 
 

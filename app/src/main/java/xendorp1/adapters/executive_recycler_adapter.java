@@ -23,7 +23,9 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import mayank.example.zendor.R;
 import mayank.example.zendor.onClickExecutive.onClickExecutiveCard;
@@ -149,6 +151,11 @@ public class executive_recycler_adapter extends RecyclerView.Adapter<executive_r
 
         ArrayList<String> numberList = new ArrayList<>(Arrays.asList(a));
         numberList.removeAll(Collections.singleton("null"));
+
+        Set<String> s = new HashSet<>();
+        s.addAll(numberList);
+        numberList.clear();
+        numberList.addAll(s);
 
         final String[] b = numberList.toArray(new String[numberList.size()]);
 

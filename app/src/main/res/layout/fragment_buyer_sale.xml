@@ -30,7 +30,10 @@
             android:textSize="16sp" />
 
     </LinearLayout>
-
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipe"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
     <android.support.v7.widget.RecyclerView
         android:id="@+id/saleRecyclerView"
         android:layout_width="match_parent"
@@ -39,5 +42,6 @@
 
     </android.support.v7.widget.RecyclerView>
 
+    </android.support.v4.widget.SwipeRefreshLayout>
 
 </RelativeLayout>

@@ -21,7 +21,11 @@ import com.android.volley.Response;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
@@ -32,12 +36,15 @@ import mayank.example.zendor.ApplicationQueue;
 import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
+import mayank.example.zendor.frequentlyUsedClass;
 import mayank.example.zendor.landingPageFragment.booked;
+import mayank.example.zendor.onClickBooked.onClickBookedCard;
 import xendorp1.application_classes.AppController;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.android.volley.VolleyLog.e;
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.frequentlyUsedClass.notifyUser;
 
 /**
  * Created by mayank on 12/11/2017.
@@ -50,25 +57,27 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
     private ArrayList arrayList;
     private SharedPreferences sharedPreferences;
     private LoadingClass lc;
+    private DatabaseReference mDatabase;
 
-    public paymentRequestAdapter(Context mContext, ArrayList arrayList){
+    public paymentRequestAdapter(Context mContext, ArrayList arrayList) {
         this.mContext = mContext;
         this.arrayList = arrayList;
+        mDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
     @Override
     public int getItemViewType(int position) {
         int i = 0;
         paymentRequest.requestClass current = (paymentRequest.requestClass) arrayList.get(position);
-        switch (current.getFlag()){
+        switch (current.getFlag()) {
             case "r":
-                i=0;
+                i = 0;
                 break;
             case "a":
-                i=1;
+                i = 1;
                 break;
             case "j":
-                i=2;
+                i = 2;
                 break;
         }
         return i;
@@ -76,37 +85,37 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
 
     @Override
     public paymentRequestHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-       View view = null;
-       switch (viewType){
-           case 0:
-               view = LayoutInflater.from(mContext).inflate(R.layout.pending_card, parent, false);
-               break;
-           case 1:
-               view = LayoutInflater.from(mContext).inflate(R.layout.processed_card, parent, false);
-               break;
-           case 2:
-               view = LayoutInflater.from(mContext).inflate(R.layout.rejected_card, parent, false);
-               break;
-       }
-       return new paymentRequestHolder(view);
+        View view = null;
+        switch (viewType) {
+            case 0:
+                view = LayoutInflater.from(mContext).inflate(R.layout.pending_card, parent, false);
+                break;
+            case 1:
+                view = LayoutInflater.from(mContext).inflate(R.layout.processed_card, parent, false);
+                break;
+            case 2:
+                view = LayoutInflater.from(mContext).inflate(R.layout.rejected_card, parent, false);
+                break;
+        }
+        return new paymentRequestHolder(view);
     }
 
     @Override
     public void onBindViewHolder(paymentRequestHolder holder, int position) {
 
         final paymentRequest.requestClass current = (paymentRequest.requestClass) arrayList.get(position);
-        switch (current.getFlag()){
+        switch (current.getFlag()) {
             case "r":
 
                 holder.requestedId.setText(current.getPid());
                 holder.requestedBy.setText(current.getRequestedBy());
                 holder.requestedAt.setText(current.getDate());
 
-                String id ;
-                if(current.getSflag().equals("0")){
+                final String id;
+                if (current.getSflag().equals("0")) {
                     id = current.getSeller_id();
                     holder.seller_name_view.setVisibility(View.GONE);
-                }else {
+                } else {
                     id = current.getSid();
                     holder.seller_name.setText(current.getSeller_name());
                 }
@@ -115,20 +124,19 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
                 holder.reject.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        onClickRejectDialog(current.getPid());
+                        onClickRejectDialog(current.getPid(), id);
                     }
                 });
 
                 boolean b = false;
-                if(holder.seller_name_view.getVisibility() == View.VISIBLE){
-                    b=true;
+                if (holder.seller_name_view.getVisibility() == View.VISIBLE) {
+                    b = true;
                 }
                 final boolean finalB = b;
-                final String finalId = id;
                 holder.proceed.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        onClickProceedDialog(current.getPid(), finalId, current.getAmount(), finalB);
+                        onClickProceedDialog(current.getPid(), id, current.getAmount(), finalB);
 
                     }
                 });
@@ -137,9 +145,9 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
             case "a":
 
 
-                if(current.getSflag().equals("0")){
+                if (current.getSflag().equals("0")) {
                     holder.seller_name_view.setVisibility(View.GONE);
-                }else
+                } else
                     holder.seller_name.setText(current.getSeller_name());
 
                 holder.requestedId.setText(current.getPid());
@@ -161,9 +169,13 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
 
     }
 
+
     @Override
     public int getItemCount() {
-        return arrayList.size();
+        if (arrayList == null)
+            return 0;
+        else
+            return arrayList.size();
     }
 
     public class paymentRequestHolder extends RecyclerView.ViewHolder {
@@ -172,7 +184,6 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
         TextView processedBy, processedAt;
         TextView rejectedBy, rejectedAt, remark;
         LinearLayout seller_name_view;
-
 
 
         public paymentRequestHolder(View itemView) {
@@ -195,7 +206,7 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
         }
     }
 
-    private void onClickRejectDialog(final String spid){
+    private void onClickRejectDialog(final String spid, final String seller_id) {
         final Dialog dialog = new Dialog(mContext);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.pr_reject_dialog);
@@ -208,8 +219,12 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
             @Override
             public void onClick(View v) {
                 String re = remarks.getText().toString();
-                rejectRequest(spid, re);
-                dialog.dismiss();
+                if (re.length() == 0) {
+                    Toast.makeText(mContext, "Please provide a reason.", Toast.LENGTH_SHORT).show();
+                } else {
+                    rejectRequest(spid, re, seller_id);
+                    dialog.dismiss();
+                }
             }
         });
 
@@ -223,7 +238,7 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
         dialog.show();
     }
 
-    private void onClickProceedDialog(final String spid, final String seller_id, final String amount, final boolean b){
+    private void onClickProceedDialog(final String spid, final String seller_id, final String amount, final boolean b) {
         final Dialog dialog = new Dialog(mContext);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.pr_proceed_dialog);
@@ -237,9 +252,13 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
             @Override
             public void onClick(View v) {
                 String re = remarks.getText().toString();
-                String RN =rn.getText().toString();
-                proceedRequest(spid,re, RN,seller_id, amount, b);
-                dialog.dismiss();
+                String RN = rn.getText().toString();
+                if (RN.length() == 0) {
+                    Toast.makeText(mContext, "Reference Number is compulsory.", Toast.LENGTH_SHORT).show();
+                } else {
+                    proceedRequest(spid, re, RN, seller_id, amount, b);
+                    dialog.dismiss();
+                }
             }
         });
 
@@ -252,7 +271,7 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
         dialog.show();
     }
 
-    private void rejectRequest(final String spid, final String rem){
+    private void rejectRequest(final String spid, final String rem, final String seller_id) {
 
         lc = new LoadingClass(mContext);
         lc.showDialog();
@@ -260,6 +279,10 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
             @Override
             public void onResponse(String response) {
 
+                notifyUser("Payment Request Cancelled", "Requested ID : "+ spid, mContext, "5", seller_id);
+                Long time = System.currentTimeMillis();
+              //  mDatabase.child("users").child(response).child("Ledger").setValue(time + "");
+                mDatabase.child("paymentRequests").setValue(time+"");
                 lc.dismissDialog();
                 paymentRequest.check.performClick();
 
@@ -276,14 +299,14 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
 
                 lc.dismissDialog();
             }
-        }){
+        }) {
 
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
 
                 sharedPreferences = mContext.getSharedPreferences("details", MODE_PRIVATE);
 
-                String id = sharedPreferences.getString("id","");
+                String id = sharedPreferences.getString("id", "");
 
                 Map<String, String> params = new HashMap<>();
                 params.put("sid", spid);
@@ -294,16 +317,38 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
         };
 
         AppController.getInstance().addToRequestQueue(stringRequest);
-
     }
 
-    private void proceedRequest(final String spid, final String rem, final String ref, final String seller_id, final String amount, final boolean b){
+    private void proceedRequest(final String spid, final String rem, final String ref, final String seller_id, final String amount, final boolean b) {
 
         lc = new LoadingClass(mContext);
         lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.PAYMENT_REQUEST_PROCEED, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    String number = jsonObject.getString("number");
+                    String accountNumber = jsonObject.getString("acc");
+                    String pref;
+                    String pos = sharedPreferences.getString("position", "");
+
+                    if(!pos.equals("0")){
+                        pref = "Cash";
+                    }else
+                        pref = accountNumber;
+
+                    frequentlyUsedClass.sendOTP(number.split(",")[0], "प्रिय किसान भाई, ₹"+amount+" आपके खाता "+pref+" में जमा कर दिया गया है, Ref : "+ref+". फ़ार्मस्टार के साथ व्यापार के लिये धन्यवाद.", mContext);
+
+                    Long time = System.currentTimeMillis();
+                   // mDatabase.child("users").child(seller_id).child("Ledger").setValue(time + "");
+                    mDatabase.child("paymentRequests").setValue(time+"");
+                    notifyUser("Payment Request Processed", "Requested ID : "+ spid, mContext, "5", seller_id);
+
+
+                } catch (JSONException e) {
+                   Log.e("error", e+"");
+                }
                 lc.dismissDialog();
                 paymentRequest.check.performClick();
             }
@@ -311,7 +356,7 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
             @Override
             public void onErrorResponse(VolleyError error) {
                 lc.dismissDialog();
-                lc.dismissDialog();
+
                 if (error instanceof TimeoutError) {
                     Toast.makeText(mContext, "Time out. Reload.", Toast.LENGTH_SHORT).show();
                 } else
@@ -320,14 +365,14 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
                 lc.dismissDialog();
 
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 sharedPreferences = mContext.getSharedPreferences("details", MODE_PRIVATE);
 
-                String id = sharedPreferences.getString("id","");
+                String id = sharedPreferences.getString("id", "");
 
-                Log.e("sender", seller_id);
+
                 Map<String, String> params = new HashMap<>();
                 params.put("spid", spid);
                 params.put("des", rem);
@@ -335,7 +380,7 @@ public class paymentRequestAdapter extends RecyclerView.Adapter<paymentRequestAd
                 params.put("req", ref);
                 params.put("sid", seller_id);
                 params.put("amount", amount);
-                params.put("status", b+"");
+                params.put("status", b + "");
                 return params;
             }
         };

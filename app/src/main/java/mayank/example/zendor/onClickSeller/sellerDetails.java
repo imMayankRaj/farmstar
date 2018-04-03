@@ -46,6 +46,12 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.github.chrisbanes.photoview.PhotoView;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -74,6 +80,7 @@ import xendorp1.application_classes.AppConfig;
 import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.frequentlyUsedClass.notifyUser;
 
 
 public class sellerDetails extends Fragment {
@@ -84,6 +91,7 @@ public class sellerDetails extends Fragment {
     private String com, num[];
     private LoadingClass lc;
     private String zid;
+    private int counter = 0;
 
     public sellerDetails() {
 
@@ -119,6 +127,7 @@ public class sellerDetails extends Fragment {
     private ProgressBar pbar;
     private RelativeLayout otherPic;
     private View parentLayout;
+    private DatabaseReference mDatabase;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -151,6 +160,12 @@ public class sellerDetails extends Fragment {
         parentLayout = view.findViewById(R.id.parent);
         otherPic = view.findViewById(R.id.otherPic);
 
+        sharedPreferences = getActivity().getSharedPreferences("details", Context.MODE_PRIVATE);
+
+        String zone_id = sharedPreferences.getString("zid","");
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+
+
         locateSeller.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -163,6 +178,14 @@ public class sellerDetails extends Fragment {
                     }
                 } else
                     Toast.makeText(getActivity(), "Gps Address Not Available.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        chequeImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (chequeImage.getDrawable() != null)
+                    showBankImage();
             }
         });
 
@@ -183,7 +206,6 @@ public class sellerDetails extends Fragment {
             }
         });
 
-        sharedPreferences = getActivity().getSharedPreferences("details", Context.MODE_PRIVATE);
 
         lc = new LoadingClass(getActivity());
 
@@ -216,6 +238,26 @@ public class sellerDetails extends Fragment {
             }
         });
         return view;
+    }
+
+    private void showBankImage() {
+
+        final Dialog dialog = new Dialog(getActivity(), R.style.Theme_Dialog);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.on_click_bank_image);
+
+        PhotoView imageView = dialog.findViewById(R.id.imageView);
+        ImageView cut = dialog.findViewById(R.id.cut);
+        imageView.setImageDrawable(chequeImage.getDrawable());
+
+        cut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
     }
 
     private void getSellerDetails() {
@@ -252,7 +294,7 @@ public class sellerDetails extends Fragment {
 
                             otherPic.setVisibility(View.VISIBLE);
 
-                            if(picpath.equals("")){
+                            if (picpath.equals("")) {
                                 otherPic.setVisibility(View.GONE);
                             }
 
@@ -380,8 +422,57 @@ public class sellerDetails extends Fragment {
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.INSERT_PURCHASE_DATA, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                startActivity(new Intent(getActivity(), MainActivity.class));
                 lc.dismissDialog();
+                String name = sharedPreferences.getString("name", "");
+                String pos = sharedPreferences.getString("position", "");
+
+
+                mDatabase.child("booking").child(zid).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if(!dataSnapshot.exists()) {
+                            long time = System.currentTimeMillis();
+                            mDatabase.child("booking").child(zid).setValue(time + "");
+                            counter++;
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+                mDatabase.child("picking").child(zid).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if(!dataSnapshot.exists()) {
+                            long time = System.currentTimeMillis();
+                            mDatabase.child("picking").child(zid).setValue(time + "");
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+
+                if(counter == 0){
+                    long time = System.currentTimeMillis();
+                    mDatabase.child("booking").child(zid).setValue(time + "");
+                    mDatabase.child("picking").child(zid).setValue(time + "");
+                }
+
+
+                if (pos.equals("2"))
+                    notifyUser("Commodity Booked", "Purchase ID : "+response, getActivity(), "1", "");
+                getActivity().finish();
+                /*Intent intent = new Intent(getActivity(), MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);*/
+
             }
         }, new Response.ErrorListener() {
             @Override
@@ -400,9 +491,6 @@ public class sellerDetails extends Fragment {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 String id = sharedPreferences.getString("id", "");
-                String zoneid = sharedPreferences.getString("zid", "");
-                String pos =  sharedPreferences.getString("position", "");
-
 
                 SimpleDateFormat dateTimeInGMT = new SimpleDateFormat("yyyy-MMM-dd hh:mm:ss aa", Locale.ENGLISH);
                 dateTimeInGMT.setTimeZone(TimeZone.getTimeZone("GMT+05:30"));
@@ -421,6 +509,7 @@ public class sellerDetails extends Fragment {
         };
         AppController.getInstance().addToRequestQueue(stringRequest);
     }
+
 
     private void callDialog(final String a[]) {
 

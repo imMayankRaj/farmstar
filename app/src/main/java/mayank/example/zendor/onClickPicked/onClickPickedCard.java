@@ -29,6 +29,8 @@ import com.android.volley.Response;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,6 +58,7 @@ import mayank.example.zendor.onClickExecutive.executiveLedger;
 import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.frequentlyUsedClass.notifyUser;
 
 public class onClickPickedCard extends AppCompatActivity {
 
@@ -84,6 +87,8 @@ public class onClickPickedCard extends AppCompatActivity {
     private String[] SNUM, BNUM, PNUM;
     private LoadingClass lc;
     private Toolbar toolbar;
+    private TextView toolbarText;
+    private DatabaseReference mDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,6 +111,7 @@ public class onClickPickedCard extends AppCompatActivity {
         callPicker = findViewById(R.id.callPicker);
         cancel = findViewById(R.id.cancel);
         collect = findViewById(R.id.collect);
+        toolbarText = findViewById(R.id.toolbarText);
 
         toolbar = findViewById(R.id.toolbar);
 
@@ -119,11 +125,13 @@ public class onClickPickedCard extends AppCompatActivity {
         });
 
         lc = new LoadingClass(this);
+        mDatabase = FirebaseDatabase.getInstance().getReference();
 
         sharedPreferences = getSharedPreferences("details", Context.MODE_PRIVATE);
 
         Bundle bundle = getIntent().getExtras();
         pid = bundle.getString("pid");
+        toolbarText.setText("Picked" + " (PID : " + pid + ")");
 
         getPickedData();
 
@@ -162,6 +170,11 @@ public class onClickPickedCard extends AppCompatActivity {
             }
         });
 
+        String pos = sharedPreferences.getString("position", "");
+
+        if (!pos.equals("0")) {
+            cancel.setVisibility(View.GONE);
+        }
     }
 
 
@@ -200,6 +213,8 @@ public class onClickPickedCard extends AppCompatActivity {
                     BNUM = bnumber.split(",");
                     PNUM = pnumber.split(",");
 
+                    mDatabase = mDatabase.child("users").child(jsonObject1.getString("seller_id"));
+
                 } catch (JSONException e) {
                     Log.e("repoiu", e+"");
                 }
@@ -236,9 +251,15 @@ public class onClickPickedCard extends AppCompatActivity {
             @Override
             public void onResponse(String response) {
                 lc.dismissDialog();
+                String zid = sharedPreferences.getString("zid", "");
 
-                Intent intent = new Intent(onClickPickedCard.this, MainActivity.class);
-                startActivity(intent);
+                Long time = System.currentTimeMillis();
+                mDatabase.child("Ledger").setValue(time + "");
+                mDatabase.getParent().getParent().child("picking").child(response).setValue(time+"");
+
+               /* Intent intent = new Intent(onClickPickedCard.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);*/
                 finish();
             }
         }, new Response.ErrorListener() {
@@ -282,8 +303,18 @@ public class onClickPickedCard extends AppCompatActivity {
             @Override
             public void onResponse(String response) {
                 lc.dismissDialog();
-                Intent intent = new Intent(onClickPickedCard.this, MainActivity.class);
-                startActivity(intent);
+                String name = sharedPreferences.getString("name", "");
+                String pos = sharedPreferences.getString("position", "");
+                String zid = sharedPreferences.getString("zid", "");
+                if (pos.equals("2"))
+                    notifyUser("Commodity Collected", "Purchase Id : "+pid, onClickPickedCard.this, "1", "");
+
+                long time = System.currentTimeMillis();
+                mDatabase.getParent().getParent().child("picking").child(zid).setValue(time);
+
+              /*  Intent intent = new Intent(onClickPickedCard.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);*/
                 finish();
             }
         }, new Response.ErrorListener() {
@@ -343,12 +374,14 @@ public class onClickPickedCard extends AppCompatActivity {
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dialog.dismiss();
+
                 roc = remark.getText().toString();
                 if(roc.length() == 0){
                     Toast.makeText(onClickPickedCard.this, "Please provide some reason for cancellation.", Toast.LENGTH_SHORT).show();
-                }else
+                }else {
                     onClickCancelButton();
+                    dialog.dismiss();
+                }
             }
         });
         dialog.show();

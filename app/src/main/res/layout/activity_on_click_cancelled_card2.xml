@@ -1,0 +1,735 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="3dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_margin="@dimen/toolBarMargin"
+        android:background="@drawable/button_background"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:gravity="center|start"
+                android:textColor="@color/lightGreen"
+                android:textSize="24sp"
+                android:id="@+id/tsid"
+                android:layout_marginStart="10dp"
+                android:text="SALE ID : 001"
+                android:layout_weight="8"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
+        </LinearLayout>
+
+
+    </android.support.v7.widget.Toolbar>
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/scroll"
+        android:layout_above="@+id/select"
+        android:layout_below="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        app:cardElevation="5dp"
+        app:cardCornerRadius="5dp"
+        android:layout_margin="5dp"
+        tools:context="mayank.example.zendor.onClickSeller.sellerDetails">
+
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <LinearLayout
+                android:padding="15dp"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:textStyle="bold"
+                        android:id="@+id/buyerName"
+                        android:textColor="@color/darkGreen"
+                        android:layout_weight="1"
+                        android:textSize="18sp"
+                        android:gravity="center"
+                        android:text="Buyer Name"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+                    <TextView
+                        android:layout_weight="1"
+                        android:text="Buyer Id"
+                        android:id="@+id/bid"
+                        android:textStyle="bold"
+                        android:textSize="18sp"
+                        android:textColor="@color/darkGreen"
+                        android:gravity="center"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/commodity"
+                        android:textColor="#000"
+                        android:layout_weight="1"
+                        android:textStyle="bold"
+                        android:textSize="18sp"
+                        android:gravity="center"
+                        android:text="Commodity"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+
+                    <TextView
+                        android:id="@+id/saledId"
+                        android:textColor="#000"
+                        android:layout_weight="1"
+                        android:textSize="18sp"
+                        android:gravity="center"
+                        android:text="SaleId"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_marginTop="30dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:textColor="#000"
+                        android:layout_weight="1"
+                        android:textSize="16sp"
+                        android:gravity="start"
+                        android:text="Rate "
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_weight="1"
+                        android:gravity="end"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_rupee_indian"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent" />
+
+                        <TextView
+                            android:id="@+id/rate"
+                            android:textColor="#000"
+                            android:textSize="16sp"
+                            android:gravity="end"
+                            android:text="40/kg"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent" />
+                    </LinearLayout>
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:textColor="#000"
+                        android:layout_weight="1"
+                        android:textSize="16sp"
+                        android:gravity="start"
+                        android:text="Dispatched Weight"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+
+                    <TextView
+                        android:id="@+id/weight"
+                        android:textColor="#000"
+                        android:layout_weight="1"
+                        android:textSize="16sp"
+                        android:gravity="end"
+                        android:text="24 kgs"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/dw"
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:textColor="#000"
+                        android:layout_weight="1"
+                        android:textSize="16sp"
+                        android:gravity="start"
+                        android:text="Delivered Weight"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+
+                    <TextView
+                        android:id="@+id/deweight"
+                        android:textColor="#000"
+                        android:layout_weight="1"
+                        android:textSize="16sp"
+                        android:gravity="end"
+                        android:text="24 kgs"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:textColor="#000"
+                        android:layout_weight="1"
+                        android:textSize="16sp"
+                        android:gravity="start"
+                        android:text="Total Amount"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_weight="1"
+                        android:gravity="end"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_rupee_indian"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent" />
+
+                        <TextView
+                            android:id="@+id/totalAmount"
+                            android:textColor="#000"
+                            android:textSize="16sp"
+                            android:gravity="center"
+                            android:text="4000"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/llaa"
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:textColor="#000"
+                        android:layout_weight="1"
+                        android:textSize="16sp"
+                        android:gravity="start"
+                        android:text="Approved Amount"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_weight="1"
+                        android:gravity="end"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_rupee_indian"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent" />
+
+                        <TextView
+                            android:id="@+id/approvedAmount"
+                            android:textColor="#000"
+                            android:textSize="16sp"
+                            android:gravity="center"
+                            android:text="4000"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent" />
+                    </LinearLayout>
+                </LinearLayout>
+
+
+                <TextView
+                    android:id="@+id/ad"
+                    android:layout_marginTop="10dp"
+                    android:padding="5dp"
+                    android:textColor="#000"
+                    android:textSize="16sp"
+                    android:gravity="center"
+                    android:text="Amount Due"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <LinearLayout
+
+                    android:orientation="horizontal"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:visibility="gone"
+                        android:src="@drawable/ic_rupee_indian"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent" />
+
+                    <TextView
+                        android:id="@+id/amountDue"
+                        android:textColor="#000"
+                        android:textSize="16sp"
+                        android:gravity="center"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/aaaa"
+                    android:layout_marginTop="5dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    xmlns:android="http://schemas.android.com/apk/res/android">
+
+                    <TextView
+                        android:text="Date"
+                        android:id="@+id/date"
+                        android:gravity="center"
+                        android:textSize="12sp"
+                        android:textColor="#000"
+                        android:layout_weight="1"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+                    <TextView
+                        android:text="Collected By"
+                        android:id="@+id/paidBy"
+                        android:gravity="center"
+                        android:textSize="12sp"
+                        android:textColor="#000"
+                        android:layout_weight="1"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+                    <TextView
+                        android:id="@+id/tran"
+                        android:text="Transaction"
+                        android:gravity="center"
+                        android:textSize="12sp"
+                        android:textColor="#000"
+                        android:layout_weight="1"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+                </LinearLayout>
+
+
+
+                <ListView
+                    android:id="@+id/splitPayment"
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp">
+
+                </ListView>
+
+
+
+                <LinearLayout
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="start|center"
+                        android:text="Delivery Address :"
+                        android:textColor="#000"
+                        android:textSize="16sp" />
+
+
+                    <TextView
+                        android:id="@+id/deliveryAddress"
+                        android:textColor="#000"
+                        android:layout_weight="1"
+                        android:textSize="16sp"
+                        android:gravity="end"
+                        android:text="_ _ _ __ _ __ __ _ __ _ __ _ _ _ __ _ _ _ __ _ _ _ _ __"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="start|center"
+                        android:text="Billing Address :"
+                        android:textColor="#000"
+                        android:textSize="16sp" />
+
+
+                    <TextView
+                        android:id="@+id/billingAddress"
+                        android:textColor="#000"
+                        android:layout_weight="1"
+                        android:textSize="16sp"
+                        android:gravity="end"
+                        android:text="_ _ _ __ _ __ __ _ __ _ __ _ _ _ __ _ _ _ __ _ _ _ _ __"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="start|center"
+                        android:text="Driver Number"
+                        android:textColor="#000"
+                        android:textSize="16sp" />
+
+
+                    <TextView
+                        android:id="@+id/driNum"
+                        android:textColor="#000"
+                        android:layout_weight="1.2"
+                        android:textSize="16sp"
+                        android:gravity="end"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+                    <ImageView
+                        android:id="@+id/callDriver"
+
+                        android:src="@drawable/ic_local_phone_black_24dp"
+                        android:layout_weight=".3"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="start|center"
+                        android:text="Vehicle Number"
+                        android:textColor="#000"
+                        android:textSize="16sp" />
+
+
+                    <TextView
+                        android:id="@+id/vnum"
+                        android:textColor="#000"
+                        android:layout_weight="1.5"
+                        android:textSize="16sp"
+                        android:gravity="end"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:id="@+id/disLayout"
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="start|center"
+                        android:text="Dispatched Date"
+                        android:textColor="#000"
+                        android:textSize="16sp" />
+
+
+                    <TextView
+                        android:id="@+id/ddate"
+                        android:textColor="#000"
+                        android:layout_weight="1.5"
+                        android:textSize="16sp"
+                        android:gravity="end"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/disBylayout"
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="start|center"
+                        android:text="Dispatched By :"
+                        android:textColor="#000"
+                        android:textSize="16sp" />
+
+
+                    <TextView
+                        android:id="@+id/disBy"
+                        android:textColor="#000"
+                        android:layout_weight="1.2"
+                        android:textSize="16sp"
+                        android:gravity="end"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+                    <ImageView
+                        android:id="@+id/callDispatch"
+
+                        android:src="@drawable/ic_local_phone_black_24dp"
+                        android:layout_weight=".3"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/delL"
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="start|center"
+                        android:text="Delivery Date"
+                        android:textColor="#000"
+                        android:textSize="16sp" />
+
+
+                    <TextView
+                        android:id="@+id/dedate"
+                        android:textColor="#000"
+                        android:layout_weight="1.5"
+                        android:textSize="16sp"
+                        android:gravity="end"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/delll"
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="start|center"
+                        android:text="Delivered By"
+                        android:textColor="#000"
+                        android:textSize="16sp" />
+
+
+                    <TextView
+                        android:id="@+id/delBy"
+                        android:textColor="#000"
+                        android:layout_weight="1.2"
+                        android:textSize="16sp"
+                        android:gravity="end"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+                    <ImageView
+                        android:id="@+id/callDel"
+
+                        android:src="@drawable/ic_local_phone_black_24dp"
+                        android:layout_weight=".3"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/canl"
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="start|center"
+                        android:text="Cancelled By"
+                        android:textColor="#000"
+                        android:textSize="16sp" />
+
+
+                    <TextView
+                        android:id="@+id/canBy"
+                        android:textColor="#000"
+                        android:layout_weight="1.2"
+                        android:textSize="16sp"
+                        android:gravity="end"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+                    <ImageView
+                        android:id="@+id/callCancel"
+
+                        android:src="@drawable/ic_local_phone_black_24dp"
+                        android:layout_weight=".3"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/ca"
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="start|center"
+                        android:text="Cancelled At"
+                        android:textColor="#000"
+                        android:textSize="16sp" />
+
+
+                    <TextView
+                        android:id="@+id/canAt"
+                        android:textColor="#000"
+                        android:layout_weight="1.5"
+                        android:textSize="16sp"
+                        android:gravity="end"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/rocl"
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="start|center"
+                        android:text="Reason of cancellation"
+                        android:textColor="#000"
+                        android:textSize="16sp" />
+
+
+                    <TextView
+                        android:id="@+id/roc"
+                        android:textColor="#000"
+                        android:layout_weight="1.5"
+                        android:textSize="16sp"
+                        android:gravity="end"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" />
+
+                </LinearLayout>
+
+
+
+
+
+            </LinearLayout>
+
+        </ScrollView>
+    </android.support.v7.widget.CardView>
+
+
+
+</RelativeLayout>

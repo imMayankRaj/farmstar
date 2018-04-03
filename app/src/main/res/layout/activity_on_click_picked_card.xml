@@ -17,6 +17,7 @@
         android:layout_height="50dp">
 
         <TextView
+            android:id="@+id/toolbarText"
             android:textColor="@color/lightGreen"
             android:textSize="@dimen/toolBarTextDimen"
             android:gravity="center|start"
@@ -113,9 +114,10 @@
                 <TextView
                     android:id="@+id/bookedAt"
                     android:textColor="#000"
-                    android:layout_weight="1"
-                    android:textSize="16sp"
+                    android:layout_weight="2"
                     android:gravity="end"
+
+                    android:textSize="16sp"
                     android:layout_width="0dp"
                     android:layout_height="match_parent" />
 
@@ -141,7 +143,7 @@
                 <TextView
                     android:id="@+id/pickedAt"
                     android:textColor="#000"
-                    android:layout_weight="1"
+                    android:layout_weight="2"
                     android:textSize="16sp"
                     android:gravity="end"
                     android:layout_width="0dp"
@@ -349,7 +351,7 @@
 
                 <TextView
                     android:textStyle="bold"
-                    android:layout_weight="1"
+                    android:layout_weight=".5"
                     android:textSize="16sp"
                     android:gravity="start"
                     android:text="Booked By :"
@@ -400,7 +402,7 @@
 
                 <TextView
                     android:textStyle="bold"
-                    android:layout_weight="1"
+                    android:layout_weight=".5"
                     android:textSize="16sp"
                     android:gravity="start"
                     android:text="Picked By :"

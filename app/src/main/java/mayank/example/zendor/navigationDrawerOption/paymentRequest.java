@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -26,11 +27,17 @@ import com.android.volley.Response;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,6 +67,9 @@ public class paymentRequest extends AppCompatActivity {
     LoadingClass lc;
     private SharedPreferences sharedPreferences;
     private Toolbar toolbar;
+    private SwipeRefreshLayout swipe;
+    private DatabaseReference mDatabase;
+    private int count = 0;
 
 
     @Override
@@ -72,12 +82,17 @@ public class paymentRequest extends AppCompatActivity {
         check = findViewById(R.id.click);
         lc = new LoadingClass(this);
         toolbar = findViewById(R.id.toolbar);
+        swipe = findViewById(R.id.swipe);
 
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mDatabase.child("paymentRequests");
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (valueEventListener != null)
+                    mDatabase.removeEventListener(valueEventListener);
                 finish();
             }
         });
@@ -86,7 +101,7 @@ public class paymentRequest extends AppCompatActivity {
         check.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRequests(paymentRequest.this);
+                getRequests();
             }
         });
 
@@ -99,21 +114,48 @@ public class paymentRequest extends AppCompatActivity {
 
         header.setupWithViewPager(paymentRequestViewpager);
 
+        swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getRequests();
+            }
+        });
 
-        getRequests(this);
+        mDatabase.addValueEventListener(valueEventListener);
+
+        getRequests();
     }
 
-    private void createpager(){
+    private ValueEventListener valueEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            if (dataSnapshot.exists() && count != 0)
+                getRequests();
+            count++;
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
+    private void createpager() {
+        int page = paymentRequestViewpager.getCurrentItem();
         viewPagerAdapter adapter = new viewPagerAdapter(getSupportFragmentManager());
+
         adapter.addFrag(new pendingFragment(requestList), "Pending");
         adapter.addFrag(new processedFragment(approvedList), "Processed");
         adapter.addFrag(new rejectedFragment(rejectedList), "Rejected");
+
         paymentRequestViewpager.setAdapter(adapter);
+        paymentRequestViewpager.setCurrentItem(page);
     }
 
     public static class viewPagerAdapter extends FragmentPagerAdapter {
         ArrayList<Fragment> fragmentArrayList = new ArrayList<>();
         ArrayList<String> titleList = new ArrayList<>();
+
         public viewPagerAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -128,7 +170,7 @@ public class paymentRequest extends AppCompatActivity {
             return fragmentArrayList.size();
         }
 
-        public void addFrag(Fragment fragment, String title){
+        public void addFrag(Fragment fragment, String title) {
             fragmentArrayList.add(fragment);
             titleList.add(title);
         }
@@ -140,9 +182,24 @@ public class paymentRequest extends AppCompatActivity {
     }
 
 
-    public void getRequests(Context context){
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (valueEventListener != null)
+            mDatabase.removeEventListener(valueEventListener);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (valueEventListener != null)
+            mDatabase.removeEventListener(valueEventListener);
+    }
+
+    public void getRequests() {
 
         lc.showDialog();
+        swipe.setRefreshing(true);
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.PAYMENT_REQUEST, new Response.Listener<String>() {
             @Override
@@ -154,7 +211,7 @@ public class paymentRequest extends AppCompatActivity {
                     approvedList.clear();
                     JSONObject jsonObject = new JSONObject(response);
                     JSONArray jsonArray = jsonObject.getJSONArray("details");
-                    for(int i =0;i<jsonArray.length();i++){
+                    for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject request = jsonArray.getJSONObject(i);
                         String pid = request.getString("sid");
                         String sname = request.getString("seller_name");
@@ -168,15 +225,15 @@ public class paymentRequest extends AppCompatActivity {
                         String rejectedAt = request.getString("rejected_date");
                         String remark = request.getString("transfer_details");
                         String flag = request.getString("flag");
-                        String sender_id =request.getString("sender_id");
+                        String sender_id = request.getString("sender_id");
                         String seller_id = request.getString("seller_id");
 
-                        switch (raj){
+                        switch (raj) {
                             case "r":
-                                requestList.add(new requestClass(pid, sender, amount, sname, date,flag, raj, sender_id, seller_id));
+                                requestList.add(new requestClass(pid, sender, amount, sname, date, flag, raj, sender_id, seller_id));
                                 break;
                             case "a":
-                                approvedList.add(new requestClass(pid, sender, processedAt,amount,flag, sname, raj));
+                                approvedList.add(new requestClass(pid, sender, processedAt, amount, flag, sname, raj));
                                 break;
                             case "j":
                                 rejectedList.add(new requestClass(pid, rejectedBy, rejectedAt, flag, remark, raj));
@@ -185,11 +242,12 @@ public class paymentRequest extends AppCompatActivity {
                     }
 
                 } catch (JSONException e) {
-                   Log.e("error", e+"");
+                    Log.e("error", e + "");
                 }
 
                 createpager();
                 lc.dismissDialog();
+                swipe.setRefreshing(false);
 
 
             }
@@ -202,15 +260,15 @@ public class paymentRequest extends AppCompatActivity {
                 } else
                     showError(error, paymentRequest.this.getClass().getName(), paymentRequest.this);
                 lc.dismissDialog();
+                swipe.setRefreshing(false);
 
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
 
-                String zid = sharedPreferences.getString("zid","");
-                String pos = sharedPreferences.getString("position","");
-
+                String zid = sharedPreferences.getString("zid", "");
+                String pos = sharedPreferences.getString("position", "");
 
 
                 Map<String, String> params = new HashMap<>();
@@ -221,7 +279,6 @@ public class paymentRequest extends AppCompatActivity {
         };
         AppController.getInstance().addToRequestQueue(stringRequest);
     }
-
 
 
     public static class requestClass {
@@ -247,8 +304,7 @@ public class paymentRequest extends AppCompatActivity {
         private String sid;
 
 
-
-        public requestClass(String pid,String processedBy, String processedAt, String amount,String sflag, String seller_name, String flag){
+        public requestClass(String pid, String processedBy, String processedAt, String amount, String sflag, String seller_name, String flag) {
             this.processedBy = processedBy;
             this.processedAt = processedAt;
             this.amount = amount;
@@ -258,7 +314,7 @@ public class paymentRequest extends AppCompatActivity {
             this.sflag = sflag;
         }
 
-        public requestClass(String pid,String rejectedBy, String rejDate,String sflag, String remark, String flag){
+        public requestClass(String pid, String rejectedBy, String rejDate, String sflag, String remark, String flag) {
             this.rejectedBy = rejectedBy;
             this.rejDate = rejDate;
             this.flag = flag;
@@ -268,7 +324,7 @@ public class paymentRequest extends AppCompatActivity {
 
         }
 
-        public requestClass(String pid, String requestedBy, String amount, String seller_name, String date,String sflag, String flag, String seller_id, String sid){
+        public requestClass(String pid, String requestedBy, String amount, String seller_name, String date, String sflag, String flag, String seller_id, String sid) {
             this.pid = pid;
             this.requestedBy = requestedBy;
             this.amount = amount;
@@ -328,6 +384,7 @@ public class paymentRequest extends AppCompatActivity {
         public String getSeller_name() {
             return seller_name;
         }
+
         public String getDate() {
             return date;
         }

@@ -180,7 +180,7 @@ public class addCommodities extends AppCompatActivity {
         final Spinner type = dialog.findViewById(R.id.comType);
         compic = dialog.findViewById(R.id.imageView);
 
-        commTypes = new String[]{"Vegetables", "Pulses", "Fruits", "Cereals", "Cash Crops", "Oil Seeds", "Spices", "Forage Crops", "Flowers", "Dairy", "Live Stocks"};
+        commTypes = new String[]{"Vegetables", "Pulses", "Fruits", "Cereals", "Cash Crops", "Oil Seeds", "Spices", "Forage Crops", "Flowers", "Dairy", "Live Stocks", "Others"};
 
         ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, commTypes);
         spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

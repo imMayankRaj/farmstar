@@ -1,16 +1,27 @@
 package mayank.example.zendor.onClickSeller;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.location.Geocoder;
+import android.location.Location;
 import android.net.Uri;
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -19,11 +30,13 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +48,23 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.bumptech.glide.Glide;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -44,6 +74,7 @@ import net.gotev.uploadservice.UploadInfo;
 import net.gotev.uploadservice.UploadNotificationConfig;
 import net.gotev.uploadservice.UploadStatusDelegate;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -54,17 +85,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 import mayank.example.zendor.ApplicationQueue;
+import mayank.example.zendor.Constants;
+import mayank.example.zendor.FetchAddressIntentService;
 import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
 import mayank.example.zendor.apiConnect;
 import mayank.example.zendor.navigationDrawerOption.addCommodities;
+import mayank.example.zendor.sellerDetailActivity;
 import mayank.example.zendor.sellerExtraData;
 import xendorp1.application_classes.AppController;
 
 import static mayank.example.zendor.MainActivity.showError;
 
-public class sellerEdit extends AppCompatActivity {
+public class sellerEdit extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
 
     private EditText accoutNumber, ifscCode, accountName;
     private EditText n1, n2, n3, n4, n5, n6, n7;
@@ -79,6 +113,22 @@ public class sellerEdit extends AppCompatActivity {
     private LoadingClass lc;
     private String seller_id;
     private String imgPath;
+    private String NUM[];
+    private TextView locate;
+    private boolean isCheck;
+    private LocationRequest locationRequest;
+    private ProgressBar load;
+    private FusedLocationProviderClient mFusedLocationClient;
+    private GoogleApiClient googleApiClient;
+    private final int REQUEST_CHECK_SETTINGS = 10;
+    private LocationCallback mLocationCallback;
+    protected Location mLastLocation;
+    private AddressResultReceiver mResultReceiver;
+    private Intent intent;
+    private String mAddressOutput = null;
+    private TextView gpsAddress;
+    private String gps;
+    int count = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +144,11 @@ public class sellerEdit extends AppCompatActivity {
         addnumber = findViewById(R.id.addNumber);
         toolbar = findViewById(R.id.toolbar);
         alternate = findViewById(R.id.alternateNo);
+        locate = findViewById(R.id.locate);
+        load = findViewById(R.id.load);
+        gpsAddress = findViewById(R.id.gpsAddress);
+
+
         n1 = findViewById(R.id.ed1);
         n2 = findViewById(R.id.ed2);
         n3 = findViewById(R.id.ed3);
@@ -103,7 +158,7 @@ public class sellerEdit extends AppCompatActivity {
         n7 = findViewById(R.id.ed7);
 
         skip.setVisibility(View.GONE);
-      //  alternate.setVisibility(View.GONE);
+        //  alternate.setVisibility(View.GONE);
 
         lc = new LoadingClass(this);
 
@@ -118,6 +173,41 @@ public class sellerEdit extends AppCompatActivity {
         seller_id = getIntent().getStringExtra("seller_id");
         getSellerData();
 
+        googleApiClient = new GoogleApiClient.Builder(sellerEdit.this)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this).build();
+        googleApiClient.connect();
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(sellerEdit.this);
+
+
+        mLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                getAddress(locationResult.getLastLocation());
+            }
+        };
+        locate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                isCheck = true;
+
+                GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+                int responseCode = apiAvailability.isGooglePlayServicesAvailable(sellerEdit.this);
+                if (apiAvailability.isGooglePlayServicesAvailable(sellerEdit.this) == 0) {
+                    getAddressFromGps();
+                    Log.e("hi", "hello0");
+
+                } else {
+                    Dialog dialog = apiAvailability.getErrorDialog(sellerEdit.this, responseCode, 0);
+                    dialog.setCancelable(false);
+                    dialog.show();
+                }
+
+            }
+        });
+
         camera.setScaleType(ImageView.ScaleType.CENTER);
         camera.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_add_a_photo_black_24dp));
         photoChanged = false;
@@ -125,27 +215,26 @@ public class sellerEdit extends AppCompatActivity {
         addnumber.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(n2.getVisibility() == View.GONE)
+                if (n2.getVisibility() == View.GONE)
                     n2.setVisibility(View.VISIBLE);
-                else if(n3.getVisibility() == View.GONE)
+                else if (n3.getVisibility() == View.GONE)
                     n3.setVisibility(View.VISIBLE);
-                else if(n4.getVisibility() == View.GONE)
+                else if (n4.getVisibility() == View.GONE)
                     n4.setVisibility(View.VISIBLE);
-                else if(n5.getVisibility() == View.GONE)
+                else if (n5.getVisibility() == View.GONE)
                     n5.setVisibility(View.VISIBLE);
-                else if(n6.getVisibility() == View.GONE)
+                else if (n6.getVisibility() == View.GONE)
                     n6.setVisibility(View.VISIBLE);
-                else if(n7.getVisibility() == View.GONE)
+                else if (n7.getVisibility() == View.GONE)
                     n7.setVisibility(View.VISIBLE);
             }
         });
 
 
-
         camera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                photoChanged=false;
+                photoChanged = false;
                 if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(sellerEdit.this);
                     builder.setTitle("Permission to read and write to storage");
@@ -174,8 +263,6 @@ public class sellerEdit extends AppCompatActivity {
         });
 
 
-
-
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -183,28 +270,26 @@ public class sellerEdit extends AppCompatActivity {
                 final String aname = accountName.getText().toString();
                 final String ifsc = ifscCode.getText().toString();
 
-                String text[] = new String[]{n1.getText().toString(),n2.getText().toString(),n3.getText().toString(),n4.getText().toString(),n5.getText().toString(),n6.getText().toString(),n7.getText().toString()};
-                String finalNumber = "";
-                for(int i =0;i<7;i++){
-                    int l =text[i].length();
-                    if(l!=0){
-                        finalNumber = finalNumber.concat("," +text[i]);
+                String text[] = new String[]{n1.getText().toString(), n2.getText().toString(), n3.getText().toString(), n4.getText().toString(), n5.getText().toString(), n6.getText().toString(), n7.getText().toString()};
+                String finalNumber = NUM[0];
+                String c = NUM[0];
+                for (int i = 0; i < 7; i++) {
+                    int l = text[i].length();
+                    if (l != 0) {
+                        c = c.concat(text[i]);
+                        finalNumber = finalNumber.concat("," + text[i]);
                     }
                 }
 
-                String c="";
-                String check[] = finalNumber.split(",");
-                for(int j=0; j<check.length; j++){
-                    c=c.concat(check[j]);
-                }
-                finalNumber = finalNumber.substring(1);
-                if(c.length()%10 !=0)
+
+                if (c.length() % 10 != 0)
                     Toast.makeText(sellerEdit.this, "Incorrect Number Entered", Toast.LENGTH_SHORT).show();
                 else {
-                    if (photoChanged){
-                       lc.showDialog();
+                    stopLocationUpdates();
+                    if (photoChanged) {
+                        lc.showDialog();
                         long time = System.currentTimeMillis();
-                        final String path =   "_" + time + imgPath.substring(imgPath.lastIndexOf("."));
+                        final String path = "_" + time + imgPath.substring(imgPath.lastIndexOf("."));
 
                         try {
 
@@ -242,7 +327,7 @@ public class sellerEdit extends AppCompatActivity {
                         } catch (Exception exc) {
                             Toast.makeText(sellerEdit.this, "Error Occured.", Toast.LENGTH_SHORT).show();
                         }
-                    }else
+                    } else
                         pushExtraData(an, aname, ifsc, finalNumber, "");
 
                 }
@@ -250,6 +335,183 @@ public class sellerEdit extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void getAddress(Location location){
+        String lat = location.getLatitude()+"";
+        String longitude = location.getLongitude()+"";
+        Log.e("resposnes", lat+" "+longitude);
+        String API_KEY = "AIzaSyAbIngBpBEV0DE4nfMGHfJURuyeZwJXixU ";
+        String url = "https://maps.googleapis.com/maps/api/geocode/json?latlng="+lat+","+longitude+"&key="+API_KEY;
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.e("response", response);
+                try {
+                    JSONObject json = new JSONObject(response);
+                    JSONArray jsonObject = json.getJSONArray("results");
+                    JSONObject jsonObject1 = jsonObject.getJSONObject(0);
+                    mAddressOutput = jsonObject1.getString("formatted_address");
+                    load.setVisibility(View.GONE);
+                    gpsAddress.setVisibility(View.VISIBLE);
+                    gpsAddress.setText(mAddressOutput);
+                    stopLocationUpdates();
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+        AppController.getInstance().addToRequestQueue(stringRequest);
+    }
+
+    private void getAddressFromGps() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    0);
+        } else {
+            getLocationDialog();
+        }
+    }
+
+    public void startIntentService() {
+        mResultReceiver = new AddressResultReceiver(new Handler());
+        intent = new Intent(this, FetchAddressIntentService.class);
+        intent.putExtra(Constants.RECEIVER, mResultReceiver);
+        intent.putExtra(Constants.LOCATION_DATA_EXTRA, mLastLocation);
+        startService(intent);
+    }
+
+    public class AddressResultReceiver extends ResultReceiver {
+
+        public AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+
+            mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
+
+            // Show a toast message if an address was found.
+            if (resultCode == Constants.SUCCESS_RESULT) {
+                load.setVisibility(View.GONE);
+                gpsAddress.setVisibility(View.VISIBLE);
+                gpsAddress.setText(mAddressOutput);
+                stopLocationUpdates();
+                Toast.makeText(sellerEdit.this, "Click On \'Locate On Map\' if you are doubtful about address.", Toast.LENGTH_SHORT).show();
+            }
+
+
+        }
+    }
+
+    private void stopLocationUpdates() {
+        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (isCheck)
+            stopLocationUpdates();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (isCheck)
+            stopLocationUpdates();
+    }
+
+    private void getLocationDialog() {
+
+        load.setVisibility(View.VISIBLE);
+
+
+        getLocationRequest();
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(locationRequest);
+
+        builder.setAlwaysShow(true);
+
+        Task<LocationSettingsResponse> task =
+                LocationServices.getSettingsClient(this).checkLocationSettings(builder.build());
+
+        task.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                if (e instanceof ResolvableApiException) {
+
+
+                    try {
+                        ResolvableApiException resolvable = (ResolvableApiException) e;
+                        resolvable.startResolutionForResult(sellerEdit.this,
+                                REQUEST_CHECK_SETTINGS);
+                    } catch (IntentSender.SendIntentException sendEx) {
+                        // Ignore the error.
+                    }
+                }
+
+            }
+        });
+
+        task.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
+            @Override
+            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                getAddressFromCoordinates();
+            }
+        });
+
+
+    }
+    @SuppressLint("MissingPermission")
+    private void getAddressFromCoordinates() {
+
+
+        mFusedLocationClient.getLastLocation()
+                .addOnSuccessListener(sellerEdit.this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        mLastLocation = location;
+
+
+                        if (!Geocoder.isPresent()) {
+                            Toast.makeText(sellerEdit.this,
+                                    "Network Error. Try again",
+                                    Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        startLocationUpdates();
+                    }
+                });
+
+    }
+
+    @SuppressLint("MissingPermission")
+    private void startLocationUpdates() {
+
+        mFusedLocationClient.requestLocationUpdates(locationRequest,
+                mLocationCallback,
+                null /* Looper */);
+    }
+
+    private void getLocationRequest() {
+        locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(10*1000);
+        locationRequest.setFastestInterval(1000);
     }
 
     private void openImageIntent() {
@@ -261,6 +523,26 @@ public class sellerEdit extends AppCompatActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_CHECK_SETTINGS:
+                switch (resultCode) {
+                    case Activity.RESULT_OK:
+
+                        getAddressFromCoordinates();
+
+                        break;
+                    case Activity.RESULT_CANCELED:
+                        Toast.makeText(sellerEdit.this, "Requested feature declined by user.", Toast.LENGTH_SHORT).show();
+                        load.setVisibility(View.GONE);
+
+
+                        break;
+                    default:
+                        break;
+                }
+                break;
+        }
+
         if (resultCode == RESULT_OK) {
             if (requestCode == 5) {
                 Log.e("here", "here111");
@@ -268,7 +550,7 @@ public class sellerEdit extends AppCompatActivity {
                 Uri resultUri = result.getUri();
                 try {
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), resultUri);
-                    String filename = System.currentTimeMillis()+".jpg";
+                    String filename = System.currentTimeMillis() + ".jpg";
                     File file = new File(getFilesDir(), filename);
 
                     FileOutputStream out = new FileOutputStream(file);
@@ -280,13 +562,14 @@ public class sellerEdit extends AppCompatActivity {
                     photoChanged = true;
 
                 } catch (Exception e) {
-                    Log.e("qwrtyuikjhgfds", e+"");
+                    Log.e("qwrtyuikjhgfds", e + "");
                 }
 
             }
         } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
             Toast.makeText(this, "Try Again.", Toast.LENGTH_SHORT).show();
         }
+
 
     }
 
@@ -302,7 +585,6 @@ public class sellerEdit extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e("dfghj", error + "");
                 lc.dismissDialog();
 
                 if (error instanceof TimeoutError) {
@@ -316,13 +598,17 @@ public class sellerEdit extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
 
+                String GPS = mAddressOutput == null ? gps : mAddressOutput;
+
                 HashMap<String, String> map = new HashMap<>();
                 map.put("sid", seller_id);
                 map.put("acnumber", an);
                 map.put("acname", aname);
                 map.put("ifsc", ifsc);
                 map.put("mob", mob);
-                if(photoChanged){
+                map.put("gps", GPS);
+
+                if (photoChanged) {
                     map.put("path", path);
                 }
 
@@ -344,6 +630,17 @@ public class sellerEdit extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 
         switch (requestCode) {
+            case 0:
+
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    getLocationDialog();
+                } else
+                    Toast.makeText(sellerEdit.this, "Requested feature declined by user.", Toast.LENGTH_SHORT).show();
+
+
+                break;
+
             case 2: {
                 Map<String, Integer> perms = new HashMap<String, Integer>();
 
@@ -380,17 +677,18 @@ public class sellerEdit extends AppCompatActivity {
                     String acHolder = jsonObject.getString("ah");
                     String checkPicPath = jsonObject.getString("checkPicPath");
                     String number = jsonObject.getString("mob");
+                    gps = jsonObject.getString("gps");
 
                     accountName.setText(acHolder);
                     accoutNumber.setText(an);
                     ifscCode.setText(IFSC);
-                    if(checkPicPath.length() != 0)
+                    if (checkPicPath.length() != 0)
                         Glide.with(sellerEdit.this).load(URLclass.CHEQUE_PIC_PATH + checkPicPath).into(camera);
 
-                    String NUM[] = number.split(",");
+                    NUM = number.split(",");
 
-                    for(int i =0;i<NUM.length;i++) {
-                        int a = getResources().getIdentifier("ed"+(i+1), "id", getPackageName());
+                    for (int i = 1; i < NUM.length; i++) {
+                        int a = getResources().getIdentifier("ed" + (i), "id", getPackageName());
                         EditText ed = findViewById(a);
                         ed.setVisibility(View.VISIBLE);
                         ed.setText(NUM[i]);
@@ -414,7 +712,6 @@ public class sellerEdit extends AppCompatActivity {
                     showError(error, sellerEdit.this.getClass().getName(), sellerEdit.this);
 
 
-
             }
         }) {
             @Override
@@ -426,5 +723,20 @@ public class sellerEdit extends AppCompatActivity {
         };
 
         AppController.getInstance().addToRequestQueue(stringRequest);
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
     }
 }

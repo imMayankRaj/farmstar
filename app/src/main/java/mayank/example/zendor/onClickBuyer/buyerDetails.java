@@ -41,7 +41,13 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
@@ -54,6 +60,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -66,8 +73,12 @@ import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
 import mayank.example.zendor.frequentlyUsedClass;
 import mayank.example.zendor.onClickBooked.onClickBookedCard;
+import mayank.example.zendor.onClickSeller.sellerLedger;
+import mayank.example.zendor.sellerDetailActivity;
+import xendorp1.adapters.zone_card_spinner_adapter;
 import xendorp1.application_classes.AppConfig;
 import xendorp1.application_classes.AppController;
+import xendorp1.cards.zone_card;
 
 import static android.content.Context.MODE_PRIVATE;
 import static mayank.example.zendor.MainActivity.showError;
@@ -85,7 +96,6 @@ public class buyerDetails extends Fragment {
     private TextView address;
     public static TextView amountDue;
     private TextView gstNumber;
-    private TextView sale;
     private String number, othermob;
     private LinearLayout commodities;
     public static String num[];
@@ -98,6 +108,12 @@ public class buyerDetails extends Fragment {
     private TextView edit;
     private String GSTNUMBER;
     private SharedPreferences sharedPreferences;
+    private TextView addRemove;
+    public static TextView click;
+    private List<zone_card> zonelist;
+    public static String buyerName;
+    public static String buyerNumber;
+    private DatabaseReference mDatabase;
 
 
     public buyerDetails() {
@@ -133,15 +149,35 @@ public class buyerDetails extends Fragment {
         amountDue = view.findViewById(R.id.amountDue);
         gstNumber = view.findViewById(R.id.gstNumber);
         commodities = view.findViewById(R.id.commodities);
-        sale = view.findViewById(R.id.sale);
         buyerImage = view.findViewById(R.id.buyerImage);
         pbar = view.findViewById(R.id.pbar);
         edit = view.findViewById(R.id.buyerEdit);
+        addRemove = view.findViewById(R.id.addRemove);
+        click = view.findViewById(R.id.click);
+
+        zonelist = new ArrayList<>();
 
         sharedPreferences = getActivity().getSharedPreferences("details", MODE_PRIVATE);
 
 
         lc = new LoadingClass(getActivity());
+        mDatabase = FirebaseDatabase.getInstance().getReference().child("buyerSales").child(buyer_id);
+
+        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(!dataSnapshot.exists()){
+                    long time = System.currentTimeMillis();
+                    mDatabase.setValue(time+"");
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
         getBuyerDetails();
 
         edit.setOnClickListener(new View.OnClickListener() {
@@ -151,12 +187,27 @@ public class buyerDetails extends Fragment {
             }
         });
 
+        click.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getBuyerDetails();
+            }
+        });
+
         call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 callDialog(num);
             }
         });
+
+        addRemove.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getActivity(), addRemoveBuyer.class).putExtra("bid", buyer_id));
+            }
+        });
+        getZones();
 
         return view;
     }
@@ -189,11 +240,53 @@ public class buyerDetails extends Fragment {
     }
 
 
+    private void getZones() {
+        lc.showDialog();
+        zonelist.clear();
+        StringRequest strReq = new StringRequest(Request.Method.GET,
+                AppConfig.URL_GET_ZONES, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    zonelist.add(new zone_card());
+                    JSONArray jsonArray = new JSONArray(response);
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                        zone_card zone_card = new zone_card();
+                        zone_card.setZone_name(jsonObject.getString("zname"));
+                        zone_card.setZone_id(jsonObject.getString("zid"));
+                        zonelist.add(zone_card);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                lc.dismissDialog();
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                lc.dismissDialog();
+                if (error instanceof TimeoutError) {
+                    Toast.makeText(getActivity(), "Time out. Reload.", Toast.LENGTH_SHORT).show();
+                } else
+                    showError(error, sellerLedger.class.getName(), getActivity());
+
+
+            }
+        });
+        AppController.getInstance().addToRequestQueue(strReq, "getzones");
+    }
+
     private void showSaleDialog(final String COMM){
-        final Dialog dialog = new Dialog(getActivity());
+        final Dialog dialog = new Dialog(getActivity(),  R.style.Theme_Dialog);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.buyer_sale_purchase_dialog);
         final TextView comm = dialog.findViewById(R.id.commodity);
+        final Spinner zone = dialog.findViewById(R.id.zone);
+
         final EditText weight = dialog.findViewById(R.id.weight);
         final EditText rate = dialog.findViewById(R.id.rate);
         final EditText vnumber = dialog.findViewById(R.id.vNumber);
@@ -213,6 +306,8 @@ public class buyerDetails extends Fragment {
         TextView cancel = dialog.findViewById(R.id.cancel);
         TextView save = dialog.findViewById(R.id.save);
 
+        zone_card_spinner_adapter adapter = new zone_card_spinner_adapter(getActivity(), R.layout.spinner_zone, zonelist, getLayoutInflater());
+        zone.setAdapter(adapter);
 
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -230,15 +325,16 @@ public class buyerDetails extends Fragment {
                 String dc = driverContact.getText().toString();
                 String da =deliveryAddress.getText().toString();
                 String ba = billingAddress.getText().toString();
+                String zo = zonelist.get(zone.getSelectedItemPosition()).getZone_name();
 
-                if ( we.length() == 0 || r.length() == 0 || vn.length() == 0 || dc.length() == 0 || da.length() == 0 || ba.length() == 0) {
+                if ( we.length() == 0 || r.length() == 0 || vn.length() == 0 || dc.length() == 0 || da.length() == 0 || ba.length() == 0 || zone.getSelectedItemPosition() == 0) {
                     Toast.makeText(getActivity(), "Some Fields Are Left Empty.", Toast.LENGTH_SHORT).show();
+                }else if(dc.length() <10) {
+                    Toast.makeText(getActivity(), "Enter valid driver contact number.", Toast.LENGTH_SHORT).show();
                 }else {
-                    addNewSale(COMM, we, r, vn, dc, da, ba);
+                    addNewSale(COMM, we, r, vn, dc, da, ba, zo);
                     dialog.dismiss();
-                    frequentlyUsedClass.sendOTP(buyerDetails.num[0], "Your Foodmonk verification code is " + "Dispatched" + " . Happy food ordering :)", getActivity());
-                    frequentlyUsedClass.sendOTP(dc, "Your Foodmonk verification code is " + da + " . Happy food ordering :)", getActivity());
-                }
+               }
             }
         });
 
@@ -246,15 +342,29 @@ public class buyerDetails extends Fragment {
 
     }
 
-    private void addNewSale(final String comm, final String weight, final String rat, final String number, final String dc, final String address, final String baddress){
+    private void addNewSale(final String comm, final String weight, final String rat, final String number, final String dc, final String address, final String baddress, final String zone){
 
         lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ON_CLICK_SALE_BUYER_BUTTON, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
+
                 lc.dismissDialog();
-                getSaleDetail(getActivity());
-                buyerLedger.click.performClick();
+
+                frequentlyUsedClass.sendOTPE(buyerNumber, "This is to inform that\n" +
+                        "Commodity : "+comm.trim()+"\n" +
+                        "Rate : "+rat.trim()+" per kg\n" +
+                        "Vehicle No : "+number.trim()+"\n" +
+                        "Driver : "+dc.trim()+"\n" +
+                        "Has been despatched by Farmstar from "+baddress.trim()+" to " + address.trim(), getActivity());
+
+
+                long time = System.currentTimeMillis();
+                mDatabase.setValue(time+"");
+
+
+               // getSaleDetail(getActivity());
+               // buyerLedger.click.performClick();
             }
         }, new Response.ErrorListener() {
             @Override
@@ -287,6 +397,7 @@ public class buyerDetails extends Fragment {
                 parameters.put("bid", buyer_id);
                 parameters.put("bookedBy", id);
                 parameters.put("ts1", dateTimeInGMT.format(new Date()));
+                parameters.put("zone", zone);
                 return parameters;
             }
         };
@@ -318,6 +429,8 @@ public class buyerDetails extends Fragment {
                     else
                         gstNumber.setText("");
 
+                    buyerName = json.getString("company_name");
+                    buyerNumber = json.getString("mob");
                     comm = json.getString("commodities");
                     number = number + "," + othermob;
                     num = number.split(",");

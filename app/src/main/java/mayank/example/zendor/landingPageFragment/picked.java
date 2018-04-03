@@ -27,6 +27,11 @@ import com.android.volley.Response;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -61,8 +66,8 @@ public class picked extends Fragment {
     private SwipeRefreshLayout swipeRefreshLayout;
     private LinearLayout layout;
     private TextView textView;
-
-
+    private DatabaseReference mDatabase;
+    private int count = 0;
 
     public picked() {
 
@@ -88,7 +93,35 @@ public class picked extends Fragment {
         pickedRecyclerView.setLayoutManager(llm);
         pickedRecyclerView.setHasFixedSize(true);
 
-        pickedList = new ArrayList<>();
+        String zid = sharedPreferences.getString("zid", "");
+
+
+        String pos = sharedPreferences.getString("position", "");
+
+        if (!pos.equals("0"))
+            mDatabase = FirebaseDatabase.getInstance().getReference().child("picking").child(zid);
+        else
+            mDatabase = FirebaseDatabase.getInstance().getReference().child("picking");
+
+
+        if(!pos.equals("0")) {
+            mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (!dataSnapshot.exists()) {
+                        long time = System.currentTimeMillis();
+                        mDatabase.setValue(time + "");
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+        mDatabase.addValueEventListener(valueEventListener);
+        //    pickedList = new ArrayList<>();
 
 
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -100,13 +133,30 @@ public class picked extends Fragment {
         });
 
 
-
         getPickedData();
 
         return view;
     }
 
-    public void getPickedData(){
+    public void removeListener() {
+        mDatabase.removeEventListener(valueEventListener);
+    }
+
+    private ValueEventListener valueEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            if (dataSnapshot.exists() && count != 0)
+                getPickedData();
+            count++;
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
+    public void getPickedData() {
         lc.showDialog();
         layout.setVisibility(View.GONE);
 
@@ -114,12 +164,14 @@ public class picked extends Fragment {
             @Override
             public void onResponse(String response) {
                 Log.e("presponse", response);
-
+                pickedList = new ArrayList<>();
                 pickedList.clear();
+                MainActivity.tabLayout.getTabAt(2).setText("SELLERS" + "(" + pickedList.size() + ")");
+
                 try {
                     JSONObject pickedParse = new JSONObject(response);
                     JSONArray pickedArray = pickedParse.getJSONArray("picked");
-                    for(int i=0;i<pickedArray.length();i++){
+                    for (int i = 0; i < pickedArray.length(); i++) {
                         JSONObject pickedDetails = pickedArray.getJSONObject(i);
                         String commodities = pickedDetails.getString("commodities");
                         String zname = pickedDetails.getString("zname");
@@ -129,26 +181,24 @@ public class picked extends Fragment {
                         String picked_ts = pickedDetails.getString("picked_ts");
                         String sellername = pickedDetails.getString("sellername");
                         String booker = pickedDetails.getString("booker");
-                        pickedList.add(new pickedClass(commodities, purchase_id,sellername, zname, actual_weight, rate, picked_ts));
+                        pickedList.add(new pickedClass(commodities, purchase_id, sellername, zname, actual_weight, rate, picked_ts));
                     }
 
                 } catch (JSONException e) {
-                    Log.e("pexception",e+"");
+                    Log.e("pexception", e + "");
                     lc.dismissDialog();
 
                 }
 
-                if(pickedList.size() == 0){
+                if (pickedList.size() == 0) {
                     layout.setVisibility(View.VISIBLE);
                     textView.setText("No Picked Data Available.");
                 }
 
 
-
-
                 pickedAdapter adapter = new pickedAdapter(getActivity(), pickedList);
                 pickedRecyclerView.setAdapter(adapter);
-                MainActivity.tabLayout.getTabAt(2).setText("PICKED"+"("+pickedList.size()+")");
+                MainActivity.tabLayout.getTabAt(2).setText("PICKED" + "(" + pickedList.size() + ")");
 
                 lc.dismissDialog();
                 swipeRefreshLayout.setRefreshing(false);
@@ -166,24 +216,31 @@ public class picked extends Fragment {
                 swipeRefreshLayout.setRefreshing(false);
                 lc.dismissDialog();
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 String pos = sharedPreferences.getString("position", "0");
-                String id = sharedPreferences.getString("id","");
-                String zoneid = sharedPreferences.getString("zid","");
+                String id = sharedPreferences.getString("id", "");
+                String zoneid = sharedPreferences.getString("zid", "");
                 HashMap<String, String> map = new HashMap();
                 map.put("pos", pos);
                 map.put("id", id);
-                map.put("zid",zoneid);
-                map.put("flag","pk");
+                map.put("zid", zoneid);
+                map.put("flag", "pk");
                 return map;
             }
+
             @Override
             public Priority getPriority() {
                 return Priority.LOW;
             }
         };
         AppController.getInstance().addToRequestQueue(stringRequest);
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mDatabase.removeEventListener(valueEventListener);
+
     }
 }

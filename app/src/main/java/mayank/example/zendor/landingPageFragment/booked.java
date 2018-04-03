@@ -30,6 +30,11 @@ import com.android.volley.Response;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -66,6 +71,8 @@ public class booked extends Fragment {
     private SwipeRefreshLayout swipe;
     private LinearLayout layout;
     private TextView textView;
+    private DatabaseReference mDatabase;
+    private int count = 0;
 
     public booked() {
 
@@ -89,10 +96,35 @@ public class booked extends Fragment {
         lc = new LoadingClass(getActivity());
         llm = new LinearLayoutManager(getActivity());
 
+        String zid = sharedPreferences.getString("zid", "");
+        String pos = sharedPreferences.getString("position", "");
+
+        if (!pos.equals("0"))
+            mDatabase = FirebaseDatabase.getInstance().getReference().child("booking").child(zid);
+        else
+            mDatabase = FirebaseDatabase.getInstance().getReference().child("booking");
+
+        if(!pos.equals("0")) {
+            mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (!dataSnapshot.exists()) {
+                        long time = System.currentTimeMillis();
+                        mDatabase.setValue(time);
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+        mDatabase.addValueEventListener(valueEventListener);
+
         bookedRecyclerView.setLayoutManager(llm);
         bookedRecyclerView.setHasFixedSize(true);
 
-        bookedList = new ArrayList<>();
 
         swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -108,7 +140,25 @@ public class booked extends Fragment {
         return view;
     }
 
-    public void getPurchaseData(){
+    public void removeListener() {
+        mDatabase.removeEventListener(valueEventListener);
+    }
+
+    private ValueEventListener valueEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            if (dataSnapshot.exists() && count != 0)
+                getPurchaseData();
+            count++;
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
+    public void getPurchaseData() {
         layout.setVisibility(View.GONE);
 
         lc.showDialog();
@@ -116,11 +166,14 @@ public class booked extends Fragment {
             @Override
             public void onResponse(String response) {
                 Log.e("bresponse", response);
+                bookedList = new ArrayList<>();
                 bookedList.clear();
+                MainActivity.tabLayout.getTabAt(1).setText("BOOKED" + "(" + bookedList.size() + ")");
+
                 try {
                     JSONObject bookedParse = new JSONObject(response);
                     JSONArray bookedArray = bookedParse.getJSONArray("picked");
-                    for(int i=0;i<bookedArray.length();i++){
+                    for (int i = 0; i < bookedArray.length(); i++) {
                         JSONObject bookedDetails = bookedArray.getJSONObject(i);
                         String commodities = bookedDetails.getString("commodities");
                         String zname = bookedDetails.getString("zname");
@@ -130,23 +183,22 @@ public class booked extends Fragment {
                         String booked_ts = bookedDetails.getString("booked_ts");
                         String sellername = bookedDetails.getString("sellername");
                         String booker = bookedDetails.getString("booker");
-                        bookedList.add(new bookedClass(commodities, purchase_id,sellername, zname, estimated_weight, rate, booked_ts));
+                        bookedList.add(new bookedClass(commodities, purchase_id, sellername, zname, estimated_weight, rate, booked_ts));
                     }
 
                 } catch (JSONException e) {
-                   Log.e("bexception", e+"");
-                   lc.dismissDialog();
+                    Log.e("bexception", e + "");
+                    lc.dismissDialog();
                 }
-
 
 
                 bookedAdapter adapter = new bookedAdapter(getActivity(), bookedList);
                 bookedRecyclerView.setAdapter(adapter);
 
-                MainActivity.tabLayout.getTabAt(1).setText("BOOKED"+"("+bookedList.size()+")");
+                MainActivity.tabLayout.getTabAt(1).setText("BOOKED" + "(" + bookedList.size() + ")");
 
 
-                if(bookedList.size() == 0){
+                if (bookedList.size() == 0) {
                     layout.setVisibility(View.VISIBLE);
                     textView.setText("No Booked Data Available.");
                 }
@@ -167,25 +219,33 @@ public class booked extends Fragment {
                 lc.dismissDialog();
                 swipe.setRefreshing(false);
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 String pos = sharedPreferences.getString("position", "0");
-                String id = sharedPreferences.getString("id","");
-                String zoneid = sharedPreferences.getString("zid","");
+                String id = sharedPreferences.getString("id", "");
+                String zoneid = sharedPreferences.getString("zid", "");
                 HashMap<String, String> map = new HashMap();
-                Log.e("hiiii", pos+" "+id+" "+zoneid+" ");
+                Log.e("hiiii", pos + " " + id + " " + zoneid + " ");
                 map.put("pos", pos);
                 map.put("id", id);
-                map.put("zid",zoneid);
-                map.put("flag","bk");
+                map.put("zid", zoneid);
+                map.put("flag", "bk");
                 return map;
             }
+
             @Override
             public Priority getPriority() {
                 return Priority.NORMAL;
             }
         };
         AppController.getInstance().addToRequestQueue(stringRequest);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mDatabase.removeEventListener(valueEventListener);
+
     }
 }

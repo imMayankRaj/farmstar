@@ -5,6 +5,9 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.app.job.JobScheduler;
 import android.content.BroadcastReceiver;
@@ -23,6 +26,7 @@ import android.net.Network;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
@@ -57,6 +61,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkError;
 import com.android.volley.NoConnectionError;
 import com.android.volley.Request;
@@ -65,6 +70,7 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.bumptech.glide.Glide;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -77,8 +83,10 @@ import java.io.StringWriter;
 import java.security.Permission;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import mayank.example.zendor.R;
 import mayank.example.zendor.landingPageFragment.booked;
@@ -101,7 +109,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private ViewPager viewPager;
-    private DrawerLayout drawer;
+    public static DrawerLayout drawer;
     private ImageView pic;
     private TextView Name;
     private TextView position;
@@ -144,6 +152,9 @@ public class MainActivity extends AppCompatActivity
         cut = findViewById(R.id.cut);
         view = findViewById(R.id.parent);
 
+        sharedPreferences = getSharedPreferences("details", MODE_PRIVATE);
+
+
 
         toast = new Toast(getApplicationContext());
         searchList = new ArrayList<>();
@@ -152,6 +163,10 @@ public class MainActivity extends AppCompatActivity
 
         // Toast.makeText(this, R.string.app_name, Toast.LENGTH_SHORT).show();
 
+
+        String s = FirebaseInstanceId.getInstance().getToken();
+        if (s != null)
+            sendToken(s);
 
         networkChangeReceiver = new BroadcastReceiver() {
             @Override
@@ -164,8 +179,8 @@ public class MainActivity extends AppCompatActivity
 
 
                 if (!isConnected) {
-                    Intent i = new Intent(context, dialogActivity.class);
-                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    Intent i = new Intent(context.getApplicationContext(), dialogActivity.class);
+                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     context.startActivity(i);
                 }
             }
@@ -188,7 +203,6 @@ public class MainActivity extends AppCompatActivity
 
 
         createPager();
-        sharedPreferences = getSharedPreferences("details", MODE_PRIVATE);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
 
@@ -202,7 +216,7 @@ public class MainActivity extends AppCompatActivity
         final String name = sharedPreferences.getString("name", "");
         String path = sharedPreferences.getString("path", "");
 
-        Glide.with(this).load(URLclass.PROFILEPIC + path).into(imageView);
+        Glide.with(this).load(URLclass.COMMODITY_PIC_PATH + path).into(imageView);
 
 
         cut.setOnClickListener(new View.OnClickListener() {
@@ -216,6 +230,17 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        getFragmentManager().addOnBackStackChangedListener(new android.app.FragmentManager.OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+                if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+                    Toast.makeText(MainActivity.this, "hry", Toast.LENGTH_SHORT).show();
+                    drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_OPEN);
+                    //  drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+                    //    drawer.setEnabled(true);
+                }
+            }
+        });
 
         searchSeller.addTextChangedListener(new TextWatcher() {
             @Override
@@ -237,21 +262,27 @@ public class MainActivity extends AppCompatActivity
                     //   cut.setPadding(paddingDp, paddingDp,paddingDp,paddingDp);
 
 
-                    ArrayList<sellerClass> sellerList = new ArrayList<>();
+                    Set<sellerClass> sellerList = new HashSet<>();
 
                     try {
 
-                        int a = Integer.parseInt(searchSeller.getText().toString());
+                        long a = Long.parseLong(searchSeller.getText().toString());
+
                         for (int i = 0; i < sellers.arrayList.size(); i++) {
                             String num[] = sellers.arrayList.get(i).getNumber().split(",");
                             for (int k = 0; k < num.length; k++) {
-                                if (num[k].contains(s)) {
+                                Log.e(num[k], s + "");
+                                if (num[k].contains(s.toString())) {
+                                    Log.e("hi", "hey13");
                                     sellerList.add(sellers.arrayList.get(i));
                                 }
                             }
                         }
 
+
                     } catch (Exception e) {
+
+
                         for (int i = 0; i < sellers.arrayList.size(); i++) {
                             String num = sellers.arrayList.get(i).getName();
                             if (num.toLowerCase().contains(s.toString().toLowerCase())) {
@@ -261,7 +292,9 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
 
-                    sellerAdapter adapter = new sellerAdapter(MainActivity.this, sellerList);
+
+                    ArrayList<sellerClass> tempList = new ArrayList<>(sellerList);
+                    sellerAdapter adapter = new sellerAdapter(MainActivity.this, tempList);
                     sellers.recyclerView.setAdapter(adapter);
                 } else {
 
@@ -348,6 +381,7 @@ public class MainActivity extends AppCompatActivity
             }
         });*/
 
+      makeNotChannels();
         navigationView.setNavigationItemSelectedListener(this);
 
 
@@ -356,6 +390,50 @@ public class MainActivity extends AppCompatActivity
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE},
                     0);
         }
+    }
+
+    private void makeNotChannels(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Create the NotificationChannel
+            CharSequence name = "Farmstar";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel mChannel = new NotificationChannel(BuildConfig.APPLICATION_ID, name, importance);
+            mChannel.enableLights(true);
+            mChannel.enableVibration(true);
+            mChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = (NotificationManager) getSystemService(
+                    NOTIFICATION_SERVICE);
+            notificationManager.createNotificationChannel(mChannel);
+        }
+
+    }
+
+    public void sendToken(final String token) {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ADD_TOKEN, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.e("res", response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                String id = sharedPreferences.getString("id", "");
+                Log.e("sadasd", id + "");
+
+                Map<String, String> params = new HashMap<>();
+                params.put("token", token);
+                params.put("id", id);
+                return params;
+            }
+        };
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
     public void isOnline() {
@@ -405,6 +483,8 @@ public class MainActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
+            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+
         }
     }
 
@@ -438,6 +518,7 @@ public class MainActivity extends AppCompatActivity
         Class fragmentClass;
         int id = item.getItemId();
 
+
         if (id == R.id.all_purchase) {
             startActivity(new Intent(this, allPurchases.class));
         } else if (id == R.id.workforce) {
@@ -452,7 +533,7 @@ public class MainActivity extends AppCompatActivity
             fragmentTransaction.replace(R.id.drawer_layout, fragment);
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
-
+            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
         } else if (id == R.id.commodities) {
             startActivity(new Intent(this, addCommodities.class));
         } else if (id == R.id.wallet) {
@@ -469,13 +550,14 @@ public class MainActivity extends AppCompatActivity
             fragmentTransaction.replace(R.id.drawer_layout, fragment);
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
-
+            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
         } else if (id == R.id.sale) {
 
             startActivity(new Intent(this, sale.class));
         } else if (id == R.id.paymentRequest) {
             startActivity(new Intent(this, paymentRequest.class));
         } else if (id == R.id.executives) {
+            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
             String id1 = sharedPreferences.getString("id", "");
             String zid = sharedPreferences.getString("zid", "");
             Bundle bundle = new Bundle();
@@ -497,6 +579,7 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
 
     @Override
     protected void onPause() {
@@ -697,35 +780,38 @@ public class MainActivity extends AppCompatActivity
     }
 
     public static void showError(final VolleyError error, final String string, final Activity activity) {
-        if (error.getClass() == TimeoutError.class) {
-            Toast.makeText(activity, "Time Out. Please Reload.", Toast.LENGTH_SHORT).show();
-        } else if (error.getClass() == NoConnectionError.class) {
-            Log.e("error", "Error for network call", error);
-            Toast.makeText(activity, "Something went wrong. Try Again.", Toast.LENGTH_SHORT).show();
-        } else {
+        if (error != null) {
+            if (error.getClass() == TimeoutError.class) {
+                Toast.makeText(activity, "Time Out. Please Reload.", Toast.LENGTH_SHORT).show();
+            } else if (error.getClass() == NoConnectionError.class) {
+                Log.e("error", "Error for network call", error);
+                Toast.makeText(activity, "Something went wrong. Try Again.", Toast.LENGTH_SHORT).show();
+            } else {
 
-            AlertDialog.Builder builder;
-            builder = new AlertDialog.Builder(activity);
-            builder.setCancelable(false);
-            builder.setTitle("Error.");
-            builder.setMessage("Some Error Occured. Please Report.")
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .setPositiveButton("Report", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
-                                    "mailto", "bugs.codebuckets@gmail.com", null));
-                            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Report Error.");
-                            emailIntent.putExtra(Intent.EXTRA_TEXT, error + "\nMessage : " +
-                                    "\n"+ error.getMessage() +"\n\n"+getErroR(error.networkResponse.data)+"\n\n"+ error.getCause()+ "\n\n"+getStackTrace(error) +"\n\n"+ string);
-                            activity.startActivity(Intent.createChooser(emailIntent, "Send email using..."));
-                            dialog.dismiss();
-                        }
-                    })
-                    .show();
-            Log.e("asdasd", "sadas", error);
+                AlertDialog.Builder builder;
+                builder = new AlertDialog.Builder(activity);
+                builder.setCancelable(false);
+                builder.setTitle("Error.");
+                builder.setMessage("Some Error Occured. Please Report.")
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setPositiveButton("Report", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
+                                        "mailto", "bugs.codebuckets@gmail.com", null));
+                                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Report Error.");
+                                emailIntent.putExtra(Intent.EXTRA_TEXT, error + "\nMessage : " +
+                                        "\n" + error.getMessage() + "\n\n" + getErroR(error.networkResponse.data) + "\n\n" + error.getCause() + "\n\n" + getStackTrace(error) + "\n\n" + string);
+                                activity.startActivity(Intent.createChooser(emailIntent, "Send email using..."));
+                                dialog.dismiss();
+                            }
+                        })
+                        .show();
+                Log.e("asdasd", "sadas", error);
+            }
         }
     }
+
     public static String getStackTrace(final Throwable throwable) {
         final StringWriter sw = new StringWriter();
         final PrintWriter pw = new PrintWriter(sw, true);
@@ -733,10 +819,10 @@ public class MainActivity extends AppCompatActivity
         return sw.getBuffer().toString();
     }
 
-    public static String getErroR(byte[] b){
+    public static String getErroR(byte[] b) {
         String s = null;
-        for (int i =0;i<b.length;i++){
-            s = s+b[0];
+        for (int i = 0; i < b.length; i++) {
+            s = s + b[0];
         }
         return s;
     }
@@ -751,14 +837,15 @@ public class MainActivity extends AppCompatActivity
         v.setTextColor(Color.parseColor("#166e5e"));
         toast.show();
     }
+
     String currentVersion, latestVersion;
 
-    private void getCurrentVersion(){
+    private void getCurrentVersion() {
         PackageManager pm = this.getPackageManager();
         PackageInfo pInfo = null;
 
         try {
-            pInfo =  pm.getPackageInfo(this.getPackageName(),0);
+            pInfo = pm.getPackageInfo(this.getPackageName(), 0);
 
         } catch (PackageManager.NameNotFoundException e1) {
             e1.printStackTrace();
@@ -769,7 +856,7 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    private class  GetLatestVersion extends AsyncTask<String, String, JSONObject> {
+    private class GetLatestVersion extends AsyncTask<String, String, JSONObject> {
 
         private ProgressDialog progressDialog;
 
@@ -781,12 +868,12 @@ public class MainActivity extends AppCompatActivity
         @Override
         protected JSONObject doInBackground(String... params) {
             try {
-        //It retrieves the latest version by scraping the content of current version from play store at runtime
+                //It retrieves the latest version by scraping the content of current version from play store at runtime
                 Document doc = Jsoup.connect("").get();
                 latestVersion = doc.getElementsByAttributeValue
-                        ("itemprop","softwareVersion").first().text();
+                        ("itemprop", "softwareVersion").first().text();
 
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
 
             }
@@ -796,9 +883,9 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected void onPostExecute(JSONObject jsonObject) {
-            if(latestVersion!=null) {
-                if (!currentVersion.equalsIgnoreCase(latestVersion)){
-                    if(!isFinishing()){ //This would help to prevent Error : BinderProxy@45d459c0 is not valid; is your activity running? error
+            if (latestVersion != null) {
+                if (!currentVersion.equalsIgnoreCase(latestVersion)) {
+                    if (!isFinishing()) { //This would help to prevent Error : BinderProxy@45d459c0 is not valid; is your activity running? error
                         showUpdateDialog();
                     }
                 }
@@ -808,14 +895,14 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void showUpdateDialog(){
+    private void showUpdateDialog() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("A New Update is Available");
         builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse
-                        ("market://details?id=yourAppPackageName")));
+                        ("market://details?id=" +  BuildConfig.APPLICATION_ID)));
                 dialog.dismiss();
             }
         });

@@ -170,6 +170,7 @@ public class sellerDetailActivity extends AppCompatActivity implements GoogleApi
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                stopLocationUpdates();
                 finish();
             }
         });
@@ -181,11 +182,7 @@ public class sellerDetailActivity extends AppCompatActivity implements GoogleApi
         mLocationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
-                for (Location location : locationResult.getLocations()) {
-                    mLastLocation = location;
-                    startIntentService();
-
-                }
+                getAddress(locationResult.getLastLocation());
             }
         };
 
@@ -286,6 +283,42 @@ public class sellerDetailActivity extends AppCompatActivity implements GoogleApi
         });
 
 
+    }
+
+
+    private void getAddress(Location location){
+        String lat = location.getLatitude()+"";
+        String longitude = location.getLongitude()+"";
+        Log.e("resposnes", lat+" "+longitude);
+        String API_KEY = "AIzaSyAbIngBpBEV0DE4nfMGHfJURuyeZwJXixU ";
+        String url = "https://maps.googleapis.com/maps/api/geocode/json?latlng="+lat+","+longitude+"&key="+API_KEY;
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.e("response", response);
+                try {
+                    JSONObject json = new JSONObject(response);
+                    JSONArray jsonObject = json.getJSONArray("results");
+                    JSONObject jsonObject1 = jsonObject.getJSONObject(0);
+                    mAddressOutput = jsonObject1.getString("formatted_address");
+                    load.setVisibility(View.GONE);
+                    gpsAddress.setVisibility(View.VISIBLE);
+                    gpsAddress.setText(mAddressOutput);
+                    stopLocationUpdates();
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+        AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
     @Override
@@ -402,7 +435,7 @@ public class sellerDetailActivity extends AppCompatActivity implements GoogleApi
 
     }
 
-    class AddressResultReceiver extends ResultReceiver {
+    public class AddressResultReceiver extends ResultReceiver {
         public AddressResultReceiver(Handler handler) {
             super(handler);
         }
@@ -464,8 +497,8 @@ public class sellerDetailActivity extends AppCompatActivity implements GoogleApi
     private void getLocationRequest() {
         locationRequest = LocationRequest.create();
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(5 * 1000);
-        locationRequest.setFastestInterval(1000);
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(5000);
     }
 
     private void getLocationDialog() {
@@ -482,35 +515,32 @@ public class sellerDetailActivity extends AppCompatActivity implements GoogleApi
         Task<LocationSettingsResponse> task =
                 LocationServices.getSettingsClient(this).checkLocationSettings(builder.build());
 
-        task.addOnCompleteListener(new OnCompleteListener<LocationSettingsResponse>() {
+
+        task.addOnFailureListener(new OnFailureListener() {
             @Override
-            public void onComplete(Task<LocationSettingsResponse> task) {
-                try {
-                    LocationSettingsResponse response = task.getResult(ApiException.class);
-                    getAddressFromCoordinates();
+            public void onFailure(@NonNull Exception e) {
+                if (e instanceof ResolvableApiException) {
 
-                } catch (ApiException exception) {
-                    switch (exception.getStatusCode()) {
-                        case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                            try {
-                                ResolvableApiException resolvable = (ResolvableApiException) exception;
-                                resolvable.startResolutionForResult(
-                                        sellerDetailActivity.this,
-                                        REQUEST_CHECK_SETTINGS);
-                            } catch (IntentSender.SendIntentException e) {
-                                Toast.makeText(sellerDetailActivity.this, "Error Occured. Try Again.", Toast.LENGTH_SHORT).show();
-                            } catch (ClassCastException e) {
-                                Toast.makeText(sellerDetailActivity.this, "Error Occured. Try Again.", Toast.LENGTH_SHORT).show();
-                            }
-                            break;
-                        case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                            Toast.makeText(sellerDetailActivity.this, "Error Occured. Try Again.", Toast.LENGTH_SHORT).show();
 
-                            break;
+                    try {
+                        ResolvableApiException resolvable = (ResolvableApiException) e;
+                        resolvable.startResolutionForResult(sellerDetailActivity.this,
+                                REQUEST_CHECK_SETTINGS);
+                    } catch (IntentSender.SendIntentException sendEx) {
+                        // Ignore the error.
                     }
                 }
+
             }
         });
+
+        task.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
+            @Override
+            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                getAddressFromCoordinates();
+            }
+        });
+
 
 
     }
@@ -521,10 +551,9 @@ public class sellerDetailActivity extends AppCompatActivity implements GoogleApi
             case REQUEST_CHECK_SETTINGS:
                 switch (resultCode) {
                     case Activity.RESULT_OK:
-
                         getAddressFromCoordinates();
-
                         break;
+
                     case Activity.RESULT_CANCELED:
                         Toast.makeText(sellerDetailActivity.this, "Requested feature declined by user.", Toast.LENGTH_SHORT).show();
                         load.setVisibility(View.GONE);
@@ -540,13 +569,17 @@ public class sellerDetailActivity extends AppCompatActivity implements GoogleApi
 
     @SuppressLint("MissingPermission")
     private void startLocationUpdates() {
+
         mFusedLocationClient.requestLocationUpdates(locationRequest,
                 mLocationCallback,
                 null /* Looper */);
+
+
     }
 
     @SuppressLint("MissingPermission")
     private void getAddressFromCoordinates() {
+
 
         mFusedLocationClient.getLastLocation()
                 .addOnSuccessListener(sellerDetailActivity.this, new OnSuccessListener<Location>() {
@@ -563,13 +596,13 @@ public class sellerDetailActivity extends AppCompatActivity implements GoogleApi
                         }
 
                         startLocationUpdates();
-
                     }
                 });
 
     }
 
     private void stopLocationUpdates() {
+        if(mFusedLocationClient != null )
         mFusedLocationClient.removeLocationUpdates(mLocationCallback);
     }
 }

@@ -26,6 +26,7 @@ public class onClickExecutiveCard extends AppCompatActivity {
     private String name;
     public static String status;
     private Toolbar toolbar;
+    private executiveLedger instance;
 
 
     @Override
@@ -44,6 +45,7 @@ public class onClickExecutiveCard extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 finish();
+                instance.removeListener();
             }
         });
 
@@ -63,9 +65,10 @@ public class onClickExecutiveCard extends AppCompatActivity {
 
     private void createpager(){
         viewPagerAdapter adapter = new viewPagerAdapter(getSupportFragmentManager());
+        instance = executiveLedger.newInstance(eid);
         adapter.addFrag(executive_details.newInstance(eid, name), "Details");
         adapter.addFrag(executive_allpurchases.newInstance(eid), "Purchases");
-        adapter.addFrag(executiveLedger.newInstance(eid), "Ledger");
+        adapter.addFrag(instance, "Ledger");
         viewPager.setAdapter(adapter);
     }
 
@@ -95,5 +98,17 @@ public class onClickExecutiveCard extends AppCompatActivity {
         public CharSequence getPageTitle(int position) {
             return titleList.get(position);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        instance.removeListener();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        instance.removeListener();
     }
 }

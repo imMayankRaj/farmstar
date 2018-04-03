@@ -1,33 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:orientation="vertical"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="mayank.example.zendor.navigationDrawerOption.paymentRequest">
 
     <android.support.v7.widget.Toolbar
-        android:background="@drawable/button_background"
-        android:layout_margin="@dimen/toolBarMargin"
-        android:layout_width="match_parent"
         android:id="@+id/toolbar"
-        android:layout_height="wrap_content">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/toolBarMargin"
+        android:background="@drawable/button_background">
 
 
         <LinearLayout
 
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
 
-           <TextView
-                android:text="Payment Requests"
-                android:textSize="@dimen/toolBarTextDimen"
-                android:textColor="@color/lightGreen"
+            <TextView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:text="Payment Requests"
+                android:textColor="@color/lightGreen"
+                android:textSize="@dimen/toolBarTextDimen" />
 
         </LinearLayout>
 
@@ -35,25 +34,31 @@
 
     <TextView
         android:id="@+id/click"
-        android:visibility="gone"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
     <android.support.design.widget.TabLayout
         android:id="@+id/header"
-        android:background="@color/textBgColour"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@color/textBgColour">
 
     </android.support.design.widget.TabLayout>
 
-    <android.support.v4.view.ViewPager
-        android:id="@+id/paymentRequestViewpager"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipe"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <android.support.v4.view.ViewPager
+            android:id="@+id/paymentRequestViewpager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
 
-    </android.support.v4.view.ViewPager>
+        </android.support.v4.view.ViewPager>
+    </android.support.v4.widget.SwipeRefreshLayout>
 
 
 </LinearLayout>

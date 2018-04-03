@@ -20,6 +20,7 @@ public class OnClickSellerCard extends AppCompatActivity {
     private TabLayout header;
     private String sellerId;
     private Toolbar toolbar;
+    private sellerLedger instance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +39,7 @@ public class OnClickSellerCard extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                instance.removeListener();
                 finish();
             }
         });
@@ -49,9 +51,10 @@ public class OnClickSellerCard extends AppCompatActivity {
 
     private void createpager(){
         viewPagerAdapter adapter = new viewPagerAdapter(getSupportFragmentManager());
+        instance = sellerLedger.newInstance(sellerId);
         adapter.addFrag(sellerDetails.newInstance(sellerId), "Details");
         adapter.addFrag(sellerPurchases.newInstance(sellerId), "Purchases");
-        adapter.addFrag(sellerLedger.newInstance(sellerId), "Ledger");
+        adapter.addFrag(instance, "Ledger");
         viewPager.setAdapter(adapter);
     }
 
@@ -82,4 +85,17 @@ public class OnClickSellerCard extends AppCompatActivity {
             return titleList.get(position);
         }
     }
+
+    @Override
+    public void onBackPressed() {
+        instance.removeListener();
+        super.onBackPressed();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        instance.removeListener();
+    }
+
 }

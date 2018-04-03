@@ -6,9 +6,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -17,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +29,10 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 
 import org.json.JSONObject;
 
@@ -57,6 +64,7 @@ public class executive_details extends Fragment {
     private Intent intent;
     private Button call;
     private LoadingClass lc;
+    private ProgressBar pbar;
     private TextView disable;
 
     public executive_details() {
@@ -94,6 +102,7 @@ public class executive_details extends Fragment {
         profilepic = rootview.findViewById(R.id.profilepic);
         call = rootview.findViewById(R.id.call);
         disable = rootview.findViewById(R.id.disable);
+        pbar = rootview.findViewById(R.id.pbar);
 
 
         if(onClickExecutiveCard.status.equals("0")){
@@ -156,8 +165,23 @@ public class executive_details extends Fragment {
                     String num = jsonObject.getString("mob") + "," + jsonObject.getString("othermob");
                     nums = num.split(",");
 
-                    if (!(prof == null || prof.equals("null")))
-                        Glide.with(getActivity()).load(URLclass.COMMODITY_PIC_PATH + prof).into(profilepic);
+                    if (!(prof == null)) {
+                        Glide.with(getActivity()).load(URLclass.COMMODITY_PIC_PATH + prof)
+                                .listener(new RequestListener<Drawable>() {
+                                    @Override
+                                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                        pbar.setVisibility(View.GONE);
+                                        return false;
+                                    }
+
+                                    @Override
+                                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                        pbar.setVisibility(View.GONE);
+                                        return false;
+                                    }
+                                })
+                                .into(profilepic);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

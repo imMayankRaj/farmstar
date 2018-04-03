@@ -1,6 +1,7 @@
 package xendorp1.fragments;
 
 
+import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -73,6 +74,7 @@ public class zonal_manager extends Fragment {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                view_pager_adapter_zonal_manager.fragment2.removeListener();
                 getActivity().getSupportFragmentManager().popBackStackImmediate();
             }
         });
@@ -151,6 +153,16 @@ public class zonal_manager extends Fragment {
         });
         add_executive=rootview.findViewById(R.id.add_executive);
 
+
+        getFragmentManager().addOnBackStackChangedListener(new android.support.v4.app.FragmentManager.OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+                try {
+                    view_pager_adapter_zonal_manager.fragment2.removeListener();
+                }catch (Exception e){}
+            }
+        });
+
         add_executive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -172,5 +184,6 @@ public class zonal_manager extends Fragment {
         pagerSlidingTabStrip.setupWithViewPager(viewPager);
         return rootview;
     }
+
 
 }

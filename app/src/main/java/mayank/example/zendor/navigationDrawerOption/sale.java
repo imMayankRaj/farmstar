@@ -2,6 +2,7 @@ package mayank.example.zendor.navigationDrawerOption;
 
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -18,6 +19,11 @@ import com.android.volley.Response;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,11 +54,14 @@ public class sale extends AppCompatActivity {
     private ArrayList<buyerSale.saleClass> dispatchedList;
     private ArrayList<buyerSale.saleClass> deliveredlist;
     private ArrayList<buyerSale.saleClass> paymentReceivedList;
+    private ArrayList<buyerSale.saleClass> cancelledList;
     private ViewPager viewPager;
     public static TabLayout headerSale;
     private Toolbar toolbar;
     LoadingClass lc ;
     public static TextView recreate;
+    private SwipeRefreshLayout swipe;
+    private DatabaseReference mDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,9 +72,13 @@ public class sale extends AppCompatActivity {
         headerSale = findViewById(R.id.header);
         headerSale.setupWithViewPager(viewPager);
         toolbar = findViewById(R.id.toolbar);
+        swipe = findViewById(R.id.swipe);
         recreate = findViewById(R.id.recreate);
 
         lc = new LoadingClass(this);
+
+        mDatabase = FirebaseDatabase.getInstance().getReference().child("buyerSales");
+        mDatabase.addValueEventListener(valueEventListener);
 
         recreate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,6 +93,7 @@ public class sale extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mDatabase.removeEventListener(valueEventListener);
                 finish();
             }
         });
@@ -87,27 +101,62 @@ public class sale extends AppCompatActivity {
         dispatchedList = new ArrayList<>();
         deliveredlist = new ArrayList<>();
         paymentReceivedList = new ArrayList<>();
+        cancelledList = new ArrayList<>();
+
+        swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getSaleDetail();
+                swipe.setRefreshing(true);
+            }
+        });
 
         getSaleDetail();
 
      //   createpager();
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        mDatabase.removeEventListener(valueEventListener);
+    }
+
+    private ValueEventListener valueEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            getSaleDetail();
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
     private void createpager(){
+        int page = viewPager.getCurrentItem();
         OnClickSellerCard.viewPagerAdapter adapter = new OnClickSellerCard.viewPagerAdapter(getSupportFragmentManager());
         adapter.addFrag(new saleDispatched(dispatchedList),"Dispatched");
         adapter.addFrag(new saleDelivered(deliveredlist), "Delivered");
         adapter.addFrag(new salePaymentReceived(paymentReceivedList), "Payment Received");
+        adapter.addFrag(new saleCancelled(cancelledList), "Cancelled");
         viewPager.setAdapter(adapter);
+        viewPager.setCurrentItem(page);
     }
 
     private void getSaleDetail(){
         lc.showDialog();
 
+        dispatchedList.clear();
+        deliveredlist.clear();
+        paymentReceivedList.clear();
+        cancelledList.clear();
+
+
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ALL_SALES, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.e("sale respo", response);
                 try {
                     JSONObject json = new JSONObject(response);
                     JSONArray saleArray = json.getJSONArray("values");
@@ -118,40 +167,55 @@ public class sale extends AppCompatActivity {
                         String commodity = sale.getString("commodities");
                         String rate = sale.getString("rate");
                         String flag = sale.getString("flag");
+                        String aa = sale.getString("aa");
                         String ts = null;
                         String weight = null;
+                        String delWeight = null;
                         switch (flag){
 
                             case "di":
                                 ts = sale.getString("ts1");
                                 weight = sale.getString("w1");
-                                dispatchedList.add(new buyerSale.saleClass(bname, sid, commodity, weight, rate, flag, ts));
+                               // delWeight = sale.getString("w2");
+                                dispatchedList.add(new buyerSale.saleClass(bname, sid, commodity, weight, rate, flag, ts, delWeight,aa));
                                 break;
+
                             case "de":
                                 ts = sale.getString("ts2");
-                                weight = sale.getString("w2");
-                                deliveredlist.add(new buyerSale.saleClass(bname, sid, commodity, weight, rate, flag, ts));
+                                weight = sale.getString("w1");
+                                delWeight = sale.getString("w2");
+                                deliveredlist.add(new buyerSale.saleClass(bname, sid, commodity, weight, rate, flag, ts, delWeight,aa));
                                 break;
+
                             case "ps":
                                 ts = sale.getString("ts1");
-                                weight = sale.getString("w2");
-                                paymentReceivedList.add(new buyerSale.saleClass(bname, sid, commodity, weight, rate, flag, ts));
+                                weight = sale.getString("w1");
+                                delWeight = sale.getString("w2");
+                                paymentReceivedList.add(new buyerSale.saleClass(bname, sid, commodity, weight, rate, flag, ts, delWeight,aa));
+                                break;
+
+                            case "cn":
+                                ts = sale.getString("canAt");
+                                weight = sale.getString("w1");
+                                delWeight = sale.getString("w2");
+                                cancelledList.add(new buyerSale.saleClass(bname, sid, commodity, weight, rate, flag, ts, delWeight,aa));
                                 break;
 
                         }
                     }
                 } catch (JSONException e) {
                     lc.dismissDialog();
-                    Log.e("sale erros", e+"");
                 }
 
                 createpager();
                 lc.dismissDialog();
+                swipe.setRefreshing(false);
 
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                swipe.setRefreshing(false);
 
                 if (error instanceof TimeoutError) {
                     Toast.makeText(sale.this, "Time out. Reload.", Toast.LENGTH_SHORT).show();
@@ -166,5 +230,9 @@ public class sale extends AppCompatActivity {
         AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mDatabase.removeEventListener(valueEventListener);
+    }
 }

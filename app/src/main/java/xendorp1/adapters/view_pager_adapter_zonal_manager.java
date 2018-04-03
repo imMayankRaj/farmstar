@@ -16,6 +16,7 @@ import xendorp1.fragments.ledger_zonal_manager;
 
 public class view_pager_adapter_zonal_manager extends FragmentPagerAdapter {
     private Bundle args;
+    public ledger_zonal_manager fragment2;
     public view_pager_adapter_zonal_manager(FragmentManager fm, Bundle args) {
         super(fm);
         this.args=args;
@@ -33,7 +34,7 @@ public class view_pager_adapter_zonal_manager extends FragmentPagerAdapter {
                 fragment1.setArguments(args);
                 return fragment1;
             case 2:
-                Fragment fragment2= new ledger_zonal_manager();
+                fragment2= new ledger_zonal_manager();
                 fragment2.setArguments(args);
                 return fragment2;
 

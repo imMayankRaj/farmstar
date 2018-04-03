@@ -23,7 +23,7 @@ public final class URLclass {
     public static String PICKED_CARD_COLLECT_BUTTON_CLICK = "http://farmstar.esy.es/zendorRestApi/pickedOnClickCollectButton.php";
     public static String SELLER_PURCHASE_DATA = "http://farmstar.esy.es/zendorRestApi/sellerPurchaseTab.php";
     public static String BUYER_DETAILS = "http://farmstar.esy.es/zendorRestApi/clickedBuyerDetails.php";
-    public static String INSERT_PURCHASE_DATA = "http://farmstar.esy.es/zendorRestApi/sellerOnClickPurchaseButton.php";
+    public static String  INSERT_PURCHASE_DATA = "http://farmstar.esy.es/zendorRestApi/sellerOnClickPurchaseButton.php";
     public static String GET_COMMODITIES = "http://farmstar.esy.es/zendorRestApi/com.php";
     public static String COMMODITY_PIC_PATH = "http://farmstar.esy.es/zendorRestApi/commodityPic/";
     public static String CHEQUE_PIC_PATH = "http://farmstar.esy.es/zendorRestApi/commodityPic/";
@@ -67,4 +67,11 @@ public final class URLclass {
     public static String GET_ZM_NUMBER = "http://farmstar.esy.es/zendorRestApi/getNumber.php";
     public static String EXE_PURCHASES = "http://farmstar.esy.es/zendorRestApi/exePurchases.php";
     public static String GET_PAYMENT_DATA = "http://farmstar.esy.es/zendorRestApi/getPaymentData.php";
+    public static String ADD_EXPENSES = "http://farmstar.esy.es/zendorRestApi/addExpenses.php";
+    public static String ON_CLICK_LEDGER_SELLER_PURCHASE = "http://farmstar.esy.es/zendorRestApi/onClickLedgerSellerPurchase.php";
+    public static String GET_BUYER_COMMODITIES = "http://farmstar.esy.es/zendorRestApi/getBuyerCommodities.php";
+    public static String UPDATE_BUYER_COMMODITIES = "http://farmstar.esy.es/zendorRestApi/updateBuyerCommodities.php";
+    public static String ADD_TOKEN = "http://farmstar.esy.es/zendorRestApi/addToken.php";
+    public static String SEND_NOTIFICATION_FOR_PURCHASE = "http://farmstar.esy.es/zendorRestApi/sendNotificationsPurchase.php";
+
 }

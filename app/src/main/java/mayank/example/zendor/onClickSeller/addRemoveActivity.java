@@ -46,7 +46,7 @@ public class addRemoveActivity extends AppCompatActivity {
     private TextView submit;
     private Toolbar toolbar;
     private ArrayList<commodity> arrayList;
-    private LinearLayout layout1, layout2, layout3, layout4, layout5, layout6, layout7, layout8, layout9, layout10, layout11;
+    private LinearLayout layout1, layout2, layout3, layout4, layout5, layout6, layout7, layout8, layout9, layout10, layout11, layout12;
     private String commo[];
     private String seller_id;
     private LoadingClass lc;
@@ -73,6 +73,7 @@ public class addRemoveActivity extends AppCompatActivity {
         layout9 = findViewById(R.id.layout9);
         layout10 = findViewById(R.id.layout10);
         layout11 = findViewById(R.id.layout11);
+        layout12 = findViewById(R.id.layout12);
 
         lc = new LoadingClass(this);
         getCommodity();
@@ -240,6 +241,10 @@ public class addRemoveActivity extends AppCompatActivity {
             case "Live Stocks":
                 makeView(layout11, current.getCommodity() + id, current.getPic_path(), current.getCommodity());
                 break;
+
+            case "Others":
+                makeView(layout12, current.getCommodity() + id, current.getPic_path(), current.getCommodity());
+                break;
         }
 
 
@@ -348,7 +353,7 @@ public class addRemoveActivity extends AppCompatActivity {
     private void setCheck(View v) {
         String id = (String) v.getTag(R.string.commodity);
         Log.e("comid", id);
-        int a = Integer.parseInt(id.replaceAll("[A-z]", ""));
+        int a = Integer.parseInt(id.replaceAll("[A-z]", "").trim());
         CheckBox cb = v.findViewById(R.id.cb);
         cb.setVisibility(View.VISIBLE);
         cb.setChecked(true);

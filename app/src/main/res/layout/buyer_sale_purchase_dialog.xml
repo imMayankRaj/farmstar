@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -21,36 +20,63 @@
             android:layout_height="wrap_content">
 
             <LinearLayout
-                android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
                 <ImageView
                     android:id="@+id/back"
-                    android:src="@drawable/ic_arrow_back_black_24dp1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content" />
+                    android:src="@drawable/ic_arrow_back_black_24dp1" />
 
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
                     android:gravity="start"
                     android:text="Sale"
                     android:textColor="#000"
                     android:textSize="20sp"
-                    android:layout_marginStart="20dp"
                     android:textStyle="bold" />
 
             </LinearLayout>
         </android.support.v7.widget.Toolbar>
 
         <View
-            android:background="#aeaeae"
             android:layout_width="match_parent"
-            android:layout_height="1dp"></View>
+            android:layout_height="1dp"
+            android:background="#aeaeae"></View>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Commodity :"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/commodity"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.7"
+                android:gravity="center"
+                android:textSize="16sp">
+
+            </TextView>
+
+        </LinearLayout>
+
         <LinearLayout
             android:layout_marginTop="5dp"
             android:orientation="horizontal"
@@ -60,229 +86,231 @@
             <TextView
                 android:textSize="16sp"
                 android:gravity="center"
-                android:text="Commodity :"
+                android:text="Zone :"
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="match_parent" />
 
-            <TextView
-                android:gravity="center"
-                android:textSize="16sp"
-                android:id="@+id/commodity"
+            <Spinner
+                android:id="@+id/zone"
                 android:layout_width="0dp"
-                android:layout_weight="1.2"
+                android:layout_weight="1.7"
                 android:layout_height="wrap_content">
 
-            </TextView>
+            </Spinner>
 
         </LinearLayout>
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <TextView
-                android:textSize="16sp"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:text="Enter Weight :"
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent" />
+                android:textSize="16sp" />
 
 
             <EditText
-                android:gravity="center"
                 android:id="@+id/weight"
-                android:inputType="numberDecimal"
-                android:layout_weight="1"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_weight="1.5"
+                android:gravity="center"
+                android:inputType="numberDecimal" />
 
             <TextView
-                android:gravity="center"
-                android:text="kgs"
-                android:layout_weight=".2"
                 android:layout_width="0dp"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:layout_weight=".2"
+                android:gravity="center"
+                android:text="kgs" />
 
 
         </LinearLayout>
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <TextView
-                android:textSize="16sp"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:text="Enter Rate :"
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent" />
+                android:textSize="16sp" />
 
 
             <EditText
-                android:gravity="center"
                 android:id="@+id/rate"
-                android:inputType="numberDecimal"
-                android:layout_weight="1"
                 android:layout_width="0dp"
-                android:layout_height="match_parent" />
+                android:layout_height="wrap_content"
+                android:layout_weight="1.5"
+                android:gravity="center"
+                android:inputType="numberDecimal" />
 
             <TextView
-                android:gravity="center"
-                android:text="/kg"
-                android:layout_weight=".2"
                 android:layout_width="0dp"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:layout_weight=".2"
+                android:gravity="center"
+                android:text="/kg" />
 
 
         </LinearLayout>
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <TextView
-                android:textSize="16sp"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:text="Vehicle Number"
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent" />
+                android:textSize="16sp" />
 
 
             <EditText
-                android:gravity="center"
                 android:id="@+id/vNumber"
-                android:maxLength="10"
-                android:layout_weight="1.2"
                 android:layout_width="0dp"
-                android:layout_height="match_parent" />
+                android:layout_height="wrap_content"
+                android:layout_weight="1.7"
+                android:gravity="center" />
 
 
         </LinearLayout>
+
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <TextView
-                android:textSize="16sp"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:text="Driver Contact No."
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent" />
+                android:textSize="16sp" />
 
 
             <EditText
-                android:gravity="center"
                 android:id="@+id/driverContact"
-                android:layout_weight="1.2"
                 android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.7"
+                android:gravity="center"
                 android:inputType="number"
-                android:layout_height="match_parent" />
+                android:maxLength="10" />
 
         </LinearLayout>
+
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <TextView
-                android:textSize="16sp"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:text="Delivery Address"
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent" />
+                android:textSize="16sp" />
 
 
             <EditText
-                android:gravity="center"
                 android:id="@+id/deliveryAddress"
-                android:layout_weight="1.2"
-                android:inputType="textMultiLine"
                 android:layout_width="0dp"
-                android:layout_height="match_parent" />
-
+                android:layout_height="wrap_content"
+                android:layout_weight="1.7"
+                android:gravity="center"
+                android:isScrollContainer="true"
+                android:maxLength="100"
+                android:inputType="textMultiLine" />
 
 
         </LinearLayout>
+
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <TextView
-                android:textSize="16sp"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:text="Billing Address"
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent" />
+                android:textSize="16sp" />
 
 
             <EditText
-                android:gravity="center"
                 android:id="@+id/billingAddress"
-                android:layout_weight="1.2"
-                android:inputType="textMultiLine"
                 android:layout_width="0dp"
-                android:layout_height="match_parent" />
+                android:layout_height="wrap_content"
+                android:layout_weight="1.7"
+                android:maxLength="100"
+                android:isScrollContainer="true"
+
+                android:gravity="center"
+                android:inputType="textMultiLine" />
 
         </LinearLayout>
 
         <View
-            android:background="#aeaeae"
             android:layout_width="match_parent"
-            android:layout_height="1dp">
+            android:layout_height="1dp"
+            android:background="#aeaeae">
 
         </View>
 
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/cancel"
-                android:gravity="center"
-                android:textColor="#c30000"
-                android:text="Cancel"
-                android:textSize="18sp"
-                android:layout_weight="1"
                 android:layout_width="0dp"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Cancel"
+                android:textColor="#c30000"
+                android:textSize="18sp" />
 
             <View
-                android:background="#aeaeae"
                 android:layout_width="1dp"
-                android:layout_height="40dp">
+                android:layout_height="40dp"
+                android:background="#aeaeae">
 
             </View>
 
             <TextView
                 android:id="@+id/save"
-                android:textSize="18sp"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:text="Sale"
-                android:textStyle="bold"
                 android:textColor="#000"
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="match_parent" />
-
-
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
 
         </LinearLayout>
-
 
 
     </LinearLayout>

@@ -13,6 +13,11 @@
         android:layout_height="match_parent">
 
 
+        <TextView
+            android:visibility="gone"
+            android:id="@+id/executivesClick"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
         <ImageView
             android:layout_gravity="center"
             android:scaleType="centerCrop"
@@ -31,6 +36,7 @@
     </LinearLayout>
 
     <FrameLayout
+        android:clickable="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 

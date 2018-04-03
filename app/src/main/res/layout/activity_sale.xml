@@ -39,12 +39,16 @@
         android:id="@+id/header"
         android:background="@color/textBgColour"
         app:tabIndicatorColor="@color/darkGreen"
-
+        app:tabMode="scrollable"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
     </android.support.design.widget.TabLayout>
 
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipe"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
     <android.support.v4.view.ViewPager
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
@@ -53,4 +57,5 @@
 
 
     </android.support.v4.view.ViewPager>
+    </android.support.v4.widget.SwipeRefreshLayout>
 </LinearLayout>

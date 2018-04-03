@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -34,10 +35,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import mayank.example.zendor.MainActivity;
 import mayank.example.zendor.R;
 import xendorp1.adapters.buyer_recycler_adapter;
 import xendorp1.application_classes.AppConfig;
@@ -98,6 +103,7 @@ public class buyers extends Fragment implements SwipeRefreshLayout.OnRefreshList
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                MainActivity.drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
                 getActivity().getSupportFragmentManager().popBackStackImmediate();
             }
         });
@@ -157,19 +163,20 @@ public class buyers extends Fragment implements SwipeRefreshLayout.OnRefreshList
                     cut.setBackgroundResource(R.drawable.ic_cancel_black_24dp);
 
 
-                    ArrayList<buyer_card> buyerTempList = new ArrayList<>();
+                    Set<buyer_card> buyerTempList = new HashSet<>();
 
                     try {
 
-                        int a = Integer.parseInt(searchBuyer.getText().toString());
+                        long a = Long.parseLong(searchBuyer.getText().toString());
                         for (int i = 0; i < buyer_cardList.size(); i++) {
                             String num[] = buyer_cardList.get(i).getNumber().split(",");
                             for (int k = 0; k < num.length; k++) {
-                                if (num[k].contains(s)) {
+                                if (num[k].trim().contains(s.toString().trim()) || num[k].equals(s.toString())) {
                                     buyerTempList.add(buyer_cardList.get(i));
                                 }
                             }
                         }
+
                     } catch (Exception e) {
                         for (int i = 0; i < buyer_cardList.size(); i++) {
                             String num = buyer_cardList.get(i).getName();
@@ -180,7 +187,9 @@ public class buyers extends Fragment implements SwipeRefreshLayout.OnRefreshList
                         }
                     }
 
-                    buyer_recycler_adapter = new buyer_recycler_adapter(getActivity(), buyerTempList);
+                    Log.e("sadasd", buyerTempList.size()+"");
+                    ArrayList<buyer_card> list = new ArrayList<>(buyerTempList);
+                    buyer_recycler_adapter = new buyer_recycler_adapter(getActivity(), list);
                     recyclerView.setAdapter(buyer_recycler_adapter);
 
                 } else {
@@ -212,14 +221,11 @@ public class buyers extends Fragment implements SwipeRefreshLayout.OnRefreshList
 
     @Override
     public void onRefresh() {
-        if (pos.equals("0"))
-            getBuyer();
-        else
-            getBuyerFromZid();
+      getBuyer();
     }
 
 
-    private void getBuyer() {
+    public void getBuyer() {
         swipeRefreshLayout.setRefreshing(true);
         layout.setVisibility(View.GONE);
 
@@ -227,7 +233,7 @@ public class buyers extends Fragment implements SwipeRefreshLayout.OnRefreshList
                 AppConfig.URL_GET_BUYERS, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d(TAG, "Register Response: " + response.toString());
+                Log.e(TAG, "Register Response: " + response.toString());
                 buyer_cardList.clear();
 
                 try {

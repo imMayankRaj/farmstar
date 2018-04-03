@@ -2,6 +2,7 @@ package mayank.example.zendor.onClickBuyer;
 
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -11,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -23,6 +25,11 @@ import com.android.volley.Response;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -61,7 +68,8 @@ public class buyerLedger extends Fragment {
     private SharedPreferences sharedPreferences;
     private double ucb;
     public static double buyercb;
-
+    private int count = 0;
+    private DatabaseReference mDatabase;
 
 
     public buyerLedger() {
@@ -94,15 +102,33 @@ public class buyerLedger extends Fragment {
         cb = view.findViewById(R.id.cb);
         click = view.findViewById(R.id.clickItBuyer);
         buyerNameAndZone = view.findViewById(R.id.sellerNameAndZone);
+
         ledgerList = new ArrayList<>();
         lc = new LoadingClass(getActivity());
+        mDatabase = FirebaseDatabase.getInstance().getReference().child("buyers").child(buyer_id).child("Ledger");
+
+
+        mDatabase.addValueEventListener(valueEventListener);
+
+        sharedPreferences = getActivity().getSharedPreferences("details", MODE_PRIVATE);
+        final String pos = sharedPreferences.getString("position","");
 
         getBuyerLedger();
         getBuyerCb();
         getUserCb();
 
-        sharedPreferences = getActivity().getSharedPreferences("details", MODE_PRIVATE);
-        final String pos = sharedPreferences.getString("position","");
+        buyerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String click = ledgerList.get(position).getFlag();
+                if(!click.equals("0")){
+                    Intent intent1 = new Intent(getActivity(), onClickDeliveredCard.class);
+                    intent1.putExtra("sid", click);
+                    intent1.putExtra("f", 2 + "");
+                    startActivity(intent1);
+                }
+            }
+        });
 
 
 
@@ -118,6 +144,26 @@ public class buyerLedger extends Fragment {
 
         return view;
     }
+
+    public void removeListener(){
+        mDatabase.removeEventListener(valueEventListener);
+    }
+    private ValueEventListener valueEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            if(dataSnapshot.exists() && count != 0){
+                getBuyerLedger();
+                getBuyerCb();
+                getUserCb();
+            }
+            count++;
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
 
     private void getUserCb(){
         lc.showDialog();
@@ -206,12 +252,13 @@ public class buyerLedger extends Fragment {
     private void getBuyerLedger(){
 
         lc.showDialog();
-        ledgerList.clear();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.BUYER_LEDGER, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
 
                 try {
+                    ledgerList.clear();
+
                     JSONObject json = new JSONObject(response);
                     JSONArray ledgerArray = json.getJSONArray("ledger");
                     for(int i =0;i<ledgerArray.length();i++){
@@ -220,11 +267,12 @@ public class buyerLedger extends Fragment {
                         String pid = ledger.getString("pid");
                         String dc = ledger.getString("dc");
                         String balance = ledger.getString("balance");
+                        String click = ledger.getString("click");
                         try {
                             if (dc.substring(dc.lastIndexOf(" ")).equals(" cr") || dc.substring(dc.lastIndexOf(" ")).equals(" dr"))
                                 dc = '\u20B9' + dc;
                         }catch (Exception e){}
-                        ledgerList.add(new sellerLedger.ledgerClass(date, pid, dc, '\u20B9'+balance));
+                        ledgerList.add(new sellerLedger.ledgerClass(date, pid, dc, '\u20B9'+balance, click, ""));
                     }
                     String name = json.getString("buyer_name");
                     buyerNameAndZone.setText(name);

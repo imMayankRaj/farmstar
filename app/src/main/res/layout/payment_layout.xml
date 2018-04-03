@@ -10,18 +10,29 @@
         android:text="Date"
         android:id="@+id/date"
         android:gravity="center"
-        android:textSize="12sp"
+        android:textSize="10sp"
+        android:textColor="#000"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="match_parent" />
+
+    <TextView
+        android:id="@+id/paidBy"
+        android:text="Collected By"
+        android:gravity="center"
+        android:textSize="10sp"
         android:textColor="#000"
         android:layout_weight="1"
         android:layout_width="0dp"
         android:layout_height="match_parent" />
 
 
+
     <TextView
         android:id="@+id/amount"
         android:text="Amount"
         android:gravity="center"
-        android:textSize="12sp"
+        android:textSize="10sp"
         android:textColor="#000"
         android:layout_weight="1"
         android:layout_width="0dp"

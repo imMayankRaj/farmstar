@@ -66,10 +66,10 @@ public class onClickCancelledCard extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     private Intent intent;
     private String pid;
-    private String snumber, bnumber, pnumber;
+    private String snumber, bnumber, pnumber, cnumber;
     private String roc;
     private String collectWeight;
-    private String[] SNUM, BNUM, PNUM;
+    private String[] SNUM, BNUM, PNUM, CNUM;
     private LoadingClass lc;
     private Toolbar toolbar;
     private TextView cancelledat;
@@ -80,7 +80,8 @@ public class onClickCancelledCard extends AppCompatActivity {
     private LinearLayout aw;
     private LinearLayout pat;
     private String extra;
-
+    private TextView total;
+    private ImageView callCan;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +97,7 @@ public class onClickCancelledCard extends AppCompatActivity {
         est_weight = findViewById(R.id.estWeight);
         actualWeight = findViewById(R.id.actualWeight);
         rate = findViewById(R.id.rate);
-        amount = findViewById(R.id.totalValue);
+        amount = findViewById(R.id.totalAmount);
         bookedBy = findViewById(R.id.bookerName);
         callBooker = findViewById(R.id.callBooker);
         pickedBy = findViewById(R.id.pickerName);
@@ -107,11 +108,10 @@ public class onClickCancelledCard extends AppCompatActivity {
         cancelledby = findViewById(R.id.cancelledby);
         cancelledre = findViewById(R.id.cancelledre);
         toolbarText = findViewById(R.id.toolbarText);
+        callCan = findViewById(R.id.callCanceller);
 
         aw = findViewById(R.id.aw);
         pat = findViewById(R.id.pat);
-
-
 
 
         toolbar = findViewById(R.id.toolbar);
@@ -132,14 +132,14 @@ public class onClickCancelledCard extends AppCompatActivity {
         Bundle bundle = getIntent().getBundleExtra("extras");
 
         ca = bundle.getString("cancelledts", "");
-        cb = bundle.getString("cancelledby","");
-        cr = bundle.getString("cancelledre","");
-        pid = bundle.getString("pid","");
+        cb = bundle.getString("cancelledby", "");
+        cr = bundle.getString("cancelledre", "");
+        pid = bundle.getString("pid", "");
         extra = bundle.getString("extra", "0");
 
-        toolbarText.setText("Cancelled"+" (PID : "+pid+")");
+        toolbarText.setText("Cancelled" + " (PID : " + pid + ")");
 
-        if(extra.equals("1")){
+        if (extra.equals("1")) {
             getExtraDetails(pid);
         }
 
@@ -166,16 +166,23 @@ public class onClickCancelledCard extends AppCompatActivity {
             }
         });
 
+        callCan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                callDialog(CNUM);
+            }
+        });
+
     }
 
 
-    private void getExtraDetails(final String pid){
+    private void getExtraDetails(final String pid) {
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.EXTRAS_SELLER, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try {
-                    Log.e("sadsadasd", response+"");
+                    Log.e("sadsadasd", response + "");
                     JSONObject jsonObject = new JSONObject(response);
                     cancelledat.setText(jsonObject.getString("cancelledat"));
                     cancelledby.setText(jsonObject.getString("cancelledby"));
@@ -189,7 +196,7 @@ public class onClickCancelledCard extends AppCompatActivity {
             public void onErrorResponse(VolleyError error) {
 
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();
@@ -201,7 +208,7 @@ public class onClickCancelledCard extends AppCompatActivity {
 
     }
 
-    private void getPickedData(){
+    private void getPickedData() {
 
         lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ON_CLICK_BOOKED_CARD_DETAILS, new Response.Listener<String>() {
@@ -211,50 +218,61 @@ public class onClickCancelledCard extends AppCompatActivity {
                     JSONObject jsonObject = new JSONObject(response);
                     JSONObject jsonObject1 = jsonObject.getJSONObject("values");
                     cname.setText(jsonObject1.getString("commodities"));
-                    est_weight.setText(jsonObject1.getString("estimated_weight")+"kgs");
-                    rate.setText('\u20B9'+jsonObject1.getString("rate")+"/kg");
+                    est_weight.setText(jsonObject1.getString("estimated_weight") + "kgs");
+                    rate.setText('\u20B9' + jsonObject1.getString("rate") + "/kg");
                     bookedAt.setText(jsonObject1.getString("booked_ts"));
                     pickedAt.setText(jsonObject1.getString("picked_ts"));
-                    if(jsonObject1.getString("picked_ts").length()==0){
+
+                    if (jsonObject1.getString("picked_ts").length() == 0) {
                         aw.setVisibility(View.GONE);
                         pat.setVisibility(View.GONE);
                         pickedAt.setVisibility(View.GONE);
                         actualWeight.setVisibility(View.GONE);
                     }
 
-                    sellerNameAndZone.setText(jsonObject1.getString("sellername")+"-"+jsonObject1.getString("zname"));
+                    sellerNameAndZone.setText(jsonObject1.getString("sellername") + "-" + jsonObject1.getString("zname"));
                     sellerId.setText(jsonObject1.getString("seller_id"));
                     bookedBy.setText(jsonObject1.getString("booker"));
                     pickedBy.setText(jsonObject1.getString("picker"));
-                    actualWeight.setText(jsonObject1.getString("actual_weight")+"kgs");
+                    actualWeight.setText(jsonObject1.getString("actual_weight") + "kgs");
 
                     snumber = jsonObject1.getString("seller_phone");
                     bnumber = jsonObject1.getString("booker_mob");
                     pnumber = jsonObject1.getString("picker_phone");
+                    cnumber = jsonObject1.getString("canMob");
 
                     DecimalFormat formatter = new DecimalFormat("#.##");
 
+
                     try {
+
                         double rate = Double.parseDouble(jsonObject1.getString("rate"));
                         double acw = Double.parseDouble(jsonObject1.getString("actual_weight"));
                         double total = rate * acw;
                         amount.setText('\u20B9' + formatter.format(total) + "");
-                    }catch (Exception e){
-                        amount.setVisibility(View.GONE);
+
+                    } catch (Exception e) {
+
+                        double rate = Double.parseDouble(jsonObject1.getString("rate"));
+                        double ecw = Double.parseDouble(jsonObject1.getString("estimated_weight"));
+                        double total = rate * ecw;
+                        amount.setText('\u20B9' + formatter.format(total) + "");
+
                     }
 
                     SNUM = snumber.split(",");
                     BNUM = bnumber.split(",");
                     PNUM = pnumber.split(",");
+                    CNUM = cnumber.split(",");
 
-                    if(!extra.equals("0")) {
+                    if (!extra.equals("1")) {
                         cancelledat.setText(ca);
                         cancelledby.setText(cb);
                         cancelledre.setText(cr);
                     }
 
                 } catch (JSONException e) {
-                    Log.e("repoiu", e+"");
+                    Log.e("repoiu", e + "");
                 }
 
                 lc.dismissDialog();
@@ -270,11 +288,11 @@ public class onClickCancelledCard extends AppCompatActivity {
                     showError(error, onClickCancelledCard.this.getClass().getName(), onClickCancelledCard.this);
 
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> parameters = new HashMap<>();
-                parameters.put("purchase_id",pid);
+                parameters.put("purchase_id", pid);
                 return parameters;
             }
         };
@@ -293,12 +311,12 @@ public class onClickCancelledCard extends AppCompatActivity {
                 .setItems(b, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         String number = b[which];
-                        intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "+91"+number));
+                        intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "+91" + number));
                         if (ActivityCompat.checkSelfPermission(onClickCancelledCard.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
                             ActivityCompat.requestPermissions(onClickCancelledCard.this, new String[]{Manifest.permission.CALL_PHONE},
                                     2);
                             return;
-                        }else
+                        } else
                             startActivity(intent);
                         dialog.dismiss();
                     }

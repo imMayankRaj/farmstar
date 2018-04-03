@@ -111,36 +111,45 @@ public class sellerPurchases extends Fragment {
                         String flag = sellerPurchases.getString("flag");
                         String pid = sellerPurchases.getString("purchase_id");
 
-                        if(flag.equals("bk")){
-                            String booked_ts = sellerPurchases.getString("booked_ts");
-                            String est_weight = sellerPurchases.getString("estimated_weight");
-                            String rate = sellerPurchases.getString("rate");
-                            String commodity = sellerPurchases.getString("commodities");
-                            String name = sellerPurchases.getString("booker");
-                            arrayList.add(new sellerPurchaseClass(commodity, rate, est_weight, booked_ts, name, flag, pid));
-                        }else if(flag.equals("pk")){
-                            String picked_ts = sellerPurchases.getString("picked_ts");
-                            String actual_weight = sellerPurchases.getString("actual_weight");
-                            String rate = sellerPurchases.getString("rate");
-                            String commodity = sellerPurchases.getString("commodities");
-                            String name = sellerPurchases.getString("picker");
-                            arrayList.add(new sellerPurchaseClass(commodity, rate, actual_weight, picked_ts, name, flag, pid));
-                        }else if(flag.equals("co")){
-                            String collected_ts = sellerPurchases.getString("collected_ts");
-                            String collected_weight = sellerPurchases.getString("collected_weight");
-                            String rate = sellerPurchases.getString("rate");
-                            String commodity = sellerPurchases.getString("commodities");
-                            String name = sellerPurchases.getString("collected_by");
-                            arrayList.add(new sellerPurchaseClass(commodity, rate, collected_weight, collected_ts, name, flag, pid));
-                        }else if(flag.equals("cn")){
-                            String cancelled_ts = sellerPurchases.getString("cancelled_ts");
-                            String roc_b = sellerPurchases.getString("roc_b");
-                            String roc_p = sellerPurchases.getString("roc_p");
-                            String rate = sellerPurchases.getString("rate");
-                            String commodity = sellerPurchases.getString("commodities");
-                            String name = sellerPurchases.getString("cancelled_by");
-                            String roc = roc_b.equals("null") ?roc_p :roc_b;
-                            arrayList.add(new sellerPurchaseClass(commodity, rate, roc, cancelled_ts, name, flag, pid));
+                        switch (flag) {
+                            case "bk": {
+                                String booked_ts = sellerPurchases.getString("booked_ts");
+                                String est_weight = sellerPurchases.getString("estimated_weight");
+                                String rate = sellerPurchases.getString("rate");
+                                String commodity = sellerPurchases.getString("commodities");
+                                String name = sellerPurchases.getString("booker");
+                                arrayList.add(new sellerPurchaseClass(commodity, rate, est_weight, booked_ts, name, flag, pid));
+                                break;
+                            }
+                            case "pk": {
+                                String picked_ts = sellerPurchases.getString("picked_ts");
+                                String actual_weight = sellerPurchases.getString("actual_weight");
+                                String rate = sellerPurchases.getString("rate");
+                                String commodity = sellerPurchases.getString("commodities");
+                                String name = sellerPurchases.getString("picker");
+                                arrayList.add(new sellerPurchaseClass(commodity, rate, actual_weight, picked_ts, name, flag, pid));
+                                break;
+                            }
+                            case "co": {
+                                String collected_ts = sellerPurchases.getString("collected_ts");
+                                String collected_weight = sellerPurchases.getString("collected_weight");
+                                String rate = sellerPurchases.getString("rate");
+                                String commodity = sellerPurchases.getString("commodities");
+                                String name = sellerPurchases.getString("collected_by");
+                                arrayList.add(new sellerPurchaseClass(commodity, rate, collected_weight, collected_ts, name, flag, pid));
+                                break;
+                            }
+                            case "cn": {
+                                String cancelled_ts = sellerPurchases.getString("cancelled_ts");
+                                String roc_b = sellerPurchases.getString("roc_b");
+                                String roc_p = sellerPurchases.getString("roc_p");
+                                String rate = sellerPurchases.getString("rate");
+                                String commodity = sellerPurchases.getString("commodities");
+                                String name = sellerPurchases.getString("cancelled_by");
+                                String roc = roc_b.equals("null") ? roc_p : roc_b;
+                                arrayList.add(new sellerPurchaseClass(commodity, rate, roc, cancelled_ts, name, flag, pid));
+                                break;
+                            }
                         }
 
                     }

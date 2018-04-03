@@ -4,6 +4,7 @@ package xendorp1.fragments;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 import mayank.example.zendor.LoadingClass;
+import mayank.example.zendor.MainActivity;
 import mayank.example.zendor.R;
 import xendorp1.adapters.zone_card_recycler_adapter;
 import xendorp1.application_classes.AppConfig;
@@ -89,6 +91,8 @@ public class workforce extends Fragment implements SwipeRefreshLayout.OnRefreshL
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                MainActivity.drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+
                 getActivity().getSupportFragmentManager().popBackStackImmediate();
             }
         });

@@ -43,7 +43,7 @@ public class commoditiesActivity extends AppCompatActivity {
     private TextView submit;
     private Toolbar toolbar;
     private ArrayList<commodity> arrayList;
-    private LinearLayout layout1, layout2, layout3, layout4, layout5, layout6, layout7, layout8, layout9, layout10, layout11;
+    private LinearLayout layout1, layout2, layout3, layout4, layout5, layout6, layout7, layout8, layout9, layout10, layout11, layout12;
     private String commo[];
     private LoadingClass lc;
 
@@ -70,6 +70,8 @@ public class commoditiesActivity extends AppCompatActivity {
         layout9 = findViewById(R.id.layout9);
         layout10 = findViewById(R.id.layout10);
         layout11 = findViewById(R.id.layout11);
+        layout12 = findViewById(R.id.layout12);
+
 
 
         lc = new LoadingClass(this);
@@ -111,6 +113,7 @@ public class commoditiesActivity extends AppCompatActivity {
                     intent.putExtra("sellerDetail", bundle);
                     intent.putExtra("comm", bun);
                     startActivity(intent);
+                    finish();
                 }
 
             }
@@ -236,6 +239,10 @@ public class commoditiesActivity extends AppCompatActivity {
 
             case "Live Stocks":
                 makeView(layout11, id+current.getCommodity(), current.getPic_path(), current.getCommodity());
+                break;
+
+            case "Others":
+                makeView(layout12, id+current.getCommodity(), current.getPic_path(), current.getCommodity());
                 break;
         }
 

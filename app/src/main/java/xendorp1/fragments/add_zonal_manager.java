@@ -235,9 +235,12 @@ public class add_zonal_manager extends Fragment {
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(name.getText().length()==0||primary_ph_no.getText().length()==0||address.getText().length()==0)
+                if(name.getText().length()==0||primary_ph_no.getText().length()==0||address.getText().length()==0||password.getText().length() == 0)
                 {
                     Toast.makeText(getActivity(), "Required fields are empty", Toast.LENGTH_LONG).show();
+                }
+                else if(password.getText().length() < 4){
+                    Toast.makeText(getActivity(), "Password should contain atleast 4 characters.", Toast.LENGTH_SHORT).show();
                 }
                 else if(primary_ph_no.getText().length()!=10)
                 {

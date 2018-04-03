@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -27,7 +28,7 @@ public class processedFragment extends Fragment {
     private LinearLayoutManager llm;
 
     public static String param = "request";
-    private ArrayList<paymentRequest.requestClass> list;
+    private ArrayList list;
 
     private LinearLayout layout;
     private TextView textView;
@@ -38,25 +39,15 @@ public class processedFragment extends Fragment {
 
     }
 
+
     @SuppressLint("ValidFragment")
     public processedFragment(ArrayList list) {
-
         this.list = list;
     }
 
-    public static processedFragment newInstance(ArrayList arrayList) {
-        processedFragment fragment = new processedFragment();
-        Bundle bundle = new Bundle();
-        bundle.putParcelableArrayList(param, arrayList);
-        fragment.setArguments(bundle);
-        return fragment;
-    }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
 
-    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -75,10 +66,14 @@ public class processedFragment extends Fragment {
 
         layout.setVisibility(View.GONE);
 
-        if(list.size() == 0 ){
-            layout.setVisibility(View.VISIBLE);
-            textView.setText("No Processed Data Available.");
-        }
+        if(list !=null) {
+            if (list.size() == 0) {
+                layout.setVisibility(View.VISIBLE);
+                textView.setText("No Processed Request.");
+            }
+        }else
+            Toast.makeText(getActivity(), "Something went wrong. Try again.", Toast.LENGTH_SHORT).show();
+
 
         paymentRequestAdapter adapter = new paymentRequestAdapter(getActivity(), list);
         processedRecyclerView.setAdapter(adapter);

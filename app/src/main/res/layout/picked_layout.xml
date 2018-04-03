@@ -113,7 +113,7 @@
                 android:textColor="#000"
                 android:textSize="16sp"
                 android:text="2017-12-05 07:15:35"
-                android:layout_weight="1"
+                android:layout_weight="1.5"
                 android:layout_width="0dp"
                 android:layout_height="match_parent" />
 

@@ -26,7 +26,9 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import mayank.example.zendor.R;
 import xendorp1.cards.zonal_manager_card;
@@ -133,6 +135,11 @@ public class zonal_manager_recycler_adapter extends RecyclerView.Adapter<zonal_m
 
         ArrayList<String> numberList = new ArrayList<>(Arrays.asList(a));
         numberList.removeAll(Collections.singleton("null"));
+
+        Set<String> s = new HashSet<>();
+        s.addAll(numberList);
+        numberList.clear();
+        numberList.addAll(s);
 
         final String[] b = numberList.toArray(new String[numberList.size()]);
 

@@ -80,6 +80,7 @@ public class sellerPurchasesAdapter extends RecyclerView.Adapter<sellerPurchases
                 break;
 
         }
+        holder.ppid.setText(current.getPid());
         holder.view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -127,7 +128,7 @@ public class sellerPurchasesAdapter extends RecyclerView.Adapter<sellerPurchases
     }
 
     public class purchaseHolder extends RecyclerView.ViewHolder {
-        TextView commodity, weight, rate, amount, name, ts, ts_text, weightText, status_text, pid;
+        TextView commodity, weight, rate, amount, name, ts, ts_text, weightText, status_text, pid, ppid;
         View view;
         public purchaseHolder(View itemView) {
             super(itemView);
@@ -142,6 +143,7 @@ public class sellerPurchasesAdapter extends RecyclerView.Adapter<sellerPurchases
             status_text = itemView.findViewById(R.id.statusText);
             ts_text = itemView.findViewById(R.id.status_ts);
             pid = itemView.findViewById(R.id.pid);
+            ppid = itemView.findViewById(R.id.ppid);
         }
     }
 

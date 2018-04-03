@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -26,6 +27,11 @@ import com.android.volley.Response;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,6 +47,7 @@ import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
 import mayank.example.zendor.expenseAdapter;
 import mayank.example.zendor.expenseClass;
+import mayank.example.zendor.navigationDrawerOption.wallet;
 import mayank.example.zendor.onClickExecutive.executiveLedger;
 import mayank.example.zendor.onClickSeller.ledgerAdapter;
 import mayank.example.zendor.onClickSeller.sellerLedger;
@@ -48,6 +55,7 @@ import xendorp1.application_classes.AppController;
 
 import static android.content.Context.MODE_PRIVATE;
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.frequentlyUsedClass.notifyUser;
 
 
 /**
@@ -68,7 +76,9 @@ public class ledger_zonal_manager extends Fragment {
     private ImageView paymentRequest;
     private ArrayList<expenseClass> expenseList;
     private String pos;
-
+    private DatabaseReference mDatabase;
+    private int count = 0;
+    private String nameAndZone;
 
 
     public ledger_zonal_manager() {
@@ -103,13 +113,46 @@ public class ledger_zonal_manager extends Fragment {
 
         pos = sharedPreferences.getString("position", "");
 
-        if(pos.equals("2") || pos.equals("1"))
+        if (pos.equals("2") || pos.equals("1"))
             paymentRequest.setVisibility(View.GONE);
 
         getZmCb();
         getZmLedger();
 
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+
+        mDatabase = mDatabase.child("users").child(zmid);
+
+        mDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.exists()) {
+                    Long time = System.currentTimeMillis();
+                    mDatabase.setValue(time + "");
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        mDatabase.addValueEventListener(valueEventListener);
+
+
+        ZmLedgerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String flag = ledgerList.get(position).getFlag();
+                if (flag.equals("1")) {
+                    getSellerPaymentDetails(ledgerList.get(position).getSid());
+                }
+            }
+        });
+
         expenseList = new ArrayList<>();
+
         request.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -146,7 +189,104 @@ public class ledger_zonal_manager extends Fragment {
         return view;
     }
 
-    private void getExpensesDetails(){
+    public void removeListener() {
+        if (valueEventListener != null)
+            mDatabase.removeEventListener(valueEventListener);
+    }
+
+    private ValueEventListener valueEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            if (dataSnapshot.exists() && (count != 0)) {
+                getZmCb();
+                getZmLedger();
+            }
+            count++;
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
+    private void getSellerPaymentDetails(final String sid) {
+        lc.showDialog();
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ON_CLICK_LEDGER_SELLER_PURCHASE,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        lc.dismissDialog();
+                        showSellerPaymentDetails(response);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("sid", sid);
+                return params;
+            }
+        };
+
+        AppController.getInstance().addToRequestQueue(stringRequest);
+
+    }
+
+
+    private void showSellerPaymentDetails(String s) {
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.on_click_ledger);
+
+        ImageView back = dialog.findViewById(R.id.back);
+        TextView reqId = dialog.findViewById(R.id.prid);
+        TextView reqBy = dialog.findViewById(R.id.reqBy);
+        TextView reqAt = dialog.findViewById(R.id.reqAt);
+        TextView proBy = dialog.findViewById(R.id.proBy);
+        TextView proAt = dialog.findViewById(R.id.proAt);
+        TextView amt = dialog.findViewById(R.id.amount);
+        TextView sellerName = dialog.findViewById(R.id.sellerName);
+        TextView sellerId = dialog.findViewById(R.id.sellerId);
+        TextView ok = dialog.findViewById(R.id.ok);
+
+        try {
+            JSONObject jsonObject = new JSONObject(s);
+            reqId.setText(jsonObject.getString("reqId"));
+            reqBy.setText(jsonObject.getString("reqBy"));
+            reqAt.setText(jsonObject.getString("reqAt"));
+            proBy.setText(jsonObject.getString("proBy"));
+            proAt.setText(jsonObject.getString("proAt"));
+            amt.setText('\u20B9' + jsonObject.getString("amount"));
+            sellerId.setText(jsonObject.getString("sellerId"));
+            sellerName.setText(jsonObject.getString("sellerName"));
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        ok.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+    }
+
+    private void getExpensesDetails() {
         expenseList.clear();
         lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.EXPENSES, new Response.Listener<String>() {
@@ -154,10 +294,10 @@ public class ledger_zonal_manager extends Fragment {
             public void onResponse(String response) {
                 try {
 
-                    JSONObject jsonObject  =new JSONObject(response);
+                    JSONObject jsonObject = new JSONObject(response);
                     JSONArray details = jsonObject.getJSONArray("details");
 
-                    for(int i = 0;i<details.length();i++){
+                    for (int i = 0; i < details.length(); i++) {
                         String rid = details.getJSONObject(i).getString("rid");
                         String t_details = details.getJSONObject(i).getString("details");
                         String amount = details.getJSONObject(i).getString("amount");
@@ -184,7 +324,7 @@ public class ledger_zonal_manager extends Fragment {
                     showError(error, executiveLedger.class.getName(), getActivity());
 
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();
@@ -197,7 +337,7 @@ public class ledger_zonal_manager extends Fragment {
 
     }
 
-    private void showExpenseDialog(){
+    private void showExpenseDialog() {
 
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(getActivity());
         builderSingle.setTitle("Expenses : ");
@@ -223,7 +363,7 @@ public class ledger_zonal_manager extends Fragment {
 
     }
 
-    private void createExpenseOnClickDialog(final DialogInterface d, int position){
+    private void createExpenseOnClickDialog(final DialogInterface d, int position) {
 
         final Dialog dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -244,8 +384,7 @@ public class ledger_zonal_manager extends Fragment {
         String details = expenseList.get(position).getDetails();
 
         det.setText(details);
-        amt.setText('\u20B9'+ amount);
-
+        amt.setText('\u20B9' + amount);
 
 
         back.setOnClickListener(new View.OnClickListener() {
@@ -270,9 +409,9 @@ public class ledger_zonal_manager extends Fragment {
             @Override
             public void onClick(View v) {
                 String rem = remarks.getText().toString();
-                if(rem.length() == 0){
+                if (rem.length() == 0) {
                     Toast.makeText(getActivity(), "Please specify reasons.", Toast.LENGTH_SHORT).show();
-                }else {
+                } else {
                     lc.showDialog();
                     updateExpenseStatus("j", rid, amount, rem);
                     dialog.dismiss();
@@ -283,14 +422,27 @@ public class ledger_zonal_manager extends Fragment {
 
         dialog.show();
     }
-    private void updateExpenseStatus(final String state, final String id, final String amount, final String rem){
+
+    private void updateExpenseStatus(final String state, final String id, final String amount, final String rem) {
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.EXPENSES_ON_CLICK,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
                         lc.dismissDialog();
-                        getZmCb();
-                        getZmLedger();
+                        String reqStatus;
+                        if (state.equals("a"))
+                            reqStatus = "Expense Approved";
+                        else
+                            reqStatus = "Expense Rejected";
+
+                        String message = nameAndZone + " Request ID : " + id;
+
+                        notifyUser(reqStatus, message, getActivity(), "3", zmid);
+
+                        Long time = System.currentTimeMillis();
+                        mDatabase.child("Ledger").setValue(time + "");
+
+
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -301,7 +453,7 @@ public class ledger_zonal_manager extends Fragment {
                 } else
                     showError(error, executiveLedger.class.getName(), getActivity());
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 String uid = sharedPreferences.getString("id", "");
@@ -322,7 +474,6 @@ public class ledger_zonal_manager extends Fragment {
     }
 
 
-
     private void getZmCb() {
 
         lc.showDialog();
@@ -332,7 +483,7 @@ public class ledger_zonal_manager extends Fragment {
                 try {
                     JSONObject json = new JSONObject(response);
                     CB = json.getString("current_balance");
-                    cb.setText('\u20B9'+CB);
+                    cb.setText('\u20B9' + CB);
                 } catch (JSONException e) {
                     e.printStackTrace();
                     lc.dismissDialog();
@@ -385,17 +536,23 @@ public class ledger_zonal_manager extends Fragment {
                         String pid = ledger.getString("pid");
                         String balance = ledger.getString("Balance");
                         String cd = ledger.getString("cd");
+                        String flag = ledger.getString("flag");
+                        String sid = ledger.getString("sid");
+
                         try {
                             if (cd.substring(cd.lastIndexOf(" ")).equals(" cr") || cd.substring(cd.lastIndexOf(" ")).equals(" dr"))
                                 cd = '\u20B9' + cd;
-                        }catch (Exception e){}
-                        ledgerList.add(new sellerLedger.ledgerClass(date, pid, cd, '\u20B9' + balance));
+                        } catch (Exception e) {
+                        }
+                        ledgerList.add(new sellerLedger.ledgerClass(date, pid, cd, '\u20B9' + balance, flag, sid));
                     }
 
                     JSONObject details = json.getJSONObject("details");
                     String name = details.getString("zm");
                     String szone = details.getString("zm_zone");
                     ZmNameAndZone.setText(name + " - " + szone);
+                    nameAndZone = name + " (" + szone + ")";
+
                 } catch (JSONException e) {
                     Log.e("error", e + "");
                     e.printStackTrace();
@@ -463,8 +620,12 @@ public class ledger_zonal_manager extends Fragment {
             public void onClick(View v) {
                 String amt = amount.getText().toString();
                 String description = desc.getText().toString();
-                addCredit(amt, description);
-                dialog.dismiss();
+                if (amt.length() == 0 || description.length() == 0) {
+                    Toast.makeText(getActivity(), "All Fields Are Compulsory.", Toast.LENGTH_SHORT).show();
+                } else {
+                    addCredit(amt, description);
+                    dialog.dismiss();
+                }
             }
         });
 
@@ -503,16 +664,24 @@ public class ledger_zonal_manager extends Fragment {
             public void onClick(View v) {
                 String amt = amount.getText().toString();
                 String description = desc.getText().toString();
-                double a = Double.parseDouble(amt);
-                double cb = Double.parseDouble(CB);
-                if (a <= cb) {
-                    if (pos.equals("0")) {
-                        sendRequestAdmin(amt, description);
+                if (amt.length() == 0 || description.length() == 0) {
+                    Toast.makeText(getActivity(), "All fields are compulsory.", Toast.LENGTH_SHORT).show();
+                } else {
+                    double a = Double.parseDouble(amt);
+                    double cb = Double.parseDouble(CB);
+
+                    if (a <= cb) {
+                        {
+                            if (pos.equals("0")) {
+                                sendRequestAdmin(amt, description);
+                            } else
+                                sendRequest(amt, description);
+                            dialog.dismiss();
+                        }
                     } else
-                        sendRequest(amt, description);
-                } else
-                    Toast.makeText(getActivity(), "Not Enough Credits.", Toast.LENGTH_SHORT).show();
-                dialog.dismiss();
+                        Toast.makeText(getActivity(), "Not Enough Credits.", Toast.LENGTH_SHORT).show();
+
+                }
             }
         });
 
@@ -526,8 +695,9 @@ public class ledger_zonal_manager extends Fragment {
             @Override
             public void onResponse(String response) {
 
-                getZmCb();
-                getZmLedger();
+                Long time = System.currentTimeMillis();
+                mDatabase.child("Ledger").setValue(time + "");
+
             }
         }, new Response.ErrorListener() {
             @Override
@@ -563,8 +733,21 @@ public class ledger_zonal_manager extends Fragment {
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.ADD_CREDIT, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                getZmCb();
-                getZmLedger();
+
+                String name = sharedPreferences.getString("name", "");
+                String pos;
+                if(sharedPreferences.getString("position", "").equals("0")){
+                    pos = "Admin";
+                }else
+                    pos = "Zonal Manager";
+
+                String msg = amt + " Rs. by "+ name + "(" + pos + ")";
+                notifyUser("Amount Credited", msg, getActivity(), "4", zmid);
+
+                Long time = System.currentTimeMillis();
+                mDatabase.child("Ledger").setValue(time + "");
+
+
             }
         }, new Response.ErrorListener() {
             @Override
@@ -608,8 +791,9 @@ public class ledger_zonal_manager extends Fragment {
                     @Override
                     public void onResponse(String response) {
 
-                        getZmCb();
-                        getZmLedger();
+                        Long time = System.currentTimeMillis();
+                        mDatabase.child("Ledger").setValue(time + "");
+
 
                     }
                 }, new Response.ErrorListener() {

@@ -50,6 +50,7 @@
             card_view:cardUseCompatPadding="false"
             android:layout_margin="5dp"
             app:cardElevation="5dp"
+            card_view:cardBackgroundColor="#ffffff"
             app:cardCornerRadius="5dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">

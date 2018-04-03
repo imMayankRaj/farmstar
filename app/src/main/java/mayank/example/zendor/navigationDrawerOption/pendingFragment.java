@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -26,33 +27,21 @@ public class pendingFragment extends Fragment {
     private LinearLayoutManager llm;
 
     public static String param = "request";
-    private ArrayList<paymentRequest.requestClass> list;
+    private ArrayList list;
     private LinearLayout layout;
     private TextView textView;
 
 
-
-    public pendingFragment() {
+    public pendingFragment(){
 
     }
+
 
     @SuppressLint("ValidFragment")
-    public pendingFragment(ArrayList arrayList) {
-        list = arrayList;
-    }
-    public static pendingFragment newInstance(ArrayList arrayList) {
-        pendingFragment fragment = new pendingFragment();
-        Bundle bundle = new Bundle();
-        bundle.putParcelableArrayList(param, arrayList);
-        fragment.setArguments(bundle);
-        return fragment;
+    public pendingFragment(ArrayList list) {
+        this.list = list;
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -71,10 +60,13 @@ public class pendingFragment extends Fragment {
         layout.setVisibility(View.GONE);
 
 
-        if(list.size() == 0){
-            layout.setVisibility(View.VISIBLE);
-            textView.setText("No Pending Request.");
-        }
+        if(list !=null) {
+            if (list.size() == 0) {
+                layout.setVisibility(View.VISIBLE);
+                textView.setText("No Pending Request.");
+            }
+        }else
+            Toast.makeText(getActivity(), "Something went wrong. Try again.", Toast.LENGTH_SHORT).show();
 
         paymentRequestAdapter adapter = new paymentRequestAdapter(getActivity(), list);
         pendingRecyclerView.setAdapter(adapter);

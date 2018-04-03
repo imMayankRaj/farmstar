@@ -57,7 +57,7 @@ public class sellerAdapter extends RecyclerView.Adapter<sellerAdapter.sellerHold
 
     @Override
     public int getItemCount() {
-        return sellerList.size();
+         return  sellerList == null ? 0 : sellerList.size();
     }
 
     public class sellerHolder extends RecyclerView.ViewHolder {

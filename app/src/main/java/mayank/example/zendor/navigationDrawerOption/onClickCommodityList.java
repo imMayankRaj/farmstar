@@ -101,7 +101,8 @@ public class onClickCommodityList extends AppCompatActivity {
                         String cw = COMM.getString("collected_weight");
                         String pw = COMM.getString("actual_weight");
                         String bw = COMM.getString("est_weight");
-                        arrayList.add(new commodityClass(zname, bw, pw, cw));
+                        String de = COMM.getString("despatched");
+                        arrayList.add(new commodityClass(zname, bw, pw, cw, de));
                     }
                 } catch (JSONException e) {
                     lc.dismissDialog();
@@ -153,13 +154,19 @@ public class onClickCommodityList extends AppCompatActivity {
         private String bookedWeight;
         private String pickedWeight;
         private String collectedWeight;
+        private String despatched;
 
-        public commodityClass(String zname, String bookedWeight, String pickedWeight, String collectedWeight){
+        public commodityClass(String zname, String bookedWeight, String pickedWeight, String collectedWeight, String despatched){
 
             this.zname = zname;
             this.bookedWeight = bookedWeight;
             this.pickedWeight = pickedWeight;
             this.collectedWeight = collectedWeight;
+            this.despatched = despatched;
+        }
+
+        public String getDespatched() {
+            return despatched;
         }
 
         public String getBookedWeight() {

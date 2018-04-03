@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -23,6 +24,12 @@ import com.android.volley.Response;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,15 +38,19 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import mayank.example.zendor.ApplicationQueue;
 import mayank.example.zendor.LoadingClass;
 import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
+import mayank.example.zendor.navigationDrawerOption.onClickCancelledCard;
+import mayank.example.zendor.onClickBooked.onClickBookedCard;
 import xendorp1.application_classes.AppController;
 
 import static android.content.Context.MODE_PRIVATE;
 import static mayank.example.zendor.MainActivity.showError;
+import static mayank.example.zendor.frequentlyUsedClass.notifyUser;
 import static mayank.example.zendor.onClickSeller.sellerDetails.amountDue;
 
 
@@ -50,13 +61,16 @@ public class sellerLedger extends Fragment {
     private String sid;
     private ListView sellerLedgerView;
     private TextView cb;
-    private ArrayList<ledgerClass> ledgerList;
+    private ArrayList<sellerledgerClass> ledgerList;
     private TextView sellerNameAndZone;
     private SharedPreferences sharedPreferences;
     private TextView transfer;
     private LoadingClass lc;
     private double ucb;
     public static double sellerCb;
+    private DatabaseReference mDatabase;
+    private int count = 0;
+
 
     public sellerLedger() {
 
@@ -79,6 +93,7 @@ public class sellerLedger extends Fragment {
 
     }
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -90,12 +105,51 @@ public class sellerLedger extends Fragment {
         ledgerList = new ArrayList<>();
 
         lc = new LoadingClass(getActivity());
+        mDatabase = FirebaseDatabase.getInstance().getReference();
 
         sharedPreferences = getActivity().getSharedPreferences("details", MODE_PRIVATE);
 
+        count = 0;
         getSellerCb();
         getSellerLedger();
         getUserCb();
+
+        mDatabase = mDatabase.child("users").child(sid.substring(11));
+
+        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.exists()) {
+                    Long time = System.currentTimeMillis();
+                    mDatabase.child("Ledger").setValue(time + "");
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
+        mDatabase.addValueEventListener(valueEventListener);
+
+
+        sellerLedgerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String isFlag = ledgerList.get(position).getIsSale();
+                String det = ledgerList.get(position).getTransaction();
+                String pid = det.substring(det.lastIndexOf(" "));
+                if (isFlag.equals("1")) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("pid", pid.trim());
+                    Intent intent = new Intent(getActivity(), onClickLedgerDetails.class);
+                    intent.putExtra("extras", bundle);
+                    startActivity(intent);
+                }
+            }
+        });
 
         final String pos = sharedPreferences.getString("position", "");
 
@@ -103,20 +157,41 @@ public class sellerLedger extends Fragment {
         transfer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if ((ucb < 0 || ucb == 0) && !pos.equals("0"))
+              /*  if ((ucb < 0 || ucb == 0) && !pos.equals("0"))
                     Toast.makeText(getActivity(), "Not Enough Credits.", Toast.LENGTH_SHORT).show();
-                else {
-                    if (sellerCb <= 0) {
+                else {*/
+                if (sellerCb <= 0) {
 
-                    } else
-                        requestDialog();
-                }
+                } else
+                    requestDialog();
+                // }
             }
         });
 
 
         return view;
     }
+
+    public void removeListener() {
+        mDatabase.removeEventListener(valueEventListener);
+    }
+
+    private ValueEventListener valueEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            if (dataSnapshot.exists() && (count != 0)) {
+                getSellerCb();
+                getSellerLedger();
+                getUserCb();
+            }
+            count++;
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
 
     private void getUserCb() {
         lc.showDialog();
@@ -161,7 +236,6 @@ public class sellerLedger extends Fragment {
     }
 
     private void getSellerCb() {
-
         lc.showDialog();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.SELLER_CB, new Response.Listener<String>() {
             @Override
@@ -219,12 +293,16 @@ public class sellerLedger extends Fragment {
                         String pid = ledger.getString("pid");
                         String dc = ledger.getString("dc");
                         String balance = ledger.getString("Balance");
+                        String isSale = ledger.getString("isSale");
+                        String sid = ledger.getString("sid");
+
                         try {
                             if (dc.substring(dc.lastIndexOf(" ")).equals(" cr") || dc.substring(dc.lastIndexOf(" ")).equals(" dr"))
                                 dc = '\u20B9' + dc;
                         } catch (Exception e) {
+
                         }
-                        ledgerList.add(new ledgerClass(date, pid, dc, '\u20B9' + balance));
+                        ledgerList.add(new sellerledgerClass(date, pid, dc, '\u20B9' + balance, isSale, sid));
                     }
 
                     JSONObject details = json.getJSONObject("details");
@@ -236,7 +314,7 @@ public class sellerLedger extends Fragment {
                     Log.e("error e", e + "");
                 }
 
-                ledgerAdapter adapter = new ledgerAdapter(getActivity(), 0, ledgerList);
+                sellerLedgerAdapter adapter = new sellerLedgerAdapter(getActivity(), 0, ledgerList);
                 sellerLedgerView.setAdapter(adapter);
                 lc.dismissDialog();
             }
@@ -264,19 +342,78 @@ public class sellerLedger extends Fragment {
         AppController.getInstance().addToRequestQueue(stringRequest);
     }
 
+    public static class sellerledgerClass {
+
+        private String date;
+        private String transaction;
+        private String status;
+        private String balance;
+        private String isSale;
+        private String sid;
+
+        public sellerledgerClass(String date, String transaction, String status, String balance, String isSale, String sid) {
+
+            this.date = date;
+            this.transaction = transaction;
+            this.status = status;
+            this.sid = sid;
+            this.isSale = isSale;
+            this.balance = balance;
+        }
+
+
+        public String getIsSale() {
+            return isSale;
+        }
+
+        public String getSid() {
+            return sid;
+        }
+
+        public String getBalance() {
+            return balance;
+        }
+
+        public String getDate() {
+            return date;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public String getTransaction() {
+            return transaction;
+        }
+    }
+
+
     public static class ledgerClass {
 
         private String date;
         private String transaction;
         private String status;
         private String balance;
+        private String flag;
+        private String sid;
 
-        public ledgerClass(String date, String transaction, String status, String balance) {
+        public ledgerClass(String date, String transaction, String status, String balance, String flag, String sid) {
 
             this.date = date;
             this.transaction = transaction;
             this.status = status;
+            this.flag = flag;
+            this.sid = sid;
             this.balance = balance;
+        }
+
+
+        public String getSid() {
+            return sid;
+        }
+
+        public String getFlag() {
+            return flag;
         }
 
         public String getBalance() {
@@ -327,8 +464,8 @@ public class sellerLedger extends Fragment {
             public void onClick(View v) {
                 String amt = amount.getText().toString();
                 String description = desc.getText().toString();
-                if (amt.length() == 0 || description.length() == 0) {
-                    Toast.makeText(getActivity(), "All fields are compulsory.", Toast.LENGTH_SHORT).show();
+                if (amt.length() == 0) {
+                    Toast.makeText(getActivity(), "Enter a valid amount.", Toast.LENGTH_SHORT).show();
                 } else {
                     double AMT = Double.parseDouble(amt);
                     if (AMT > sellerCb) {
@@ -350,8 +487,16 @@ public class sellerLedger extends Fragment {
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.SELLER_REQUEST, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                getSellerCb();
-                getSellerLedger();
+               /* getSellerCb();
+                getSellerLedger();*/
+
+                Long time = System.currentTimeMillis();
+                mDatabase.child("Ledger").setValue(time + "");
+
+
+                notifyUser("Payment Requested", "Requested ID : "+ response, getActivity(), "2", "");
+
+
             }
         }, new Response.ErrorListener() {
             @Override

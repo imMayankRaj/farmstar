@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -32,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import mayank.example.zendor.MainActivity;
 import mayank.example.zendor.R;
 import xendorp1.adapters.executive_recycler_adapter;
 import xendorp1.adapters.zonal_manager_recycler_adapter;
@@ -87,6 +89,8 @@ public class executives extends Fragment implements SwipeRefreshLayout.OnRefresh
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                MainActivity.drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+
                 getActivity().getSupportFragmentManager().popBackStackImmediate();
             }
         });
@@ -162,7 +166,7 @@ public class executives extends Fragment implements SwipeRefreshLayout.OnRefresh
                     recyclerView.setAdapter(null);
                     Log.e("wertyui", e+"");
                     layout.setVisibility(View.VISIBLE);
-                    textView.setText("No Zones.");
+                    textView.setText("No Executives.");
 
                 }
             }

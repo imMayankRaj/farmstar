@@ -27,6 +27,11 @@ import com.android.volley.Response;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -49,6 +54,7 @@ import mayank.example.zendor.R;
 import mayank.example.zendor.URLclass;
 import mayank.example.zendor.apiConnect;
 import mayank.example.zendor.commoditiesActivity;
+import mayank.example.zendor.notValidUserActivity;
 import mayank.example.zendor.sellerDetailActivity;
 import xendorp1.application_classes.AppController;
 
@@ -61,7 +67,7 @@ import static mayank.example.zendor.MainActivity.toast;
  * A simple {@link Fragment} subclass.
  */
 
-public class sellers extends Fragment implements View.OnClickListener{
+public class sellers extends Fragment implements View.OnClickListener {
 
 
     private View view;
@@ -77,7 +83,8 @@ public class sellers extends Fragment implements View.OnClickListener{
     private LoadingClass lc;
     private LinearLayout layout;
     private TextView textView;
-
+    private DatabaseReference mDatabase;
+    private int count = 0;
 
     public sellers() {
 
@@ -104,8 +111,33 @@ public class sellers extends Fragment implements View.OnClickListener{
         recyclerView.setLayoutManager(llm);
         recyclerView.setHasFixedSize(true);
 
-        arrayList = new ArrayList<>();
-        connect = new apiConnect(getActivity(),"Seller");
+        connect = new apiConnect(getActivity(), "Seller");
+        String zid = sharedPreferences.getString("zid", "");
+        String pos = sharedPreferences.getString("position", "");
+
+        if (!pos.equals("0"))
+            mDatabase = FirebaseDatabase.getInstance().getReference().child("sellers").child(zid);
+        else
+            mDatabase = FirebaseDatabase.getInstance().getReference().child("sellers");
+
+        if(!pos.equals("0")) {
+            mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (!dataSnapshot.exists()) {
+                        long time = System.currentTimeMillis();
+                        mDatabase.setValue(time + "");
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+
+        mDatabase.addValueEventListener(valueEventListener);
 
 
         lc.showDialog();
@@ -125,27 +157,52 @@ public class sellers extends Fragment implements View.OnClickListener{
 
         return view;
     }
-    private void getSellersData(){
+
+
+    private ValueEventListener valueEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            if (dataSnapshot.exists() && count != 0) {
+                getSellersData();
+            }
+            count++;
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
+    private void getSellersData() {
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URLclass.SELLERSDATA, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 Log.e("seller res", response);
                 layout.setVisibility(View.GONE);
+                arrayList = new ArrayList<>();
+                arrayList.clear();
+                MainActivity.tabLayout.getTabAt(0).setText("SELLERS" + "(" + arrayList.size() + ")");
 
                 try {
-                    arrayList.clear();
                     JSONObject json = new JSONObject(response);
                     String status = json.getString("status");
-                    if(status.equals("success")){
-                        JSONArray array = json.getJSONArray("details");
-                        for(int i=0; i<array.length(); i++){
-                            JSONObject details = array.getJSONObject(i);
-                            String name = details.getString("name");
-                            String address = details.getString("address");
-                            String seller_id = details.getString("seller_id");
-                            String last_purchase = details.getString("last_purchase");
-                            String number = details.getString("number");
-                            arrayList.add(new sellerClass(seller_id, name, address, last_purchase, number));
+                    if (status.equals("success")) {
+                        String userStatus = json.getString("userStatus");
+                        if (userStatus.equals("1")) {
+                            JSONArray array = json.getJSONArray("details");
+                            for (int i = 0; i < array.length(); i++) {
+                                JSONObject details = array.getJSONObject(i);
+                                String name = details.getString("name");
+                                String address = details.getString("address");
+                                String seller_id = details.getString("seller_id");
+                                String last_purchase = details.getString("last_purchase");
+                                String number = details.getString("number");
+                                arrayList.add(new sellerClass(seller_id, name, address, last_purchase, number));
+                            }
+                        } else {
+                            lc.dismissDialog();
+                            startActivity(new Intent(getActivity(), notValidUserActivity.class));
                         }
                     }
                 } catch (JSONException e) {
@@ -158,8 +215,7 @@ public class sellers extends Fragment implements View.OnClickListener{
                 lc.dismissDialog();
 
 
-
-                if(arrayList.size() == 0){
+                if (arrayList.size() == 0) {
                     layout.setVisibility(View.VISIBLE);
                     textView.setText("No Sellers Available.");
                 }
@@ -168,7 +224,7 @@ public class sellers extends Fragment implements View.OnClickListener{
                 adapter = new sellerAdapter(getActivity(), arrayList);
                 recyclerView.setAdapter(adapter);
                 swipeRefreshLayout.setRefreshing(false);
-                MainActivity.tabLayout.getTabAt(0).setText("SELLERS"+"("+arrayList.size()+")");
+                MainActivity.tabLayout.getTabAt(0).setText("SELLERS" + "(" + arrayList.size() + ")");
             }
         }, new Response.ErrorListener() {
             @Override
@@ -183,16 +239,16 @@ public class sellers extends Fragment implements View.OnClickListener{
 
 
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 String pos = sharedPreferences.getString("position", "0");
-                String id = sharedPreferences.getString("id","");
-                String zoneid = sharedPreferences.getString("zid","");
+                String id = sharedPreferences.getString("id", "");
+                String zoneid = sharedPreferences.getString("zid", "");
                 HashMap<String, String> map = new HashMap();
                 map.put("pos", pos);
                 map.put("id", id);
-                map.put("zid",zoneid);
+                map.put("zid", zoneid);
                 return map;
             }
 
@@ -204,7 +260,6 @@ public class sellers extends Fragment implements View.OnClickListener{
 
         AppController.getInstance().addToRequestQueue(stringRequest);
     }
-
 
 
     @Override
@@ -224,10 +279,16 @@ public class sellers extends Fragment implements View.OnClickListener{
             Log.e("parsing error", e + "");
             e.printStackTrace();
         }
-        long updated_time = date.getTime() ;
+        long updated_time = date.getTime();
         return updated_time + "";
 
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mDatabase.removeEventListener(valueEventListener);
+
+    }
 
 }

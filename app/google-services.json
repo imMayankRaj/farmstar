@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "910690421043",
+    "firebase_url": "https://farmstar-e805e.firebaseio.com",
+    "project_id": "farmstar-e805e",
+    "storage_bucket": "farmstar-e805e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:910690421043:android:5ce730d4bd2829c1",
+        "android_client_info": {
+          "package_name": "trade.farmstar.in"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "910690421043-rdcg73rgic44to9hurjr7q8ldc5j6dqd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBB88vJKL_PEuNWBM0jTK8R2Lyv7Yyk8R4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

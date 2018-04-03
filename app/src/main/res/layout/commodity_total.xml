@@ -141,6 +141,64 @@
         </LinearLayout>
 
 
+        <LinearLayout
+            android:padding="5dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:textSize="16sp"
+                android:gravity="center"
+                android:text="Net despatched :"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
+
+            <TextView
+                android:gravity="center"
+                android:id="@+id/despatched"
+                android:layout_weight="1"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:text="24 kg"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:padding="5dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:textSize="16sp"
+                android:gravity="center"
+                android:text="Current Stock :"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
+
+            <TextView
+                android:gravity="center"
+                android:id="@+id/stock"
+                android:layout_weight="1"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:text="24 kg"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+
+
+
+        </LinearLayout>
+
 
         <View
             android:background="#aeaeae"

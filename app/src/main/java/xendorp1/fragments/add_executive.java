@@ -226,9 +226,12 @@ public class add_executive extends Fragment {
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (name.getText().length() == 0 || primary_ph_no.getText().length() == 0 || address.getText().length() == 0) {
+                if (name.getText().length() == 0 || primary_ph_no.getText().length() == 0 || address.getText().length() == 0||password.getText().length() == 0) {
                     Toast.makeText(getActivity(), "Required fields are empty", Toast.LENGTH_LONG).show();
-                } else if (primary_ph_no.getText().length() != 10) {
+                }
+                else if(password.getText().length() < 4){
+                    Toast.makeText(getActivity(), "Password should contain atleast 4 characters.", Toast.LENGTH_SHORT).show();
+                }else if (primary_ph_no.getText().length() != 10) {
                     Toast.makeText(getActivity(), "Please enter a valid phone number", Toast.LENGTH_LONG).show();
                 } else {
                     lc.showDialog();
@@ -291,6 +294,10 @@ public class add_executive extends Fragment {
                                                             Toast.makeText(getActivity(), jobj.getString("error_message"), Toast.LENGTH_SHORT).show();
                                                         } else {
                                                             Toast.makeText(getActivity(), "Successfully added executive.Please refresh" , Toast.LENGTH_LONG).show();
+                                                           /* lc.dismissDialog();
+                                                            executives.click1.performClick();
+                                                            executive_zonal_manager.click1.performClick();*/
+
                                                             getActivity().getSupportFragmentManager().popBackStackImmediate();
                                                         }
                                                     } catch (Exception e) {
@@ -299,8 +306,9 @@ public class add_executive extends Fragment {
                                                     }
 
                                                     lc.dismissDialog();
-                                                 /*   executives.click1.performClick();
-                                                    getActivity().getFragmentManager().popBackStack();*/
+                                                   // executives.click1.performClick();
+                                                   // executive_zonal_manager.click1.performClick();
+                                                    getActivity().getFragmentManager().popBackStack();
 
                                                 }
                                             }, new Response.ErrorListener() {

@@ -93,7 +93,7 @@
                 android:textSize="16sp"
                 android:paddingStart="2dp"
                 android:gravity="center|start"
-                android:text="Weight :"
+                android:text="Dispatched Weight :"
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="match_parent" />
@@ -102,6 +102,38 @@
             <TextView
                 android:gravity="center"
                 android:id="@+id/weight"
+                android:layout_weight="1"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:text="24 kg"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+
+
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:padding="5dp"
+            android:id="@+id/ll"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:textSize="16sp"
+                android:paddingStart="2dp"
+                android:gravity="center|start"
+                android:text="Delivered Weight :"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
+
+            <TextView
+                android:gravity="center"
+                android:id="@+id/deweight"
                 android:layout_weight="1"
                 android:textSize="16sp"
                 android:textColor="#000"

@@ -41,9 +41,12 @@ public class paymentAdapter extends ArrayAdapter<OnClickPaymentRequestCard.payme
 
         TextView date = convertView.findViewById(R.id.date);
         TextView amount = convertView.findViewById(R.id.amount);
+        TextView cb = convertView.findViewById(R.id.paidBy);
+
 
         date.setText(current.getPaidOn());
         amount.setText(current.getPaid());
+        cb.setText(current.getPaidBy());
 
         return convertView;
     }
